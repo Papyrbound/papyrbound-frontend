@@ -3,7 +3,7 @@
 import * as React from "react"
 
 import { NavMain } from "@/components/navbar/nav-main"
-import { NavProjects } from "@/components/navbar/nav-projects"
+import { NavReadingLists } from "@/components/navbar/nav-reading-lists"
 import { NavUser } from "@/components/navbar/nav-user"
 import { TeamSwitcher } from "@/components/navbar/team-switcher"
 import {
@@ -13,7 +13,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { GalleryVerticalEndIcon, AudioLinesIcon, TerminalIcon, TerminalSquareIcon, BotIcon, BookOpenIcon, Settings2Icon, FrameIcon, PieChartIcon, MapIcon } from "lucide-react"
+import { GalleryVerticalEndIcon, House, Library, FolderHeart, NotebookPen, Heart, BookOpen, CheckCircle2 } from "lucide-react"
 
 // This is sample data.
 const data = {
@@ -24,153 +24,55 @@ const data = {
   },
   teams: [
     {
-      name: "Acme Inc",
-      logo: (
-        <GalleryVerticalEndIcon
-        />
-      ),
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: (
-        <AudioLinesIcon
-        />
-      ),
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: (
-        <TerminalIcon
-        />
-      ),
-      plan: "Free",
+      name: "Papyrbound",
+      logo: <GalleryVerticalEndIcon />,
+      plan: "Personal Library",
     },
   ],
   navMain: [
     {
-      title: "Playground",
-      url: "#",
-      icon: (
-        <TerminalSquareIcon
-        />
-      ),
+      title: "Home",
+      url: "/",
+      icon: <House />,
       isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
     },
     {
-      title: "Models",
-      url: "#",
-      icon: (
-        <BotIcon
-        />
-      ),
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
+      title: "Library",
+      url: "/library",
+      icon: <Library />,
     },
     {
-      title: "Documentation",
-      url: "#",
-      icon: (
-        <BookOpenIcon
-        />
-      ),
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
+      title: "Collections",
+      url: "/collections",
+      icon: <FolderHeart />,
     },
     {
-      title: "Settings",
-      url: "#",
-      icon: (
-        <Settings2Icon
-        />
-      ),
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
+      title: "Annotations",
+      url: "/annotations",
+      icon: <NotebookPen />,
     },
   ],
-  projects: [
+  readingLists: [
     {
-      name: "Design Engineering",
+      name: "Favourites",
       url: "#",
-      icon: (
-        <FrameIcon
-        />
-      ),
+      icon: <Heart className="fill-current" />,
+      color: "rose" as const,
+      isDefault: true,
     },
     {
-      name: "Sales & Marketing",
+      name: "Want To Read",
       url: "#",
-      icon: (
-        <PieChartIcon
-        />
-      ),
+      icon: <BookOpen className="fill-current" />,
+      color: "blue" as const,
+      isDefault: true,
     },
     {
-      name: "Travel",
+      name: "Completed",
       url: "#",
-      icon: (
-        <MapIcon
-        />
-      ),
+      icon: <CheckCircle2 className="fill-current stroke-white" />,
+      color: "green" as const,
+      isDefault: true,
     },
   ],
 }
@@ -183,7 +85,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavReadingLists readingLists={data.readingLists} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
