@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AppHeader } from "@/app-shell/app-header";
 import { AppSidebar } from "@/app-shell/app-sidebar";
+import { ReadingListsProvider } from "@/features/reading-lists/stores/reading-lists-store";
 import { TooltipProvider } from "@/shared/ui/tooltip";
 import { SidebarInset, SidebarProvider } from "@/shared/ui/sidebar";
 import { cn } from "@/shared/lib/utils";
@@ -15,15 +16,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={cn("h-full", "antialiased")}>
       <body className="min-h-full flex flex-col">
-        <TooltipProvider>
-          <SidebarProvider className="grid min-h-screen w-full grid-cols-[auto_minmax(0,1fr)]">
-            <AppSidebar />
-            <SidebarInset className="min-w-0">
-              <AppHeader />
-              {children}
-            </SidebarInset>
-          </SidebarProvider>
-        </TooltipProvider>
+        <ReadingListsProvider>
+          <TooltipProvider>
+            <SidebarProvider className="grid min-h-screen w-full grid-cols-[auto_minmax(0,1fr)]">
+              <AppSidebar />
+              <SidebarInset className="min-w-0">
+                <AppHeader />
+                {children}
+              </SidebarInset>
+            </SidebarProvider>
+          </TooltipProvider>
+        </ReadingListsProvider>
       </body>
     </html>
   );

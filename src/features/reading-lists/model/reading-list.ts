@@ -6,28 +6,42 @@ export type ReadingList = {
   url: string
   icon: ReadingListIcon
   isDefault?: boolean
+  isPinned?: boolean
+  sortOrder: number
+}
+
+export const MAX_PINNED_CUSTOM_LISTS = 5
+
+export function getReadingListUrl(id: string) {
+  return `/reading-lists?list=${encodeURIComponent(id)}`
 }
 
 export const defaultReadingLists: ReadingList[] = [
   {
     id: "favourites",
     name: "Favourites",
-    url: "/reading-lists#favourites",
+    url: getReadingListUrl("favourites"),
     icon: "heart",
     isDefault: true,
+    isPinned: true,
+    sortOrder: 0,
   },
   {
     id: "want-to-read",
     name: "Want To Read",
-    url: "/reading-lists#want-to-read",
+    url: getReadingListUrl("want-to-read"),
     icon: "book-open",
     isDefault: true,
+    isPinned: true,
+    sortOrder: 1,
   },
   {
     id: "completed",
     name: "Completed",
-    url: "/reading-lists#completed",
+    url: getReadingListUrl("completed"),
     icon: "completed",
     isDefault: true,
+    isPinned: true,
+    sortOrder: 2,
   },
 ]

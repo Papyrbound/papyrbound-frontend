@@ -7,7 +7,6 @@ import { NavMain } from "@/app-shell/nav-main"
 import { TeamSwitcher } from "@/app-shell/team-switcher"
 import { localProfile } from "@/features/profile/model/profile"
 import { NavProfile } from "@/features/profile/ui/nav-profile"
-import { defaultReadingLists } from "@/features/reading-lists/model/reading-list"
 import { NavReadingLists } from "@/features/reading-lists/ui/nav-reading-lists"
 import {
   Sidebar,
@@ -36,7 +35,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={mainNavigation} />
-        <NavReadingLists readingLists={defaultReadingLists} />
+        <React.Suspense fallback={null}>
+          <NavReadingLists />
+        </React.Suspense>
       </SidebarContent>
       <SidebarFooter>
         <NavProfile profile={localProfile} />
