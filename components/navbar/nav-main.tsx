@@ -38,7 +38,7 @@ export function NavMain({
         {items.map((item) => (
           item.items?.length ? (
             <Collapsible key={item.title} defaultOpen={item.isActive} className="group/collapsible" render={<SidebarMenuItem />}>
-              <CollapsibleTrigger render={<SidebarMenuButton tooltip={item.title} className="transition-colors hover:bg-neutral-200 hover:text-foreground data-open:bg-neutral-200 data-open:text-foreground" />}>
+              <CollapsibleTrigger render={<SidebarMenuButton tooltip={item.title} className="transition-colors hover:bg-sidebar-accent/70 hover:text-foreground data-open:bg-sidebar-accent data-open:text-foreground" />}>
                 {item.icon}
                 <span>{item.title}</span>
                 <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-open/collapsible:rotate-90" />
@@ -55,7 +55,7 @@ export function NavMain({
             </Collapsible>
           ) : (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton render={<a href={item.url} />} isActive={item.isActive} tooltip={item.title} className="transition-colors hover:bg-neutral-200 hover:text-foreground" >
+              <SidebarMenuButton render={<a href={item.url} />} isActive={item.isActive} tooltip={item.title} className="transition-colors hover:bg-sidebar-accent/70 hover:text-foreground" >
                 {item.icon}
                 <span>{item.title}</span>
               </SidebarMenuButton>

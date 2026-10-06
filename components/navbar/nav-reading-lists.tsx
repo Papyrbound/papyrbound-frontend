@@ -93,11 +93,11 @@ export function NavReadingLists({
       <SidebarMenu>
         {lists.map((item) => (
           <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton render={<a href={item.url} />} className="hover:bg-sidebar-accent">
+            <SidebarMenuButton render={<a href={item.url} />} className="hover:bg-sidebar-accent/70">
               {item.isDefault && item.icon ? (
-                <span className={cn("flex size-5 items-center justify-center", colorClasses[item.color].split(" ")[1])} aria-hidden="true">{item.icon}</span>
+                <span className="flex size-5 items-center justify-center text-sidebar-foreground/70 [&_svg]:fill-none" aria-hidden="true">{item.icon}</span>
               ) : (
-                <TagIcon className={cn("size-4", colorClasses[item.color].split(" ")[1])} aria-hidden="true" />
+                <TagIcon className="size-4 text-sidebar-foreground/70" aria-hidden="true" />
               )}
               <span>{item.name}</span>
             </SidebarMenuButton>

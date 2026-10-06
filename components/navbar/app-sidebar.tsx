@@ -56,21 +56,21 @@ const data = {
     {
       name: "Favourites",
       url: "#",
-      icon: <Heart className="fill-current" />,
+      icon: <Heart />,
       color: "rose" as const,
       isDefault: true,
     },
     {
       name: "Want To Read",
       url: "#",
-      icon: <BookOpen className="fill-current" />,
+      icon: <BookOpen />,
       color: "blue" as const,
       isDefault: true,
     },
     {
       name: "Completed",
       url: "#",
-      icon: <CheckCircle2 className="fill-current stroke-white" />,
+      icon: <CheckCircle2 />,
       color: "green" as const,
       isDefault: true,
     },
@@ -79,7 +79,7 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar variant="floating" collapsible="icon" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>

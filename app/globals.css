@@ -257,12 +257,10 @@
   [data-slot="dropdown-menu-content"],
   [data-slot="dropdown-menu-sub-content"] {
     border-color: transparent;
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-md);
   }
 
-  [data-sidebar="menu-button"],
-  [data-slot="dropdown-menu-item"],
-  [data-slot="dropdown-menu-sub-trigger"] {
+  [data-sidebar="menu-button"] {
     border-radius: 9999px;
   }
 }
