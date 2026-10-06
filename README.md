@@ -15,3 +15,20 @@ The application combines a Next.js frontend with Tauri to provide a native deskt
 
 - EPUB e-books
 - CBZ comic book archives
+
+## Architecture
+
+The frontend uses a feature-oriented structure with one-way dependencies:
+
+```text
+src/app          routes and layouts only
+src/app-shell    persistent desktop navigation and chrome
+src/features     domain-owned models, logic, and UI
+src/shared       domain-neutral utilities and shadcn primitives
+```
+
+Route files stay thin and compose feature views. Features may depend on
+`shared`, while `shared` never imports from a feature. Tauri IPC commands are
+kept thin in `src-tauri/src/commands` and delegate filesystem or business work
+to `src-tauri/src/services`; Rust data contracts live in
+`src-tauri/src/types`.
