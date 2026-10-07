@@ -1,11 +1,7 @@
-"use client"
+"use client";
 
-import type { LocalProfile } from "@/features/profile/model/profile"
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/shared/ui/avatar"
+import type { LocalProfile } from "@/features/profile/model/profile";
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,29 +10,29 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu"
+} from "@/shared/ui/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/shared/ui/sidebar"
+} from "@/shared/ui/sidebar";
 import {
   BookOpenCheckIcon,
   ChevronsUpDownIcon,
   SettingsIcon,
   TrophyIcon,
   UserRoundPenIcon,
-} from "lucide-react"
+} from "lucide-react";
 
 export function NavProfile({ profile }: { profile: LocalProfile }) {
-  const { isMobile } = useSidebar()
+  const { isMobile } = useSidebar();
   const initials = profile.name
     .split(" ")
     .map((part) => part[0])
     .join("")
     .slice(0, 2)
-    .toUpperCase()
+    .toUpperCase();
 
   return (
     <SidebarMenu>
@@ -44,7 +40,18 @@ export function NavProfile({ profile }: { profile: LocalProfile }) {
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <SidebarMenuButton size="lg" className="aria-expanded:bg-muted" />
+              <SidebarMenuButton
+                size="lg"
+                className="aria-expanded:bg-muted"
+                tooltip={{
+                  children: (
+                    <div>
+                      <div className="font-sm">{profile.name}</div>
+                      <div className="text-xs opacity-70">{profile.title}</div>
+                    </div>
+                  ),
+                }}
+              />
             }
           >
             <Avatar>
@@ -108,5 +115,5 @@ export function NavProfile({ profile }: { profile: LocalProfile }) {
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }

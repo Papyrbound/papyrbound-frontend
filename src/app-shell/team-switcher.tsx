@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useState, type ReactNode } from "react"
 
 import {
   DropdownMenu,
@@ -25,12 +25,12 @@ export function TeamSwitcher({
 }: {
   teams: {
     name: string
-    logo: React.ReactNode
+    logo: ReactNode
     plan: string
   }[]
 }) {
   const { isMobile } = useSidebar()
-  const [activeTeam, setActiveTeam] = React.useState(teams[0])
+  const [activeTeam, setActiveTeam] = useState(teams[0])
   if (!activeTeam) {
     return null
   }

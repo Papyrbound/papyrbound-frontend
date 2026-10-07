@@ -52,7 +52,12 @@ export function NavMain({
             </Collapsible>
           ) : (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton render={<Link href={item.url} />} isActive={pathname === item.url} tooltip={item.title} className="transition-colors hover:bg-sidebar-accent/70 hover:text-foreground" >
+              <SidebarMenuButton
+                render={<Link href={item.url} />}
+                isActive={pathname === item.url}
+                tooltip={item.title}
+                className="transition-colors hover:bg-sidebar-accent/70 hover:text-foreground"
+              >
                 <item.icon className="stroke-muted-foreground" />
                 <span>{item.title}</span>
               </SidebarMenuButton>

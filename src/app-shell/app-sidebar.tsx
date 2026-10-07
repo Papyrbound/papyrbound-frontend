@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { Suspense, type ComponentProps } from "react"
 
 import { mainNavigation } from "@/app-shell/navigation"
 import { NavMain } from "@/app-shell/nav-main"
@@ -27,7 +27,7 @@ const data = {
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar variant="floating" collapsible="icon" {...props}>
       <SidebarHeader>
@@ -35,9 +35,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={mainNavigation} />
-        <React.Suspense fallback={null}>
+        <Suspense fallback={null}>
           <NavReadingLists />
-        </React.Suspense>
+        </Suspense>
       </SidebarContent>
       <SidebarFooter>
         <NavProfile profile={localProfile} />

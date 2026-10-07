@@ -1,6 +1,13 @@
 "use client"
 
-import * as React from "react"
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  type PropsWithChildren,
+} from "react"
 
 import {
   defaultReadingLists,
@@ -16,14 +23,14 @@ type ReadingListsContextValue = {
   togglePinned: (id: string) => void
 }
 
-const ReadingListsContext = React.createContext<ReadingListsContextValue | null>(
+const ReadingListsContext = createContext<ReadingListsContextValue | null>(
   null
 )
 
-export function ReadingListsProvider({ children }: React.PropsWithChildren) {
-  const [lists, setLists] = React.useState<ReadingList[]>(defaultReadingLists)
+export function ReadingListsProvider({ children }: PropsWithChildren) {
+  const [lists, setLists] = useState<ReadingList[]>(defaultReadingLists)
 
-  const createList = React.useCallback((name: string) => {
+  const createList = useCallback((name: string) => {
     const trimmedName = name.trim()
     if (!trimmedName) return
 
@@ -48,14 +55,14 @@ export function ReadingListsProvider({ children }: React.PropsWithChildren) {
     })
   }, [])
 
-  const deleteList = React.useCallback((id: string) => {
+  const deleteList = useCallback((id: string) => {
     setLists((current) => {
       if (current.find((list) => list.id === id)?.isDefault) return current
       return current.filter((list) => list.id !== id)
     })
   }, [])
 
-  const togglePinned = React.useCallback((id: string) => {
+  const togglePinned = useCallback((id: string) => {
     setLists((current) => {
       const target = current.find((list) => list.id === id)
       if (!target || target.isDefault) return current
@@ -74,7 +81,7 @@ export function ReadingListsProvider({ children }: React.PropsWithChildren) {
     })
   }, [])
 
-  const value = React.useMemo(
+  const value = useMemo(
     () => ({ lists, createList, deleteList, togglePinned }),
     [lists, createList, deleteList, togglePinned]
   )
@@ -87,7 +94,7 @@ export function ReadingListsProvider({ children }: React.PropsWithChildren) {
 }
 
 export function useReadingLists() {
-  const context = React.useContext(ReadingListsContext)
+  const context = useContext(ReadingListsContext)
 
   if (!context) {
     throw new Error("useReadingLists must be used within ReadingListsProvider")
