@@ -8,7 +8,7 @@ The application combines a Next.js frontend with Tauri to provide a native deskt
 
 - [Next.js](https://nextjs.org/) for the application frontend
 - [Tauri](https://tauri.app/) for the native desktop shell
-- [shadcn/ui](https://ui.shadcn.com/) for reusable interface components
+- [shadcn/ui](https://ui.shadcn.com/) for reusable interface components. Preset (--preset bK05dzrGc)
 - [Tailwind CSS](https://tailwindcss.com/) for styling
 
 ## Supported Formats

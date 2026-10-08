@@ -29,12 +29,12 @@ const data = {
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar variant="floating" collapsible="icon" {...props}>
+    <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
+        <NavMain items={mainNavigation} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={mainNavigation} />
         <Suspense fallback={null}>
           <NavReadingLists />
         </Suspense>

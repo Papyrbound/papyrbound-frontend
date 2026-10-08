@@ -16,9 +16,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/shared/ui/sidebar"
-import { ChevronsUpDownIcon, PlusIcon } from "lucide-react"
+import { ChevronDownIcon, PlusIcon } from "lucide-react"
 
 export function TeamSwitcher({
   teams,
@@ -29,7 +28,6 @@ export function TeamSwitcher({
     plan: string
   }[]
 }) {
-  const { isMobile } = useSidebar()
   const [activeTeam, setActiveTeam] = useState(teams[0])
   if (!activeTeam) {
     return null
@@ -39,26 +37,18 @@ export function TeamSwitcher({
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger
-            render={
-              <SidebarMenuButton
-                size="lg"
-                className="data-open:bg-sidebar-accent data-open:text-sidebar-accent-foreground"
-              />
-            }
+            render={<SidebarMenuButton className="w-fit px-1.5" />}
           >
-            <div className="flex aspect-square size-7 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+            <div className="flex aspect-square size-5 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
               {activeTeam.logo}
             </div>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-medium">{activeTeam.name}</span>
-              <span className="truncate text-xs">{activeTeam.plan}</span>
-            </div>
-            <ChevronsUpDownIcon className="ml-auto" />
+            <span className="truncate font-medium">{activeTeam.name}</span>
+            <ChevronDownIcon className="opacity-50" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-fit"
+            className="w-64 rounded-lg"
             align="start"
-            side={isMobile ? "bottom" : "right"}
+            side="bottom"
             sideOffset={4}
           >
             <DropdownMenuGroup>
@@ -71,7 +61,7 @@ export function TeamSwitcher({
                   onClick={() => setActiveTeam(team)}
                   className="gap-2 p-2"
                 >
-                  <div className="flex size-6 items-center justify-center rounded-md border">
+                  <div className="flex size-6 items-center justify-center rounded-xs border">
                     {team.logo}
                   </div>
                   {team.name}
@@ -82,7 +72,7 @@ export function TeamSwitcher({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem className="gap-2 p-2">
-                <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
+                <div className="flex size-6 items-center justify-center rounded-md border bg-background">
                   <PlusIcon className="size-4" />
                 </div>
                 <div className="font-medium text-muted-foreground">

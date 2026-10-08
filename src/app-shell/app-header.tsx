@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation"
 
+import { NavActions } from "@/app-shell/nav-actions"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -24,16 +25,24 @@ export function AppHeader() {
   const label = routeLabels[pathname] ?? "Papyrbound"
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-2 px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-      <SidebarTrigger className="-ml-1 p-2 bg-control/40 hover:bg-control/70 cursor-pointer" />
-      <Separator orientation="vertical" className="mr-2 h-4" />
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbPage>{label}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+    <header className="flex h-14 shrink-0 items-center gap-2">
+      <div className="flex flex-1 items-center gap-2 px-3">
+        <SidebarTrigger />
+        <Separator
+          orientation="vertical"
+          className="mr-2 data-vertical:h-4 data-vertical:self-auto"
+        />
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbPage className="line-clamp-1">{label}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+      <div className="ml-auto px-3">
+        <NavActions />
+      </div>
     </header>
   )
 }

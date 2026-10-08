@@ -75,12 +75,8 @@ function ReadingListMenuItem({
         render={<Link href={item.url} />}
         isActive={isActive}
         tooltip={item.name}
-        className="hover:bg-sidebar-accent/70"
       >
-        <ListIcon
-          className="size-4 fill-none text-sidebar-foreground/70"
-          aria-hidden="true"
-        />
+        <ListIcon aria-hidden="true" />
         <span>{item.name}</span>
         {item.isPinned && !item.isDefault ? (
           <PinIcon
