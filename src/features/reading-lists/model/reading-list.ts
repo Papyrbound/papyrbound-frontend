@@ -1,5 +1,20 @@
 export type ReadingListIcon = "heart" | "book-open" | "completed" | "tag"
 
+export const readingListColors = [
+  { name: "Lilac", value: "#ded4ed" },
+  { name: "Rose", value: "#efd0df" },
+  { name: "Sage", value: "#dbe5cd" },
+  { name: "Sand", value: "#e6dfbd" },
+  { name: "Mint", value: "#cce5de" },
+  { name: "Peach", value: "#f2dacb" },
+] as const
+
+export type ReadingListDetails = {
+  name: string
+  color: string
+  bookIds: string[]
+}
+
 export type ReadingList = {
   id: string
   name: string
@@ -8,6 +23,8 @@ export type ReadingList = {
   isDefault?: boolean
   isPinned?: boolean
   sortOrder: number
+  color?: string
+  bookIds?: string[]
 }
 
 export const MAX_PINNED_CUSTOM_LISTS = 5

@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation"
 import { MoonIcon, SunIcon } from "lucide-react"
 import { SidebarTrigger } from "@/shared/ui/sidebar"
 import { Button } from "@/shared/ui/button"
+import { BookSearchDialog } from "@/features/home/ui/book-search-dialog"
+import { AddBookDialog } from "@/features/library/ui/add-book-dialog"
 
 const routeLabels: Record<string, string> = {
   "/": "Home",
@@ -30,8 +32,9 @@ export function AppHeader() {
       <SidebarTrigger className="text-muted-foreground" />
       <span className="h-4 w-px bg-border" aria-hidden="true" />
       <span className="text-sm">{routeLabels[pathname] ?? "Papyrbound"}</span>
+      <div className="ml-auto flex items-center gap-2">
       <Button
-        className="ml-auto text-muted-foreground"
+        className="text-muted-foreground"
         variant="ghost"
         size="icon"
         aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
@@ -39,6 +42,9 @@ export function AppHeader() {
       >
         {dark ? <SunIcon /> : <MoonIcon />}
       </Button>
+      <BookSearchDialog />
+      <AddBookDialog />
+      </div>
     </header>
   )
 }

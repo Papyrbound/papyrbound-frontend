@@ -2,22 +2,18 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ArrowUpRightIcon, BookOpenIcon, ChevronRightIcon, HeartIcon, LayoutGridIcon, ListIcon, SearchIcon, SparklesIcon } from "lucide-react"
+import { ArrowUpRightIcon, BookOpenIcon, ChevronRightIcon, HeartIcon, LayoutGridIcon, ListIcon, SparklesIcon } from "lucide-react"
 import { Button } from "@/shared/ui/button"
-import { Input } from "@/shared/ui/input"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/shared/ui/sheet"
-import { sampleBooks, type SampleBook } from "../model/sample-books"
+import { type SampleBook } from "../model/sample-books"
+import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store"
 import { BookCover } from "./book-cover"
 
 export function LibraryOverview() {
+  const { books } = useReadingLists()
   const [view, setView] = useState<"grid" | "list">("grid")
-  const [query, setQuery] = useState("")
   const [selected, setSelected] = useState<SampleBook | null>(null)
-  const normalizedQuery = query.trim().toLowerCase()
-  const visibleBooks = sampleBooks.filter((book) =>
-    `${book.title} ${book.author} ${book.genre}`.toLowerCase().includes(normalizedQuery)
-  )
-  const readingBooks = sampleBooks.filter((book) => book.progress > 0)
+  const readingBooks = books.filter((book) => book.progress > 0 && book.progress < 100)
 
   return (
     <div className="overview">
@@ -62,10 +58,6 @@ export function LibraryOverview() {
             <p className="eyebrow mt-1">Six stories, a few different worlds.</p>
           </div>
           <div className="shelf-controls">
-            <div className="relative w-full max-w-60">
-              <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-              <Input type="search" aria-label="Search sample books" placeholder="Find a book…" value={query} onChange={(event) => setQuery(event.target.value)} className="h-9 pl-9" />
-            </div>
             <div className="view-switch" role="group" aria-label="Shelf layout">
               <Button variant="ghost" size="icon-sm" aria-label="Grid view" aria-pressed={view === "grid"} onClick={() => setView("grid")}><LayoutGridIcon /></Button>
               <Button variant="ghost" size="icon-sm" aria-label="List view" aria-pressed={view === "list"} onClick={() => setView("list")}><ListIcon /></Button>
@@ -73,7 +65,7 @@ export function LibraryOverview() {
           </div>
         </div>
         <div className={view === "grid" ? "book-grid" : "book-list"}>
-          {visibleBooks.map((book) => (
+          {books.map((book) => (
             <button type="button" className="book-item" key={book.id} onClick={() => setSelected(book)} aria-label={`View ${book.title} by ${book.author}`}>
               <BookCover book={book} />
               <span className="book-caption">
@@ -84,9 +76,6 @@ export function LibraryOverview() {
             </button>
           ))}
         </div>
-        <p role="status" className={visibleBooks.length ? "sr-only" : "py-12 text-center text-muted-foreground"}>
-          {visibleBooks.length ? `${visibleBooks.length} sample books shown` : "No books match. Try another title, author, or genre."}
-        </p>
       </section>
 
       <nav aria-label="Reading shortcuts" className="collection-grid">

@@ -28,7 +28,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" tooltip="Papyrbound" render={<Link href="/" onClick={() => setOpenMobile(false)} />}>
+            <SidebarMenuButton size="lg" className="group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:justify-center" tooltip="Papyrbound" render={<Link href="/" onClick={() => setOpenMobile(false)} />}>
               <GalleryVerticalEndIcon aria-hidden="true" />
               <span className="font-medium group-data-[collapsible=icon]:hidden">Papyrbound</span>
             </SidebarMenuButton>

@@ -14,13 +14,22 @@ import {
   getReadingListUrl,
   MAX_PINNED_CUSTOM_LISTS,
   type ReadingList,
+  type ReadingListDetails,
 } from "@/features/reading-lists/model/reading-list"
+import { sampleBooks, type SampleBook } from "@/features/home/model/sample-books"
 
 type ReadingListsContextValue = {
+  books: SampleBook[]
+  addBook: (details: { title: string; author: string }) => void
+  markAsRead: (bookId: string) => void
+  markAsUnread: (bookId: string) => void
+  deleteBook: (bookId: string) => void
   lists: ReadingList[]
-  createList: (name: string) => void
+  createList: (details: ReadingListDetails) => string | undefined
+  updateList: (id: string, details: ReadingListDetails) => void
   deleteList: (id: string) => void
   togglePinned: (id: string) => void
+  toggleBook: (listId: string, bookId: string) => void
 }
 
 const ReadingListsContext = createContext<ReadingListsContextValue | null>(
@@ -28,14 +37,45 @@ const ReadingListsContext = createContext<ReadingListsContextValue | null>(
 )
 
 export function ReadingListsProvider({ children }: PropsWithChildren) {
+  const [books, setBooks] = useState<(SampleBook & { previousProgress?: number })[]>(sampleBooks)
   const [lists, setLists] = useState<ReadingList[]>(defaultReadingLists)
 
-  const createList = useCallback((name: string) => {
-    const trimmedName = name.trim()
-    if (!trimmedName) return
+  const addBook = useCallback((details: { title: string; author: string }) => {
+    if (!details.title.trim() || !details.author.trim()) return
+    const book: SampleBook = {
+      id: crypto.randomUUID(), title: details.title.trim(), author: details.author.trim(),
+      genre: "Uncategorized", pages: 0, progress: 0,
+      paper: "#d9cae9", ink: "#494059", tone: "var(--content-lilac)", art: "orbit",
+    }
+    setBooks((current) => [...current, book])
+  }, [])
 
+  const markAsRead = useCallback((bookId: string) => {
+    setBooks((current) => current.map((book) => book.id === bookId && book.progress < 100 ? { ...book, previousProgress: book.progress, progress: 100 } : book))
+    setLists((current) => current.map((list) => list.id === "completed"
+      ? { ...list, bookIds: [...new Set([...(list.bookIds ?? []), bookId])] }
+      : list))
+  }, [])
+
+  const markAsUnread = useCallback((bookId: string) => {
+    setBooks((current) => current.map((book) => book.id === bookId && book.progress >= 100
+      ? { ...book, progress: book.previousProgress ?? 0, previousProgress: undefined }
+      : book))
+    setLists((current) => current.map((list) => list.id === "completed"
+      ? { ...list, bookIds: list.bookIds?.filter((id) => id !== bookId) }
+      : list))
+  }, [])
+
+  const deleteBook = useCallback((bookId: string) => {
+    setBooks((current) => current.filter((book) => book.id !== bookId))
+    setLists((current) => current.map((list) => ({ ...list, bookIds: list.bookIds?.filter((id) => id !== bookId) })))
+  }, [])
+
+  const createList = useCallback((details: ReadingListDetails) => {
+    const trimmedName = details.name.trim()
+    if (!trimmedName) return
+    const id = crypto.randomUUID()
     setLists((current) => {
-      const id = crypto.randomUUID()
       const nextSortOrder = current.reduce(
         (highest, list) => Math.max(highest, list.sortOrder),
         -1
@@ -44,6 +84,7 @@ export function ReadingListsProvider({ children }: PropsWithChildren) {
       return [
         ...current,
         {
+          ...details,
           id,
           name: trimmedName,
           url: getReadingListUrl(id),
@@ -53,6 +94,16 @@ export function ReadingListsProvider({ children }: PropsWithChildren) {
         },
       ]
     })
+    return id
+  }, [])
+
+  const updateList = useCallback((id: string, details: ReadingListDetails) => {
+    if (!details.name.trim()) return
+    setLists((current) => current.map((list) =>
+      list.id === id && !list.isDefault
+        ? { ...list, ...details, name: details.name.trim() }
+        : list
+    ))
   }, [])
 
   const deleteList = useCallback((id: string) => {
@@ -81,9 +132,17 @@ export function ReadingListsProvider({ children }: PropsWithChildren) {
     })
   }, [])
 
+  const toggleBook = useCallback((listId: string, bookId: string) => {
+    setLists((current) => current.map((list) => {
+      if (list.id !== listId) return list
+      const bookIds = list.bookIds ?? []
+      return { ...list, bookIds: bookIds.includes(bookId) ? bookIds.filter((id) => id !== bookId) : [...bookIds, bookId] }
+    }))
+  }, [])
+
   const value = useMemo(
-    () => ({ lists, createList, deleteList, togglePinned }),
-    [lists, createList, deleteList, togglePinned]
+    () => ({ books, addBook, markAsRead, markAsUnread, deleteBook, lists, createList, updateList, deleteList, togglePinned, toggleBook }),
+    [books, addBook, markAsRead, markAsUnread, deleteBook, lists, createList, updateList, deleteList, togglePinned, toggleBook]
   )
 
   return (

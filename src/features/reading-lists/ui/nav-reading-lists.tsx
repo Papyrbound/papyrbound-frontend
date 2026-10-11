@@ -2,13 +2,14 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { usePathname, useSearchParams } from "next/navigation"
+import { usePathname, useSearchParams, useRouter } from "next/navigation"
 import {
   BookOpenIcon,
   CheckCircle2Icon,
-  CheckIcon,
+  ChevronDownIcon,
   HeartIcon,
   ListFilterIcon,
+  MinusIcon,
   MoreHorizontalIcon,
   PencilIcon,
   PinIcon,
@@ -23,10 +24,12 @@ import {
   MAX_PINNED_CUSTOM_LISTS,
   type ReadingList,
   type ReadingListIcon,
+  getReadingListUrl,
 } from "@/features/reading-lists/model/reading-list"
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
+import { ReadingListEditor } from "./reading-list-editor"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,7 +41,6 @@ import {
 } from "@/shared/ui/dropdown-menu"
 import {
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuAction,
   SidebarMenuButton,
@@ -59,12 +61,14 @@ function ReadingListMenuItem({
   canPin,
   onDelete,
   onTogglePinned,
+  onEdit,
 }: {
   item: ReadingList
   isActive: boolean
   canPin: boolean
   onDelete: (id: string) => void
   onTogglePinned: (id: string) => void
+  onEdit: (list: ReadingList) => void
 }) {
   const { isMobile } = useSidebar()
   const ListIcon = listIcons[item.icon]
@@ -76,21 +80,23 @@ function ReadingListMenuItem({
         isActive={isActive}
         aria-current={isActive ? "page" : undefined}
         tooltip={item.name}
-        className="hover:bg-sidebar-accent/70"
+        className="reading-list-link"
       >
         <ListIcon
-          className="size-4 fill-none text-sidebar-foreground/70"
+          className="size-4 fill-none"
+          style={item.color ? { color: item.color } : undefined}
           aria-hidden="true"
         />
         <span>{item.name}</span>
-        {item.isPinned && !item.isDefault ? (
-          <PinIcon
-            className="ml-auto text-sidebar-foreground/50 group-data-[collapsible=icon]:hidden"
-            aria-label="Pinned"
-          />
-        ) : null}
       </SidebarMenuButton>
-      <DropdownMenu>
+      {!item.isDefault && <SidebarMenuAction
+        showOnHover
+        className="list-pin-action"
+        aria-label={`${item.isPinned ? "Unpin" : "Pin"} ${item.name}`}
+        disabled={!item.isPinned && !canPin}
+        onClick={() => onTogglePinned(item.id)}
+      >{item.isPinned ? <PinOffIcon /> : <PinIcon />}</SidebarMenuAction>}
+      {!item.isDefault && <DropdownMenu>
         <DropdownMenuTrigger
           render={
             <SidebarMenuAction
@@ -107,8 +113,8 @@ function ReadingListMenuItem({
           side={isMobile ? "bottom" : "right"}
           align={isMobile ? "end" : "start"}
         >
-          <DropdownMenuItem>
-            <PencilIcon /> Rename list
+          <DropdownMenuItem onClick={() => onEdit(item)}>
+            <PencilIcon /> Edit list
           </DropdownMenuItem>
           {!item.isDefault ? (
             <>
@@ -129,20 +135,23 @@ function ReadingListMenuItem({
             </>
           ) : null}
         </DropdownMenuContent>
-      </DropdownMenu>
+      </DropdownMenu>}
     </SidebarMenuItem>
   )
 }
 
 export function NavReadingLists() {
-  const { state } = useSidebar()
-  const { lists, createList, deleteList, togglePinned } = useReadingLists()
+  const { state, isMobile, setOpenMobile } = useSidebar()
+  const { lists, createList, updateList, deleteList, togglePinned } = useReadingLists()
+  const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const selectedListId = searchParams.get("list")
   const [isCreating, setIsCreating] = useState(false)
-  const [name, setName] = useState("")
+  const [editingList, setEditingList] = useState<ReadingList | undefined>()
+  const [sectionOpen, setSectionOpen] = useState(true)
   const [overflowQuery, setOverflowQuery] = useState("")
+  const isCollapsed = state === "collapsed" && !isMobile
 
   const orderedLists = [...lists].sort(
     (first, second) => first.sortOrder - second.sortOrder
@@ -162,33 +171,39 @@ export function NavReadingLists() {
         list.name.toLocaleLowerCase().includes(normalizedQuery)
       )
     : overflowLists
-  const visibleLists = state === "collapsed" ? collapsedLists : orderedLists
+  const visibleLists = isCollapsed ? collapsedLists : orderedLists
   const canPin = pinnedCustomLists.length < MAX_PINNED_CUSTOM_LISTS
 
-  function submitList() {
-    const trimmedName = name.trim()
-    if (!trimmedName) return
-    createList(trimmedName)
-    setName("")
-    setIsCreating(false)
+  function openEditor(list?: ReadingList) {
+    setEditingList(list)
+    setIsCreating(true)
   }
 
   return (
-    <SidebarGroup>
-      <div className="flex items-center justify-between group-data-[collapsible=icon]:hidden">
-        <SidebarGroupLabel>Reading Lists</SidebarGroupLabel>
+    <SidebarGroup className="reading-lists-section">
+      {isCollapsed ? <div className="flex h-9 w-full shrink-0 items-center justify-center" aria-hidden="true"><MinusIcon className="size-4 shrink-0" /></div> : <div className="list-section-heading">
+        <button type="button" className="list-section-toggle" aria-expanded={sectionOpen} aria-controls="reading-lists-menu" onClick={() => setSectionOpen((open) => !open)}>
+          Reading lists <ChevronDownIcon className={`list-heading-action size-3 ${sectionOpen ? "" : "-rotate-90"}`} aria-hidden="true" />
+        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button variant="ghost" size="icon-xs" className="list-heading-action" />} aria-label="Reading list options"><MoreHorizontalIcon /></DropdownMenuTrigger>
+          <DropdownMenuContent side="bottom" align="end">
+            <DropdownMenuItem onClick={() => setSectionOpen((open) => !open)}>{sectionOpen ? "Collapse lists" : "Expand lists"}</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => openEditor()}><PlusIcon /> Create reading list</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button
           variant="ghost"
           size="icon-xs"
-          className="mr-2 text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-          onClick={() => setIsCreating((open) => !open)}
+          className="list-heading-action"
+          onClick={() => openEditor()}
           aria-label="Create reading list"
         >
           <PlusIcon />
         </Button>
-      </div>
+      </div>}
 
-      <SidebarMenu>
+      <SidebarMenu id="reading-lists-menu" hidden={!sectionOpen && !isCollapsed}>
         {visibleLists.map((item) => (
           <ReadingListMenuItem
             key={item.id}
@@ -197,12 +212,13 @@ export function NavReadingLists() {
               pathname === "/reading-lists" && selectedListId === item.id
             }
             canPin={canPin}
-            onDelete={deleteList}
+            onEdit={openEditor}
+            onDelete={(id) => { deleteList(id); if (selectedListId === id) router.push("/reading-lists") }}
             onTogglePinned={togglePinned}
           />
         ))}
 
-        {state === "collapsed" && overflowLists.length > 0 ? (
+        {isCollapsed && overflowLists.length > 0 ? (
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger
@@ -261,31 +277,17 @@ export function NavReadingLists() {
           </SidebarMenuItem>
         ) : null}
 
-        {isCreating ? (
-          <li className="space-y-2 rounded-lg bg-sidebar-accent/50 p-2 group-data-[collapsible=icon]:hidden">
-            <Input
-              autoFocus
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") submitList()
-                if (event.key === "Escape") setIsCreating(false)
-              }}
-              placeholder="List name"
-              className="h-8 bg-sidebar"
-            />
-            <div className="flex justify-end">
-              <Button
-                size="icon-xs"
-                onClick={submitList}
-                aria-label="Create list"
-              >
-                <CheckIcon />
-              </Button>
-            </div>
-          </li>
-        ) : null}
+        <SidebarMenuItem>
+          <SidebarMenuButton tooltip="Create reading list" onClick={() => openEditor()} className="reading-list-link"><PlusIcon /><span>Create a reading list</span></SidebarMenuButton>
+        </SidebarMenuItem>
       </SidebarMenu>
+      {isCreating && <ReadingListEditor list={editingList} onClose={() => setIsCreating(false)} onSave={(details) => {
+        const id = editingList ? editingList.id : createList(details)
+        if (editingList) updateList(editingList.id, details)
+        setIsCreating(false)
+        if (isMobile) setOpenMobile(false)
+        if (id) router.push(getReadingListUrl(id))
+      }} />}
     </SidebarGroup>
   )
 }
