@@ -30,7 +30,7 @@ export function NavMain({
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarGroupLabel>Browse</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           item.items?.length ? (
@@ -55,6 +55,7 @@ export function NavMain({
               <SidebarMenuButton
                 render={<Link href={item.url} />}
                 isActive={pathname === item.url}
+                aria-current={pathname === item.url ? "page" : undefined}
                 tooltip={item.title}
                 className="transition-colors hover:bg-sidebar-accent/70 hover:text-foreground"
               >

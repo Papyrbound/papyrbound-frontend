@@ -74,6 +74,7 @@ function ReadingListMenuItem({
       <SidebarMenuButton
         render={<Link href={item.url} />}
         isActive={isActive}
+        aria-current={isActive ? "page" : undefined}
         tooltip={item.name}
         className="hover:bg-sidebar-accent/70"
       >

@@ -6,6 +6,12 @@ import { TooltipProvider } from "@/shared/ui/tooltip";
 import { SidebarInset, SidebarProvider } from "@/shared/ui/sidebar";
 import { cn } from "@/shared/lib/utils";
 import "./globals.css";
+import { Inter } from "next/font/google";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
   title: "Papyrbound",
@@ -14,11 +20,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={cn("h-full", "antialiased")}>
+    <html
+      lang="en"
+      className={cn("h-full", "antialiased", "font-sans", inter.variable)}
+    >
       <body className="min-h-full flex flex-col">
         <ReadingListsProvider>
           <TooltipProvider>
-            <SidebarProvider className="grid min-h-screen w-full grid-cols-[auto_minmax(0,1fr)]">
+            <SidebarProvider className="min-h-screen w-full">
               <AppSidebar />
               <SidebarInset className="min-w-0">
                 <AppHeader />
