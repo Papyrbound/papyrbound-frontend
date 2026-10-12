@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState, type CSSProperties } from "react"
-import { ArrowLeftIcon, BookOpenIcon, CheckIcon, FolderPlusIcon, MoreHorizontalIcon, PencilIcon, PinIcon, PinOffIcon, PlusIcon, SearchIcon, Trash2Icon } from "lucide-react"
+import { ArrowLeftIcon, ArrowUpRightIcon, BookOpenIcon, CheckIcon, FolderPlusIcon, MoreHorizontalIcon, PencilIcon, PinIcon, PinOffIcon, PlusIcon, SearchIcon, Trash2Icon } from "lucide-react"
 import { Button } from "@/shared/ui/button"
 import { Card } from "@/shared/ui/card"
 import { Checkbox } from "@/shared/ui/checkbox"
@@ -79,28 +79,23 @@ export function CollectionsPage() {
       <BookGallery books={collectionBooks(selected)} onAddBooks={() => setEditor({ collection: selected })} />
     </section> : <section className="collections-page" aria-label="Collections">
       <div className="collections-heading"><div><h1>Your collections</h1><p>{collections.length} {collections.length === 1 ? "collection" : "collections"} · Books brought together by you</p></div><Button onClick={() => setEditor({})}><PlusIcon />New collection</Button></div>
-      {[true, false].map((pinned) => {
-        const group = collections.filter((collection) => collection.pinned === pinned)
-        return group.length > 0 && <section className="collection-section" key={String(pinned)} aria-label={pinned ? "Pinned collections" : "Recent collections"}>
-          <h2>{pinned ? "Pinned" : "Recent"}</h2>
-          <div className="collection-cards">{group.map((collection) => {
+          <div className="collection-cards">{[...collections].sort((first, second) => Number(second.pinned) - Number(first.pinned)).map((collection) => {
             const previewBooks = collectionBooks(collection)
             return <Card key={collection.id} className="collection-card" style={{ "--collection-color": collection.color } as CSSProperties}>
               <Button variant="ghost" className="collection-open" onClick={() => setSelectedId(collection.id)} aria-label={`Open ${collection.name}, ${previewBooks.length} ${previewBooks.length === 1 ? "book" : "books"}`}>
-                <span className="collection-card-meta"><span>{collection.pinned ? <PinIcon /> : <BookOpenIcon />}{collection.pinned ? "Pinned collection" : "Collection"}</span><span><BookOpenIcon />{previewBooks.length}</span></span>
-                <span className="collection-card-info"><span className="collection-card-title">{collection.name}</span><span className="collection-card-subtitle">{previewBooks.length === 0 ? "A home for your next great reads" : `${previewBooks.length} books, a world to discover`}</span></span>
                 <span className="collection-preview" aria-hidden="true">
+                  <span className="collection-preview-line" />
                   <span className="collection-cover-stack">{previewBooks.slice(0, 3).map((book) => <span className="collection-preview-cover" key={book.id}><BookCover book={book} /></span>)}</span>
                   {previewBooks.length === 0 && <BookOpenIcon className="collection-preview-empty" />}
                 </span>
+                <span className="collection-card-info"><span><span className="collection-card-title">{collection.name}</span><span className="collection-card-meta">{previewBooks.length} {previewBooks.length === 1 ? "book" : "books"}</span></span><ArrowUpRightIcon className="collection-open-arrow" /></span>
               </Button>
+              {collection.pinned && <span className="collection-pin"><PinIcon className="size-3" /><span>Pinned</span></span>}
               <DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" className="collection-menu" />} aria-label={`Options for ${collection.name}`}><MoreHorizontalIcon /></DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56"><DropdownMenuItem onClick={() => setEditor({ collection })}><PencilIcon />Edit collection</DropdownMenuItem><DropdownMenuItem onClick={() => setCollections((current) => current.map((item) => item.id === collection.id ? { ...item, pinned: !item.pinned } : item))}>{collection.pinned ? <PinOffIcon /> : <PinIcon />}{collection.pinned ? "Unpin collection" : "Pin collection"}</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onClick={() => setDeleting(collection)}><Trash2Icon />Delete collection</DropdownMenuItem></DropdownMenuContent>
               </DropdownMenu>
             </Card>
           })}</div>
-        </section>
-      })}
       {collections.length === 0 && <Card className="collection-empty"><FolderPlusIcon className="size-10 text-muted-foreground" /><h2>Your next chapter starts here.</h2><p>Bring a few books together in your first collection.</p><Button onClick={() => setEditor({})}><PlusIcon />New collection</Button></Card>}
     </section>}
     {editor && <CollectionEditor collection={editor.collection} onClose={() => setEditor(null)} onSave={saveCollection} />}
