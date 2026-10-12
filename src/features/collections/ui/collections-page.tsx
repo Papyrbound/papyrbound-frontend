@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState, type CSSProperties } from "react"
-import { ArrowLeftIcon, BookOpenIcon, CheckIcon, FolderPlusIcon, MoreHorizontalIcon, PencilIcon, PinIcon, PinOffIcon, PlusIcon, SearchIcon, Trash2Icon } from "lucide-react"
+import { ArrowLeftIcon, ArrowUpRightIcon, BookOpenIcon, CheckIcon, FolderPlusIcon, MoreHorizontalIcon, PencilIcon, PinIcon, PinOffIcon, PlusIcon, SearchIcon, Trash2Icon } from "lucide-react"
 import { Button } from "@/shared/ui/button"
 import { Card } from "@/shared/ui/card"
 import { Checkbox } from "@/shared/ui/checkbox"
@@ -46,7 +46,7 @@ function CollectionEditor({ collection, onClose, onSave }: {
         setOpen(false)
       }}>
         <div className="space-y-2"><label htmlFor="collection-name">Name</label><Input id="collection-name" ref={titleRef} placeholder="e.g. Weekend escapes" value={name} onChange={(event) => setName(event.target.value)} required maxLength={80} /></div>
-        <fieldset><legend className="mb-2 text-sm">Folder color</legend><div className="flex gap-2">{colors.map((option) => <Button key={option.name} type="button" variant="outline" size="icon" aria-label={option.name} aria-pressed={color === option.value} style={{ background: option.value, color: "#36332f" }} onClick={() => setColor(option.value)}>{color === option.value && <CheckIcon />}</Button>)}</div></fieldset>
+        <fieldset><legend className="mb-2 text-sm">Collection color</legend><div className="flex gap-2">{colors.map((option) => <Button key={option.name} type="button" variant="outline" size="icon" aria-label={option.name} aria-pressed={color === option.value} style={{ background: option.value, color: "#36332f" }} onClick={() => setColor(option.value)}>{color === option.value && <CheckIcon />}</Button>)}</div></fieldset>
         <fieldset><legend className="mb-2 text-sm">Books · {bookIds.length} selected</legend>
           <div className="relative"><SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input type="search" aria-label="Search collection books" placeholder="Find a book…" className="pl-9" value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") event.preventDefault() }} /></div>
           <div className="collection-book-picker mt-3">{results.map((book) => <label key={book.id} className="collection-book-option"><BookCover book={book} /><span className="min-w-0 flex-1"><span className="block truncate text-sm">{book.title}</span><span className="block truncate text-xs text-muted-foreground">{book.author}</span></span><Checkbox checked={bookIds.includes(book.id)} aria-label={`Include ${book.title}`} onCheckedChange={(checked) => setBookIds((current) => checked ? [...current, book.id] : current.filter((id) => id !== book.id))} /></label>)}
@@ -78,27 +78,24 @@ export function CollectionsPage() {
       <div className="gallery-heading"><h1>{selected.name}</h1><span>{collectionBooks(selected).length} {collectionBooks(selected).length === 1 ? "book" : "books"}</span></div>
       <BookGallery books={collectionBooks(selected)} onAddBooks={() => setEditor({ collection: selected })} />
     </section> : <section className="collections-page" aria-label="Collections">
-      <div className="collections-heading"><div><h1>Collections</h1><p>A place for every kind of read.</p></div><Button onClick={() => setEditor({})}><PlusIcon />New collection</Button></div>
-      {[{ label: "Pinned", pinned: true }, { label: "Recent", pinned: false }].map((section) => {
-        const items = collections.filter((collection) => collection.pinned === section.pinned)
-        if (!items.length) return null
-        return <section key={section.label} className="collection-section" aria-label={section.label}>
-          <div className="collection-section-heading"><h2>{section.label}</h2><span>{items.length}</span></div>
-          <div className="collection-cards">{items.map((collection) => {
+      <div className="collections-heading"><div><h1>Your collections</h1><p>{collections.length} {collections.length === 1 ? "collection" : "collections"} · Books brought together by you</p></div><Button onClick={() => setEditor({})}><PlusIcon />New collection</Button></div>
+          <div className="collection-cards">{[...collections].sort((first, second) => Number(second.pinned) - Number(first.pinned)).map((collection) => {
             const previewBooks = collectionBooks(collection)
-            return <Card key={collection.id} className="collection-card" style={{ "--folder-color": collection.color } as CSSProperties}>
+            return <Card key={collection.id} className="collection-card" style={{ "--collection-color": collection.color } as CSSProperties}>
               <Button variant="ghost" className="collection-open" onClick={() => setSelectedId(collection.id)} aria-label={`Open ${collection.name}, ${previewBooks.length} ${previewBooks.length === 1 ? "book" : "books"}`}>
-                <span className="collection-card-meta"><span>{collection.pinned ? <><PinIcon />Pinned</> : <><BookOpenIcon />Collection</>}</span><span>{previewBooks.length} {previewBooks.length === 1 ? "book" : "books"}</span></span>
-                <span className="collection-card-title">{collection.name}</span>
-                <span className="collection-folder" aria-hidden="true"><span className="collection-folder-tab" /><span className="collection-cover-stack">{previewBooks.slice(0, 3).map((book) => <span className="collection-preview-cover" key={book.id}><BookCover book={book} /></span>)}</span><span className="collection-folder-front"><BookOpenIcon /></span></span>
+                <span className="collection-preview" aria-hidden="true">
+                  <span className="collection-preview-line" />
+                  <span className="collection-cover-stack">{previewBooks.slice(0, 3).map((book) => <span className="collection-preview-cover" key={book.id}><BookCover book={book} /></span>)}</span>
+                  {previewBooks.length === 0 && <BookOpenIcon className="collection-preview-empty" />}
+                </span>
+                <span className="collection-card-info"><span><span className="collection-card-title">{collection.name}</span><span className="collection-card-meta">{previewBooks.length} {previewBooks.length === 1 ? "book" : "books"}</span></span><ArrowUpRightIcon className="collection-open-arrow" /></span>
               </Button>
+              {collection.pinned && <span className="collection-pin"><PinIcon className="size-3" /><span>Pinned</span></span>}
               <DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" className="collection-menu" />} aria-label={`Options for ${collection.name}`}><MoreHorizontalIcon /></DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56"><DropdownMenuItem onClick={() => setEditor({ collection })}><PencilIcon />Edit collection</DropdownMenuItem><DropdownMenuItem onClick={() => setCollections((current) => current.map((item) => item.id === collection.id ? { ...item, pinned: !item.pinned } : item))}>{collection.pinned ? <PinOffIcon /> : <PinIcon />}{collection.pinned ? "Unpin collection" : "Pin collection"}</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onClick={() => setDeleting(collection)}><Trash2Icon />Delete collection</DropdownMenuItem></DropdownMenuContent>
               </DropdownMenu>
             </Card>
           })}</div>
-        </section>
-      })}
       {collections.length === 0 && <Card className="collection-empty"><FolderPlusIcon className="size-10 text-muted-foreground" /><h2>Your next chapter starts here.</h2><p>Bring a few books together in your first collection.</p><Button onClick={() => setEditor({})}><PlusIcon />New collection</Button></Card>}
     </section>}
     {editor && <CollectionEditor collection={editor.collection} onClose={() => setEditor(null)} onSave={saveCollection} />}
