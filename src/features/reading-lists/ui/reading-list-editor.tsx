@@ -17,6 +17,8 @@ export function ReadingListEditor({ list, initialBookIds = [], onClose, onSave }
   onSave: (details: ReadingListDetails) => void
 }) {
   const { books } = useReadingLists()
+  const [open, setOpen] = useState(true)
+  const pendingSave = useRef<ReadingListDetails | null>(null)
   const [name, setName] = useState(list?.name ?? "")
   const [query, setQuery] = useState("")
   const [color, setColor] = useState(list?.color ?? readingListColors[2].value)
@@ -34,11 +36,18 @@ export function ReadingListEditor({ list, initialBookIds = [], onClose, onSave }
   }
 
   return (
-    <Sheet open onOpenChange={(open) => { if (!open) onClose() }}>
+    <Sheet open={open} onOpenChange={setOpen} onOpenChangeComplete={(isOpen) => {
+      if (isOpen) return
+      if (pendingSave.current) onSave(pendingSave.current)
+      else onClose()
+    }}>
       <SheetContent initialFocus={nameRef} className="reading-list-sheet" style={{ "--list-color": color } as CSSProperties}>
         <form className="flex min-h-0 flex-1 flex-col" onSubmit={(event) => {
           event.preventDefault()
-          if (name.trim()) onSave({ name: name.trim(), color, bookIds })
+          if (name.trim()) {
+            pendingSave.current = { name: name.trim(), color, bookIds }
+            setOpen(false)
+          }
         }}>
           <div className="pr-10">
             <SheetTitle>{list ? "Edit reading list" : "Create reading list"}</SheetTitle>
@@ -90,7 +99,7 @@ export function ReadingListEditor({ list, initialBookIds = [], onClose, onSave }
             </div>}
           </div>
           <div className="flex shrink-0 justify-end gap-2 pt-4">
-            <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
             <Button type="submit" disabled={!name.trim()}>{list ? "Save changes" : "Create list"}</Button>
           </div>
         </form>

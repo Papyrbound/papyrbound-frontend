@@ -50,7 +50,7 @@ export function BookSearchDialog() {
         <KbdGroup className="ml-auto hidden sm:flex" aria-hidden="true"><Kbd>Ctrl</Kbd><Kbd>K</Kbd></KbdGroup>
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm transition-opacity data-starting-style:opacity-0 data-ending-style:opacity-0" />
+        <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm transition-opacity duration-180 data-starting-style:opacity-0 data-ending-style:opacity-0" />
         <Dialog.Popup initialFocus={inputRef} finalFocus={triggerRef} className="book-search-dialog">
           <Dialog.Title className="pr-10 text-lg font-semibold">Search books</Dialog.Title>
           <Dialog.Description className="mt-1 text-xs text-muted-foreground">Search the sample library by title, author, or genre.</Dialog.Description>
