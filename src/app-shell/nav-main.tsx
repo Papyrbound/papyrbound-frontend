@@ -10,8 +10,6 @@ import {
   CollapsibleTrigger,
 } from "@/shared/ui/collapsible"
 import {
-  SidebarGroup,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -29,6 +27,7 @@ export function NavMain({
   const pathname = usePathname()
 
   return (
+<<<<<<< HEAD
     <SidebarGroup>
       <SidebarGroupLabel>Browse</SidebarGroupLabel>
       <SidebarMenu>
@@ -67,5 +66,51 @@ export function NavMain({
         ))}
       </SidebarMenu>
     </SidebarGroup>
+=======
+    <SidebarMenu>
+      {items.map((item) =>
+        item.items?.length ? (
+          <Collapsible
+            key={item.title}
+            defaultOpen={pathname.startsWith(item.url)}
+            className="group/collapsible"
+            render={<SidebarMenuItem />}
+          >
+            <CollapsibleTrigger
+              render={<SidebarMenuButton tooltip={item.title} />}
+            >
+              <item.icon />
+              <span>{item.title}</span>
+              <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-open/collapsible:rotate-90" />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarMenuSub>
+                {item.items.map((subItem) => (
+                  <SidebarMenuSubItem key={subItem.title}>
+                    <SidebarMenuSubButton
+                      render={<Link href={subItem.url} />}
+                    >
+                      <span>{subItem.title}</span>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                ))}
+              </SidebarMenuSub>
+            </CollapsibleContent>
+          </Collapsible>
+        ) : (
+          <SidebarMenuItem key={item.title}>
+            <SidebarMenuButton
+              render={<Link href={item.url} />}
+              isActive={pathname === item.url}
+              tooltip={item.title}
+            >
+              <item.icon />
+              <span>{item.title}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        )
+      )}
+    </SidebarMenu>
+>>>>>>> ffc4d700659f5630b3cf220aaac2e7c869e897f7
   )
 }

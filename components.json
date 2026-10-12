@@ -1,6 +1,10 @@
 {
   "$schema": "https://ui.shadcn.com/schema.json",
+<<<<<<< HEAD
   "style": "base-rhea",
+=======
+  "style": "base-mira",
+>>>>>>> ffc4d700659f5630b3cf220aaac2e7c869e897f7
   "rsc": true,
   "tsx": true,
   "tailwind": {
@@ -10,7 +14,7 @@
     "cssVariables": true,
     "prefix": ""
   },
-  "iconLibrary": "lucide",
+  "iconLibrary": "tabler",
   "rtl": false,
   "aliases": {
     "components": "@/shared",
