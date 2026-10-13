@@ -12,7 +12,7 @@ import { BookCover } from "@/features/home/ui/book-cover"
 import { BookGallery } from "@/features/library/ui/book-gallery"
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store"
 
-type Collection = { id: string; name: string; color: string; bookIds: string[]; pinned: boolean }
+type Collection = { id: string; name: string; color: string; bookIds: string[]; pinned: boolean; updatedAt?: string }
 const colors = [{ name: "Lilac", value: "#d9cae9" }, { name: "Sage", value: "#d6dfbd" }, { name: "Peach", value: "#f0c6ac" }, { name: "Rose", value: "#cfaaae" }]
 const initialCollections: Collection[] = [
   { id: "quiet-afternoons", name: "Quiet afternoons", color: "#d9cae9", bookIds: ["quiet", "sun", "wild"], pinned: true },
@@ -68,7 +68,8 @@ export function CollectionsPage() {
   const collectionBooks = (collection: Collection) => books.filter((book) => collection.bookIds.includes(book.id))
   function saveCollection(details: Pick<Collection, "name" | "color" | "bookIds">) {
     const id = editor?.collection?.id ?? crypto.randomUUID()
-    setCollections((current) => editor?.collection ? current.map((item) => item.id === id ? { ...item, ...details } : item) : [...current, { ...details, id, pinned: false }])
+    const updatedAt = new Date().toISOString()
+    setCollections((current) => editor?.collection ? current.map((item) => item.id === id ? { ...item, ...details, updatedAt } : item) : [...current, { ...details, id, pinned: false, updatedAt }])
     setEditor(null)
   }
 
@@ -84,11 +85,10 @@ export function CollectionsPage() {
             return <Card key={collection.id} className="collection-card" style={{ "--collection-color": collection.color } as CSSProperties}>
               <Button variant="ghost" className="collection-open" onClick={() => setSelectedId(collection.id)} aria-label={`Open ${collection.name}, ${previewBooks.length} ${previewBooks.length === 1 ? "book" : "books"}`}>
                 <span className="collection-preview" aria-hidden="true">
-                  <span className="collection-preview-line" />
                   <span className="collection-cover-stack">{previewBooks.slice(0, 3).map((book) => <span className="collection-preview-cover" key={book.id}><BookCover book={book} /></span>)}</span>
                   {previewBooks.length === 0 && <BookOpenIcon className="collection-preview-empty" />}
                 </span>
-                <span className="collection-card-info"><span><span className="collection-card-title">{collection.name}</span><span className="collection-card-meta">{previewBooks.length} {previewBooks.length === 1 ? "book" : "books"}</span></span><ArrowUpRightIcon className="collection-open-arrow" /></span>
+                <span className="collection-card-info"><span><span className="collection-card-title">{collection.name}</span><span className="collection-card-meta">{previewBooks.length} {previewBooks.length === 1 ? "book" : "books"}</span><span className="collection-card-updated">Last updated: {collection.updatedAt ? <time dateTime={collection.updatedAt}>{new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/Los_Angeles" }).format(new Date(collection.updatedAt))}</time> : "Not updated yet"}</span></span><ArrowUpRightIcon className="collection-open-arrow" /></span>
               </Button>
               {collection.pinned && <span className="collection-pin"><PinIcon className="size-3" /><span>Pinned</span></span>}
               <DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" className="collection-menu" />} aria-label={`Options for ${collection.name}`}><MoreHorizontalIcon /></DropdownMenuTrigger>
