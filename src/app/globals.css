@@ -394,8 +394,8 @@
 .collections-heading h1 { font-size: 28px; line-height: 1.2; font-weight: 500; letter-spacing: -.045em; }
 .collections-heading p { margin-top: 8px; font-size: 12px; color: var(--muted-foreground); }
 .collection-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 384px)); gap: 20px; }
-.collection-card[data-slot="card"] { position: relative; overflow: hidden; padding: 16px; gap: 0; border: 0; border-radius: 24px; box-shadow: none; background: transparent; transition: background-color 180ms, color 180ms; }
-.collection-card:hover, .collection-card:focus-within { background: color-mix(in srgb, color-mix(in srgb, var(--collection-color) 28%, #ffffff) 70%, transparent); backdrop-filter: blur(40px) saturate(150%); color: #191715; }
+.collection-card[data-slot="card"] { position: relative; overflow: hidden; padding: 16px; gap: 0; border: 0; border-radius: 24px; box-shadow: none; background: color-mix(in srgb, var(--popover) 70%, transparent); backdrop-filter: blur(40px) saturate(150%); transition: background-color 180ms, color 180ms; }
+.collection-card:hover, .collection-card:focus-within { background: color-mix(in srgb, var(--collection-color) 28%, #ffffff); color: #191715; }
 .collection-open[data-slot="button"] { display: flex; flex-direction: column; justify-content: flex-start; width: 100%; height: auto; padding: 0; border: none; border-radius: 0; gap: 0; white-space: normal; overflow: visible; background: transparent; color: inherit; }
 .collection-open[data-slot="button"]:hover { background: transparent; }
 .collection-preview { position: relative; display: flex; width: 100%; aspect-ratio: 355 / 209; border-radius: 24px; overflow: hidden; align-items: flex-end; justify-content: center; padding: 40px 20px 24px; background: color-mix(in srgb, var(--collection-color) 18%, var(--card)); }
