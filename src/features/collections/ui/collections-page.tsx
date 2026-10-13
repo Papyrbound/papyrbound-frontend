@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState, type CSSProperties } from "react"
-import { ArrowLeftIcon, BookOpenIcon, CheckIcon, FolderPlusIcon, LibraryIcon, MoreVerticalIcon, PencilIcon, PinIcon, PinOffIcon, PlusIcon, RotateCwIcon, SearchIcon, Trash2Icon } from "lucide-react"
+import { ArrowLeftIcon, BookOpenIcon, CheckIcon, FolderPlusIcon, LibraryIcon, MoreVerticalIcon, PencilIcon, PinIcon, PinOffIcon, PlusIcon, RotateCwFadingClockIcon, SearchIcon, Trash2Icon } from "lucide-react"
 import { Button } from "@/shared/ui/button"
 import { Card } from "@/shared/ui/card"
 import { Checkbox } from "@/shared/ui/checkbox"
@@ -13,11 +13,11 @@ import { BookGallery } from "@/features/library/ui/book-gallery"
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store"
 
 type Collection = { id: string; name: string; color: string; bookIds: string[]; pinned: boolean; updatedAt?: string }
-const colors = [{ name: "Neutral", value: "#B1B2B5" }, { name: "Lilac", value: "#d9cae9" }, { name: "Sage", value: "#d6dfbd" }, { name: "Peach", value: "#f0c6ac" }, { name: "Rose", value: "#cfaaae" }]
+const colors = [{ name: "Neutral", value: "#FAF9F8" }, { name: "Lilac", value: "#d9cae9" }, { name: "Sage", value: "#d6dfbd" }, { name: "Peach", value: "#f0c6ac" }, { name: "Rose", value: "#cfaaae" }]
 const initialCollections: Collection[] = [
-  { id: "quiet-afternoons", name: "Quiet afternoons", color: "#B1B2B5", bookIds: ["quiet", "sun", "wild"], pinned: true },
-  { id: "far-from-home", name: "Far from home", color: "#B1B2B5", bookIds: ["atlas", "wild", "tidal"], pinned: true },
-  { id: "after-hours", name: "After hours", color: "#B1B2B5", bookIds: ["night", "quiet", "tidal"], pinned: false },
+  { id: "quiet-afternoons", name: "Quiet afternoons", color: "#d9cae9", bookIds: ["quiet", "sun", "wild"], pinned: true, updatedAt: "2026-10-10T12:00:00-07:00" },
+  { id: "far-from-home", name: "Far from home", color: "#d6dfbd", bookIds: ["atlas", "wild", "tidal"], pinned: true, updatedAt: "2026-10-09T12:00:00-07:00" },
+  { id: "after-hours", name: "After hours", color: "#f0c6ac", bookIds: ["night", "quiet", "tidal"], pinned: false, updatedAt: "2026-10-11T12:00:00-07:00" },
 ]
 
 function updatedLabel(updatedAt: string | undefined, now: number) {
@@ -101,7 +101,7 @@ export function CollectionsPage() {
                   <span className="collection-cover-stack">{previewBooks.slice(0, 3).map((book) => <span className="collection-preview-cover" key={book.id}><BookCover book={book} /></span>)}</span>
                   {previewBooks.length === 0 && <BookOpenIcon className="collection-preview-empty" />}
                 </span>
-                <span className="collection-card-info"><span className="collection-card-title">{collection.name}</span><span className="collection-card-meta"><span className="collection-book-count" aria-label={`${previewBooks.length} books`}><LibraryIcon aria-hidden="true" />{previewBooks.length}</span><span aria-hidden="true" className="collection-meta-dot">·</span><span className="collection-card-updated" aria-label={`Last updated: ${updatedLabel(collection.updatedAt, now)}`}><RotateCwIcon aria-hidden="true" />{collection.updatedAt ? <time dateTime={collection.updatedAt}>{updatedLabel(collection.updatedAt, now)}</time> : "No updates yet"}</span></span></span>
+                <span className="collection-card-info"><span className="collection-card-title">{collection.name}</span><span className="collection-card-meta"><span className="collection-book-count" aria-label={`${previewBooks.length} books`}><LibraryIcon aria-hidden="true" />{previewBooks.length}</span><span aria-hidden="true" className="collection-meta-dot">·</span><span className="collection-card-updated" aria-label={`Last updated: ${updatedLabel(collection.updatedAt, now)}`}><RotateCwFadingClockIcon aria-hidden="true" />{collection.updatedAt ? <time dateTime={collection.updatedAt}>{updatedLabel(collection.updatedAt, now)}</time> : "No updates yet"}</span></span></span>
               </Button>
               {collection.pinned && <Button variant="ghost" size="icon-xs" className="collection-pin" aria-label={`Unpin ${collection.name}`} onClick={() => togglePinned(collection)}><PinIcon aria-hidden="true" /><span>Unpin</span></Button>}
               <DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" className="collection-menu" />} aria-label={`Options for ${collection.name}`}><MoreVerticalIcon /></DropdownMenuTrigger>
