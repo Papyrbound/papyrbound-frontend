@@ -412,14 +412,14 @@
 .collection-card-title[data-slot="button"] { display: block; width: 100%; height: auto; padding: 0; border: 0; border-radius: 0; background: transparent; color: inherit; text-align: left; white-space: normal; font-size: 16px; line-height: 24px; font-weight: 400; letter-spacing: 0; overflow-wrap: anywhere; }
 .collection-card-meta { display: flex; flex-wrap: nowrap; align-items: center; min-height: 24px; gap: 0; font-size: 12px; font-weight: 400; color: var(--muted-foreground); }
 .dark .collection-card-meta { color: #e7e5e2; }
-.collection-book-count { flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; height: 22px; border-radius: 999px; background: #e7e5e2; color: #42403d; }
+.collection-book-count { flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; height: 22px; border-radius: 999px; background: color-mix(in srgb, var(--foreground) 8%, transparent); color: inherit; }
 .collection-book-count svg, .collection-card-updated svg { width: 16px; height: 16px; stroke-width: 1; }
 .collection-meta-dot { flex-shrink: 0; display: inline-flex; width: 24px; justify-content: center; }
 .collection-card-updated { display: inline-flex; align-items: center; gap: 4px; min-width: 0; white-space: nowrap; }
 .collection-card-updated svg { flex-shrink: 0; }
 .collection-card:hover .collection-card-meta, .collection-card:focus-within .collection-card-meta { color: var(--muted-foreground); }
 .dark .collection-card:hover .collection-card-meta, .dark .collection-card:focus-within .collection-card-meta { color: #e7e5e2; }
-.collection-pin[data-slot="button"] { position: absolute; top: 16px; left: 16px; width: 24px; height: 24px; min-width: 24px; gap: 4px; padding: 4px; border-radius: 999px; background: #e7e5e2; color: #54524f; font-size: 12px; }
+.collection-pin[data-slot="button"] { position: absolute; top: 16px; left: 16px; width: 24px; height: 24px; min-width: 24px; gap: 4px; padding: 4px; border-radius: 999px; background: color-mix(in srgb, var(--popover) 38%, transparent); backdrop-filter: blur(12px); color: var(--foreground); font-size: 12px; }
 .collection-pin[data-slot="button"] svg { width: 16px; height: 16px; stroke-width: 1; }
 .collection-pin span { display: none; }
 .collection-card:hover .collection-pin[data-slot="button"], .collection-card:focus-within .collection-pin[data-slot="button"] { width: auto; height: 26px; padding-inline: 8px; }
