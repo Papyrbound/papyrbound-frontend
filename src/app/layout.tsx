@@ -7,12 +7,6 @@ import { SidebarInset, SidebarProvider } from "@/shared/ui/sidebar";
 import { cn } from "@/shared/lib/utils";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Inter } from "next/font/google";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -33,11 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <ReadingListsProvider>
           <TooltipProvider>
-<<<<<<< HEAD
             <SidebarProvider className="min-h-screen w-full">
-=======
-            <SidebarProvider>
->>>>>>> ffc4d700659f5630b3cf220aaac2e7c869e897f7
               <AppSidebar />
               <SidebarInset className="min-w-0">
                 <AppHeader />

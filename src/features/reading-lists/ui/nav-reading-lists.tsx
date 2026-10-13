@@ -80,7 +80,6 @@ function ReadingListMenuItem({
         isActive={isActive}
         aria-current={isActive ? "page" : undefined}
         tooltip={item.name}
-<<<<<<< HEAD
         className="reading-list-link"
       >
         <ListIcon
@@ -88,10 +87,6 @@ function ReadingListMenuItem({
           style={item.color ? { color: item.color } : undefined}
           aria-hidden="true"
         />
-=======
-      >
-        <ListIcon aria-hidden="true" />
->>>>>>> ffc4d700659f5630b3cf220aaac2e7c869e897f7
         <span>{item.name}</span>
       </SidebarMenuButton>
       {!item.isDefault && <SidebarMenuAction

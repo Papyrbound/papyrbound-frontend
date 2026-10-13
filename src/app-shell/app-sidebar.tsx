@@ -26,7 +26,6 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
-<<<<<<< HEAD
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" className="group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:justify-center" tooltip="Papyrbound" render={<Link href="/" onClick={() => setOpenMobile(false)} />}>
@@ -40,12 +39,6 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         if (isMobile && event.target instanceof Element && event.target.closest("a[href]")) setOpenMobile(false)
       }}>
         <NavMain items={mainNavigation} />
-=======
-        <TeamSwitcher teams={data.teams} />
-        <NavMain items={mainNavigation} />
-      </SidebarHeader>
-      <SidebarContent>
->>>>>>> ffc4d700659f5630b3cf220aaac2e7c869e897f7
         <Suspense fallback={null}>
           <NavReadingLists />
         </Suspense>
