@@ -24,7 +24,7 @@ import { GalleryVerticalEndIcon } from "lucide-react"
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const { isMobile, setOpenMobile } = useSidebar()
   return (
-    <Sidebar className="border-r-0" {...props}>
+    <Sidebar variant="floating" collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
