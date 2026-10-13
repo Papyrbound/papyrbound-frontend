@@ -1,14 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { CheckIcon, HeartIcon, ListPlusIcon, MoreHorizontalIcon, PlusIcon, Trash2Icon } from "lucide-react"
 import { Button } from "@/shared/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuGroup, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/shared/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuGroup, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/shared/ui/dropdown-menu"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/shared/ui/alert-dialog"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/shared/ui/sheet"
 import { BookCover } from "@/features/home/ui/book-cover"
 import type { SampleBook } from "@/features/home/model/sample-books"
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store"
 import { ReadingListEditor } from "@/features/reading-lists/ui/reading-list-editor"
+import { useCollections } from "@/features/collections/stores/collections-store"
 
 export function BookGallery({ books, listId, onAddBooks, emptyMessage = "No books here yet. Add a few to start your list." }: {
   books: SampleBook[]
@@ -18,11 +20,17 @@ export function BookGallery({ books, listId, onAddBooks, emptyMessage = "No book
 }) {
   const [selected, setSelected] = useState<SampleBook | null>(null)
   const [newListBook, setNewListBook] = useState<SampleBook | null>(null)
+  const [deletingBook, setDeletingBook] = useState<SampleBook | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const cancelRef = useRef<HTMLButtonElement>(null)
+  const galleryRef = useRef<HTMLDivElement>(null)
+  const confirmedDeletion = useRef(false)
+  const { setCollections } = useCollections()
   const { lists, toggleBook, createList, markAsRead, markAsUnread, deleteBook } = useReadingLists()
 
   return (
     <>
-      <div className="library-book-grid">
+      <div ref={galleryRef} tabIndex={-1} className="library-book-grid outline-none">
         {onAddBooks && <button type="button" className="gallery-add-book" onClick={onAddBooks}><PlusIcon className="size-7" aria-hidden="true" /><span>Add books</span></button>}
         {books.map((book) => (
           <article key={book.id} className="gallery-book">
@@ -59,7 +67,11 @@ export function BookGallery({ books, listId, onAddBooks, emptyMessage = "No book
                   </DropdownMenuGroup>
                   {listId && <><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onClick={() => toggleBook(listId, book.id)}><Trash2Icon />Remove from this list</DropdownMenuItem></>}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem variant="destructive" onClick={() => deleteBook(book.id)}><Trash2Icon />Delete</DropdownMenuItem>
+                  <DropdownMenuItem variant="destructive" onClick={() => {
+                    confirmedDeletion.current = false
+                    setDeletingBook(book)
+                    setDeleteDialogOpen(true)
+                  }}><Trash2Icon />Delete</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -67,6 +79,25 @@ export function BookGallery({ books, listId, onAddBooks, emptyMessage = "No book
         ))}
       </div>
       {books.length === 0 && <p className="gallery-empty" role="status">{emptyMessage}</p>}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} onOpenChangeComplete={(open) => { if (!open) setDeletingBook(null) }}>
+        <AlertDialogContent initialFocus={cancelRef} finalFocus={() => confirmedDeletion.current ? galleryRef.current : true}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete “{deletingBook?.title}”?</AlertDialogTitle>
+            <AlertDialogDescription>This book will be removed from your library, reading lists, and collections.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel ref={cancelRef}>Cancel</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={() => {
+              if (!deletingBook) return
+              confirmedDeletion.current = true
+              deleteBook(deletingBook.id)
+              setCollections((current) => current.map((collection) => ({ ...collection, bookIds: collection.bookIds.filter((id) => id !== deletingBook.id) })))
+              if (selected?.id === deletingBook.id) setSelected(null)
+              setDeleteDialogOpen(false)
+            }}>Delete book</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {newListBook && <ReadingListEditor initialBookIds={[newListBook.id]} onClose={() => setNewListBook(null)} onSave={(details) => {
         createList({ ...details, bookIds: [...new Set([...details.bookIds, newListBook.id])] })
         setNewListBook(null)
