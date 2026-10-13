@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { AppHeader } from "@/app-shell/app-header";
 import { AppSidebar } from "@/app-shell/app-sidebar";
 import { ReadingListsProvider } from "@/features/reading-lists/stores/reading-lists-store";
+import { CollectionsProvider } from "@/features/collections/stores/collections-store";
 import { TooltipProvider } from "@/shared/ui/tooltip";
 import { SidebarInset, SidebarProvider } from "@/shared/ui/sidebar";
 import { cn } from "@/shared/lib/utils";
@@ -26,15 +27,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <ReadingListsProvider>
-          <TooltipProvider>
-            <SidebarProvider className="min-h-screen w-full">
-              <AppSidebar />
-              <SidebarInset className="min-w-0">
-                <AppHeader />
-                {children}
-              </SidebarInset>
-            </SidebarProvider>
-          </TooltipProvider>
+          <CollectionsProvider>
+            <TooltipProvider>
+              <SidebarProvider className="min-h-screen w-full">
+                <AppSidebar />
+                <SidebarInset className="min-w-0">
+                  <AppHeader />
+                  {children}
+                </SidebarInset>
+              </SidebarProvider>
+            </TooltipProvider>
+          </CollectionsProvider>
         </ReadingListsProvider>
       </body>
     </html>

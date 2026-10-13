@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState, type CSSProperties } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { ArrowLeftIcon, BookOpenIcon, CheckIcon, FolderPlusIcon, LibraryIcon, MoreVerticalIcon, PencilIcon, PinIcon, PinOffIcon, PlusIcon, RotateCwFadingClockIcon, SearchIcon, Trash2Icon } from "lucide-react"
 import { Button } from "@/shared/ui/button"
 import { Card } from "@/shared/ui/card"
@@ -11,18 +12,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { BookCover } from "@/features/home/ui/book-cover"
 import { BookGallery } from "@/features/library/ui/book-gallery"
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store"
+import { useCollections, type Collection } from "@/features/collections/stores/collections-store"
 
-type Collection = { id: string; name: string; color: string; bookIds: string[]; pinned: boolean; updatedAt?: string }
 const colors = [{ name: "Neutral", value: "#FAF9F8" }, { name: "Lilac", value: "#d9cae9" }, { name: "Sage", value: "#d6dfbd" }, { name: "Peach", value: "#f0c6ac" }, { name: "Rose", value: "#cfaaae" }]
-const initialCollections: Collection[] = [
-  { id: "quiet-afternoons", name: "Quiet afternoons", color: "#d9cae9", bookIds: ["quiet", "sun", "wild"], pinned: true, updatedAt: "2026-10-10T12:00:00-07:00" },
-  { id: "far-from-home", name: "Far from home", color: "#d6dfbd", bookIds: ["atlas", "wild", "tidal"], pinned: true, updatedAt: "2026-10-09T12:00:00-07:00" },
-  { id: "after-hours", name: "After hours", color: "#f0c6ac", bookIds: ["night", "quiet", "tidal"], pinned: false, updatedAt: "2026-10-11T12:00:00-07:00" },
-]
 
-function updatedLabel(updatedAt: string | undefined, now: number) {
-  if (!updatedAt) return "No updates yet"
-  const days = Math.max(0, Math.floor((now - new Date(updatedAt).getTime()) / 86400000))
+function lastAddedLabel(lastBookAddedAt: string | undefined, now: number) {
+  if (!lastBookAddedAt) return "No books added"
+  const days = Math.max(0, Math.floor((now - new Date(lastBookAddedAt).getTime()) / 86400000))
   return days === 0 ? "Today" : new Intl.RelativeTimeFormat("en-US", { numeric: "always" }).format(-days, "day")
 }
 
@@ -66,8 +62,13 @@ function CollectionEditor({ collection, onClose, onSave }: {
 
 export function CollectionsPage() {
   const { books } = useReadingLists()
-  const [collections, setCollections] = useState(initialCollections)
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const { collections, setCollections } = useCollections()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const selectedId = searchParams.get("collection")
+  function openCollection(id: string) {
+    router.push(`/collections?collection=${encodeURIComponent(id)}`)
+  }
   const [editor, setEditor] = useState<{ collection?: Collection } | null>(null)
   const [deleting, setDeleting] = useState<Collection | null>(null)
   const [now, setNow] = useState(() => new Date().getTime())
@@ -75,20 +76,22 @@ export function CollectionsPage() {
   const collectionBooks = (collection: Collection) => books.filter((book) => collection.bookIds.includes(book.id))
   function saveCollection(details: Pick<Collection, "name" | "color" | "bookIds">) {
     const id = editor?.collection?.id ?? crypto.randomUUID()
-    const updatedAt = new Date().toISOString()
-    setNow(new Date(updatedAt).getTime())
-    setCollections((current) => editor?.collection ? current.map((item) => item.id === id ? { ...item, ...details, updatedAt } : item) : [...current, { ...details, id, pinned: false, updatedAt }])
+    const lastBookAddedAt = new Date().toISOString()
+    setNow(new Date(lastBookAddedAt).getTime())
+    setCollections((current) => editor?.collection ? current.map((item) => {
+      if (item.id !== id) return item
+      const hasNewBook = details.bookIds.some((bookId) => !item.bookIds.includes(bookId))
+      return { ...item, ...details, lastBookAddedAt: hasNewBook ? lastBookAddedAt : item.lastBookAddedAt }
+    }) : [...current, { ...details, id, pinned: false, lastBookAddedAt: details.bookIds.length > 0 ? lastBookAddedAt : undefined }])
     setEditor(null)
   }
   function togglePinned(collection: Collection) {
-    const updatedAt = new Date().toISOString()
-    setNow(new Date(updatedAt).getTime())
-    setCollections((current) => current.map((item) => item.id === collection.id ? { ...item, pinned: !item.pinned, updatedAt } : item))
+    setCollections((current) => current.map((item) => item.id === collection.id ? { ...item, pinned: !item.pinned } : item))
   }
 
   return <>
     {selected ? <section className="library-gallery collections-detail">
-      <div className="mb-6 flex items-center justify-between gap-3"><Button variant="ghost" onClick={() => setSelectedId(null)}><ArrowLeftIcon />Collections</Button><Button variant="secondary" onClick={() => setEditor({ collection: selected })}><PencilIcon />Edit collection</Button></div>
+      <div className="mb-6 flex items-center justify-between gap-3"><Button variant="ghost" onClick={() => router.push("/collections")}><ArrowLeftIcon />Collections</Button><Button variant="secondary" onClick={() => setEditor({ collection: selected })}><PencilIcon />Edit collection</Button></div>
       <div className="gallery-heading"><h1>{selected.name}</h1><span>{collectionBooks(selected).length} {collectionBooks(selected).length === 1 ? "book" : "books"}</span></div>
       <BookGallery books={collectionBooks(selected)} onAddBooks={() => setEditor({ collection: selected })} />
     </section> : <section className="collections-page" aria-label="Collections">
@@ -96,20 +99,22 @@ export function CollectionsPage() {
           <div className="collection-cards">{[...collections].sort((first, second) => Number(second.pinned) - Number(first.pinned)).map((collection) => {
             const previewBooks = collectionBooks(collection)
             return <Card key={collection.id} className="collection-card" style={{ "--collection-color": collection.color } as CSSProperties}>
-              <Button variant="ghost" className="collection-open" onClick={() => setSelectedId(collection.id)} aria-label={`Open ${collection.name}, ${previewBooks.length} ${previewBooks.length === 1 ? "book" : "books"}`}>
+              <Button variant="ghost" className="collection-open" onClick={() => openCollection(collection.id)} aria-label={`Open ${collection.name}, ${previewBooks.length} ${previewBooks.length === 1 ? "book" : "books"}`}>
                 <span className="collection-preview" aria-hidden="true">
                   <span className="collection-cover-stack">{previewBooks.slice(0, 3).map((book) => <span className="collection-preview-cover" key={book.id}><BookCover book={book} /></span>)}</span>
                   {previewBooks.length === 0 && <BookOpenIcon className="collection-preview-empty" />}
                 </span>
               </Button>
-              {collection.pinned && <Button variant="ghost" size="icon-xs" className="collection-pin" aria-label={`Unpin ${collection.name}`} onClick={() => togglePinned(collection)}><PinIcon aria-hidden="true" /><span>Unpin</span></Button>}
               <div className="collection-card-footer">
                 <div className="collection-card-info">
-                  <Button variant="ghost" className="collection-card-title" onClick={() => setSelectedId(collection.id)}>{collection.name}</Button>
+                  <div className="collection-title-row">
+                    <Button variant="ghost" className="collection-card-title" onClick={() => openCollection(collection.id)}>{collection.name}</Button>
+                    {collection.pinned && <Button variant="ghost" size="icon-xs" className="collection-pin" aria-label={`Unpin ${collection.name}`} onClick={() => togglePinned(collection)}><PinIcon aria-hidden="true" /></Button>}
+                  </div>
                   <div className="collection-card-meta">
                     <span className="collection-book-count" aria-label={`${previewBooks.length} books`}><LibraryIcon aria-hidden="true" />{previewBooks.length}</span>
                     <span aria-hidden="true" className="collection-meta-dot">·</span>
-                    <span className="collection-card-updated" aria-label={`Last updated: ${updatedLabel(collection.updatedAt, now)}`}><RotateCwFadingClockIcon aria-hidden="true" />{collection.updatedAt ? <time dateTime={collection.updatedAt}>{updatedLabel(collection.updatedAt, now)}</time> : "No updates yet"}</span>
+                    <span className="collection-card-updated" aria-label={`Last book added: ${lastAddedLabel(collection.lastBookAddedAt, now)}`}><RotateCwFadingClockIcon aria-hidden="true" />{collection.lastBookAddedAt ? <time dateTime={collection.lastBookAddedAt}>{lastAddedLabel(collection.lastBookAddedAt, now)}</time> : "No books added"}</span>
                   </div>
                 </div>
               <DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" className="collection-menu" />} aria-label={`Options for ${collection.name}`}><MoreVerticalIcon /></DropdownMenuTrigger>
