@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState, type CSSProperties } from "react"
-import { ArrowLeftIcon, BookOpenIcon, CheckIcon, FolderPlusIcon, MoreVerticalIcon, PencilIcon, PinIcon, PinOffIcon, PlusIcon, SearchIcon, Trash2Icon } from "lucide-react"
+import { ArrowLeftIcon, BookOpenIcon, CheckIcon, FolderPlusIcon, LibraryIcon, MoreVerticalIcon, PencilIcon, PinIcon, PinOffIcon, PlusIcon, RotateCwIcon, SearchIcon, Trash2Icon } from "lucide-react"
 import { Button } from "@/shared/ui/button"
 import { Card } from "@/shared/ui/card"
 import { Checkbox } from "@/shared/ui/checkbox"
@@ -13,12 +13,18 @@ import { BookGallery } from "@/features/library/ui/book-gallery"
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store"
 
 type Collection = { id: string; name: string; color: string; bookIds: string[]; pinned: boolean; updatedAt?: string }
-const colors = [{ name: "Lilac", value: "#d9cae9" }, { name: "Sage", value: "#d6dfbd" }, { name: "Peach", value: "#f0c6ac" }, { name: "Rose", value: "#cfaaae" }]
+const colors = [{ name: "Neutral", value: "#B1B2B5" }, { name: "Lilac", value: "#d9cae9" }, { name: "Sage", value: "#d6dfbd" }, { name: "Peach", value: "#f0c6ac" }, { name: "Rose", value: "#cfaaae" }]
 const initialCollections: Collection[] = [
-  { id: "quiet-afternoons", name: "Quiet afternoons", color: "#d9cae9", bookIds: ["quiet", "sun", "wild"], pinned: true },
-  { id: "far-from-home", name: "Far from home", color: "#d6dfbd", bookIds: ["atlas", "wild", "tidal"], pinned: true },
-  { id: "after-hours", name: "After hours", color: "#f0c6ac", bookIds: ["night", "quiet", "tidal"], pinned: false },
+  { id: "quiet-afternoons", name: "Quiet afternoons", color: "#B1B2B5", bookIds: ["quiet", "sun", "wild"], pinned: true },
+  { id: "far-from-home", name: "Far from home", color: "#B1B2B5", bookIds: ["atlas", "wild", "tidal"], pinned: true },
+  { id: "after-hours", name: "After hours", color: "#B1B2B5", bookIds: ["night", "quiet", "tidal"], pinned: false },
 ]
+
+function updatedLabel(updatedAt: string | undefined, now: number) {
+  if (!updatedAt) return "No updates yet"
+  const days = Math.max(0, Math.floor((now - new Date(updatedAt).getTime()) / 86400000))
+  return days === 0 ? "Today" : new Intl.RelativeTimeFormat("en-US", { numeric: "always" }).format(-days, "day")
+}
 
 function CollectionEditor({ collection, onClose, onSave }: {
   collection?: Collection
@@ -64,13 +70,20 @@ export function CollectionsPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [editor, setEditor] = useState<{ collection?: Collection } | null>(null)
   const [deleting, setDeleting] = useState<Collection | null>(null)
+  const [now, setNow] = useState(() => new Date().getTime())
   const selected = collections.find((collection) => collection.id === selectedId)
   const collectionBooks = (collection: Collection) => books.filter((book) => collection.bookIds.includes(book.id))
   function saveCollection(details: Pick<Collection, "name" | "color" | "bookIds">) {
     const id = editor?.collection?.id ?? crypto.randomUUID()
     const updatedAt = new Date().toISOString()
+    setNow(new Date(updatedAt).getTime())
     setCollections((current) => editor?.collection ? current.map((item) => item.id === id ? { ...item, ...details, updatedAt } : item) : [...current, { ...details, id, pinned: false, updatedAt }])
     setEditor(null)
+  }
+  function togglePinned(collection: Collection) {
+    const updatedAt = new Date().toISOString()
+    setNow(new Date(updatedAt).getTime())
+    setCollections((current) => current.map((item) => item.id === collection.id ? { ...item, pinned: !item.pinned, updatedAt } : item))
   }
 
   return <>
@@ -88,11 +101,11 @@ export function CollectionsPage() {
                   <span className="collection-cover-stack">{previewBooks.slice(0, 3).map((book) => <span className="collection-preview-cover" key={book.id}><BookCover book={book} /></span>)}</span>
                   {previewBooks.length === 0 && <BookOpenIcon className="collection-preview-empty" />}
                 </span>
-                <span className="collection-card-info"><span><span className="collection-card-title">{collection.name}</span><span className="collection-card-meta">{previewBooks.length} {previewBooks.length === 1 ? "book" : "books"}</span><span className="collection-card-updated">Last updated: {collection.updatedAt ? <time dateTime={collection.updatedAt}>{new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/Los_Angeles" }).format(new Date(collection.updatedAt))}</time> : "Not updated yet"}</span></span></span>
+                <span className="collection-card-info"><span className="collection-card-title">{collection.name}</span><span className="collection-card-meta"><span className="collection-book-count" aria-label={`${previewBooks.length} books`}><LibraryIcon aria-hidden="true" />{previewBooks.length}</span><span aria-hidden="true" className="collection-meta-dot">·</span><span className="collection-card-updated" aria-label={`Last updated: ${updatedLabel(collection.updatedAt, now)}`}><RotateCwIcon aria-hidden="true" />{collection.updatedAt ? <time dateTime={collection.updatedAt}>{updatedLabel(collection.updatedAt, now)}</time> : "No updates yet"}</span></span></span>
               </Button>
-              {collection.pinned && <span className="collection-pin"><PinIcon className="size-3" /><span>Pinned</span></span>}
+              {collection.pinned && <Button variant="ghost" size="icon-xs" className="collection-pin" aria-label={`Unpin ${collection.name}`} onClick={() => togglePinned(collection)}><PinIcon aria-hidden="true" /><span>Unpin</span></Button>}
               <DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" className="collection-menu" />} aria-label={`Options for ${collection.name}`}><MoreVerticalIcon /></DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56"><DropdownMenuItem onClick={() => setEditor({ collection })}><PencilIcon />Edit collection</DropdownMenuItem><DropdownMenuItem onClick={() => setCollections((current) => current.map((item) => item.id === collection.id ? { ...item, pinned: !item.pinned } : item))}>{collection.pinned ? <PinOffIcon /> : <PinIcon />}{collection.pinned ? "Unpin collection" : "Pin collection"}</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onClick={() => setDeleting(collection)}><Trash2Icon />Delete collection</DropdownMenuItem></DropdownMenuContent>
+                <DropdownMenuContent align="end" className="w-56"><DropdownMenuItem onClick={() => setEditor({ collection })}><PencilIcon />Edit collection</DropdownMenuItem><DropdownMenuItem onClick={() => togglePinned(collection)}>{collection.pinned ? <PinOffIcon /> : <PinIcon />}{collection.pinned ? "Unpin collection" : "Pin collection"}</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onClick={() => setDeleting(collection)}><Trash2Icon />Delete collection</DropdownMenuItem></DropdownMenuContent>
               </DropdownMenu>
             </Card>
           })}</div>
