@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState, type CSSProperties } from "react"
-import { ArrowLeftIcon, ArrowUpRightIcon, BookOpenIcon, CheckIcon, FolderPlusIcon, MoreHorizontalIcon, PencilIcon, PinIcon, PinOffIcon, PlusIcon, SearchIcon, Trash2Icon } from "lucide-react"
+import { ArrowLeftIcon, BookOpenIcon, CheckIcon, FolderPlusIcon, MoreVerticalIcon, PencilIcon, PinIcon, PinOffIcon, PlusIcon, SearchIcon, Trash2Icon } from "lucide-react"
 import { Button } from "@/shared/ui/button"
 import { Card } from "@/shared/ui/card"
 import { Checkbox } from "@/shared/ui/checkbox"
@@ -88,10 +88,10 @@ export function CollectionsPage() {
                   <span className="collection-cover-stack">{previewBooks.slice(0, 3).map((book) => <span className="collection-preview-cover" key={book.id}><BookCover book={book} /></span>)}</span>
                   {previewBooks.length === 0 && <BookOpenIcon className="collection-preview-empty" />}
                 </span>
-                <span className="collection-card-info"><span><span className="collection-card-title">{collection.name}</span><span className="collection-card-meta">{previewBooks.length} {previewBooks.length === 1 ? "book" : "books"}</span><span className="collection-card-updated">Last updated: {collection.updatedAt ? <time dateTime={collection.updatedAt}>{new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/Los_Angeles" }).format(new Date(collection.updatedAt))}</time> : "Not updated yet"}</span></span><ArrowUpRightIcon className="collection-open-arrow" /></span>
+                <span className="collection-card-info"><span><span className="collection-card-title">{collection.name}</span><span className="collection-card-meta">{previewBooks.length} {previewBooks.length === 1 ? "book" : "books"}</span><span className="collection-card-updated">Last updated: {collection.updatedAt ? <time dateTime={collection.updatedAt}>{new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/Los_Angeles" }).format(new Date(collection.updatedAt))}</time> : "Not updated yet"}</span></span></span>
               </Button>
               {collection.pinned && <span className="collection-pin"><PinIcon className="size-3" /><span>Pinned</span></span>}
-              <DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" className="collection-menu" />} aria-label={`Options for ${collection.name}`}><MoreHorizontalIcon /></DropdownMenuTrigger>
+              <DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" className="collection-menu" />} aria-label={`Options for ${collection.name}`}><MoreVerticalIcon /></DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56"><DropdownMenuItem onClick={() => setEditor({ collection })}><PencilIcon />Edit collection</DropdownMenuItem><DropdownMenuItem onClick={() => setCollections((current) => current.map((item) => item.id === collection.id ? { ...item, pinned: !item.pinned } : item))}>{collection.pinned ? <PinOffIcon /> : <PinIcon />}{collection.pinned ? "Unpin collection" : "Pin collection"}</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onClick={() => setDeleting(collection)}><Trash2Icon />Delete collection</DropdownMenuItem></DropdownMenuContent>
               </DropdownMenu>
             </Card>
