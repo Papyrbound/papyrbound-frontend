@@ -395,7 +395,7 @@
 .collections-heading p { margin-top: 8px; font-size: 12px; color: var(--muted-foreground); }
 .collection-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 384px)); gap: 20px; }
 .collection-card[data-slot="card"] { position: relative; overflow: hidden; padding: 16px; gap: 0; border: 0; border-radius: 24px; box-shadow: none; background: color-mix(in srgb, var(--popover) 70%, transparent); backdrop-filter: blur(40px) saturate(150%); transition: background-color 180ms, color 180ms; }
-.collection-card:hover, .collection-card:focus-within { background: color-mix(in srgb, var(--collection-color) 28%, #ffffff); color: #191715; }
+.collection-card:hover, .collection-card:focus-within { background: color-mix(in srgb, var(--collection-color) 8%, color-mix(in srgb, var(--popover) 70%, transparent)); color: var(--foreground); }
 .collection-open[data-slot="button"] { display: flex; flex-direction: column; justify-content: flex-start; width: 100%; height: auto; padding: 0; border: none; border-radius: 0; gap: 0; white-space: normal; overflow: visible; background: transparent; color: inherit; }
 .collection-open[data-slot="button"]:hover { background: transparent; }
 .collection-preview { position: relative; display: flex; width: 100%; aspect-ratio: 355 / 209; border-radius: 24px; overflow: hidden; align-items: flex-end; justify-content: center; padding: 40px 20px 24px; background: color-mix(in srgb, var(--collection-color) 18%, var(--card)); }
@@ -417,7 +417,8 @@
 .collection-meta-dot { flex-shrink: 0; display: inline-flex; width: 24px; justify-content: center; }
 .collection-card-updated { display: inline-flex; align-items: center; gap: 4px; min-width: 0; white-space: nowrap; }
 .collection-card-updated svg { flex-shrink: 0; }
-.collection-card:hover .collection-card-meta, .collection-card:focus-within .collection-card-meta { color: #42403d; }
+.collection-card:hover .collection-card-meta, .collection-card:focus-within .collection-card-meta { color: var(--muted-foreground); }
+.dark .collection-card:hover .collection-card-meta, .dark .collection-card:focus-within .collection-card-meta { color: #e7e5e2; }
 .collection-pin[data-slot="button"] { position: absolute; top: 16px; left: 16px; width: 24px; height: 24px; min-width: 24px; gap: 4px; padding: 4px; border-radius: 999px; background: #e7e5e2; color: #54524f; font-size: 12px; }
 .collection-pin[data-slot="button"] svg { width: 16px; height: 16px; stroke-width: 1; }
 .collection-pin span { display: none; }
