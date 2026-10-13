@@ -101,12 +101,21 @@ export function CollectionsPage() {
                   <span className="collection-cover-stack">{previewBooks.slice(0, 3).map((book) => <span className="collection-preview-cover" key={book.id}><BookCover book={book} /></span>)}</span>
                   {previewBooks.length === 0 && <BookOpenIcon className="collection-preview-empty" />}
                 </span>
-                <span className="collection-card-info"><span className="collection-card-title">{collection.name}</span><span className="collection-card-meta"><span className="collection-book-count" aria-label={`${previewBooks.length} books`}><LibraryIcon aria-hidden="true" />{previewBooks.length}</span><span aria-hidden="true" className="collection-meta-dot">·</span><span className="collection-card-updated" aria-label={`Last updated: ${updatedLabel(collection.updatedAt, now)}`}><RotateCwFadingClockIcon aria-hidden="true" />{collection.updatedAt ? <time dateTime={collection.updatedAt}>{updatedLabel(collection.updatedAt, now)}</time> : "No updates yet"}</span></span></span>
               </Button>
               {collection.pinned && <Button variant="ghost" size="icon-xs" className="collection-pin" aria-label={`Unpin ${collection.name}`} onClick={() => togglePinned(collection)}><PinIcon aria-hidden="true" /><span>Unpin</span></Button>}
+              <div className="collection-card-footer">
+                <div className="collection-card-info">
+                  <Button variant="ghost" className="collection-card-title" onClick={() => setSelectedId(collection.id)}>{collection.name}</Button>
+                  <div className="collection-card-meta">
+                    <span className="collection-book-count" aria-label={`${previewBooks.length} books`}><LibraryIcon aria-hidden="true" />{previewBooks.length}</span>
+                    <span aria-hidden="true" className="collection-meta-dot">·</span>
+                    <span className="collection-card-updated" aria-label={`Last updated: ${updatedLabel(collection.updatedAt, now)}`}><RotateCwFadingClockIcon aria-hidden="true" />{collection.updatedAt ? <time dateTime={collection.updatedAt}>{updatedLabel(collection.updatedAt, now)}</time> : "No updates yet"}</span>
+                  </div>
+                </div>
               <DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" className="collection-menu" />} aria-label={`Options for ${collection.name}`}><MoreVerticalIcon /></DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56"><DropdownMenuItem onClick={() => setEditor({ collection })}><PencilIcon />Edit collection</DropdownMenuItem><DropdownMenuItem onClick={() => togglePinned(collection)}>{collection.pinned ? <PinOffIcon /> : <PinIcon />}{collection.pinned ? "Unpin collection" : "Pin collection"}</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onClick={() => setDeleting(collection)}><Trash2Icon />Delete collection</DropdownMenuItem></DropdownMenuContent>
               </DropdownMenu>
+              </div>
             </Card>
           })}</div>
       {collections.length === 0 && <Card className="collection-empty"><FolderPlusIcon className="size-10 text-muted-foreground" /><h2>Your next chapter starts here.</h2><p>Bring a few books together in your first collection.</p><Button onClick={() => setEditor({})}><PlusIcon />New collection</Button></Card>}
