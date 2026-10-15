@@ -394,8 +394,8 @@
 .collections-heading h1 { font-size: 28px; line-height: 1.2; font-weight: 500; letter-spacing: -.045em; }
 .collections-heading p { margin-top: 8px; font-size: 12px; color: var(--muted-foreground); }
 .collection-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 384px)); gap: 20px; }
-.collection-card[data-slot="card"] { position: relative; overflow: hidden; padding: 16px; gap: 0; border: 1px solid color-mix(in srgb, var(--foreground) 7%, transparent); border-radius: 24px; box-shadow: none; background: color-mix(in srgb, var(--popover) 70%, transparent); backdrop-filter: blur(40px) saturate(150%); transition: background-color 180ms, color 180ms; }
-.collection-card:hover { background: color-mix(in srgb, var(--collection-color) 8%, color-mix(in srgb, var(--popover) 70%, transparent)); color: var(--foreground); }
+.collection-card[data-slot="card"] { position: relative; overflow: hidden; padding: 16px; gap: 0; border: 1px solid transparent; border-radius: 24px; box-shadow: none; background: transparent; transition: background-color 180ms, color 180ms; }
+.collection-card:hover { background: color-mix(in srgb, var(--collection-color) 5%, transparent); color: var(--foreground); }
 .collection-open[data-slot="button"] { display: flex; flex-direction: column; justify-content: flex-start; width: 100%; height: auto; padding: 0; border: none; border-radius: 0; gap: 0; white-space: normal; overflow: visible; background: transparent; color: inherit; }
 .collection-open[data-slot="button"]:hover { background: transparent; }
 .collection-preview { position: relative; display: flex; width: 100%; aspect-ratio: 355 / 209; border-radius: 24px; overflow: hidden; align-items: flex-end; justify-content: center; padding: 40px 20px 24px; background: color-mix(in srgb, var(--collection-color) 18%, var(--card)); }
@@ -411,12 +411,12 @@
 .collection-card-info { flex: 1; min-width: 0; text-align: left; }
 .collection-title-row { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .collection-card-title[data-slot="button"] { display: block; min-width: 0; width: auto; height: auto; padding: 0; border: 0; border-radius: 0; background: transparent; color: inherit; text-align: left; white-space: normal; font-size: 16px; line-height: 24px; font-weight: 400; letter-spacing: 0; overflow-wrap: anywhere; }
-.collection-card-meta { display: flex; flex-wrap: nowrap; align-items: center; min-height: 24px; gap: 0; font-size: 12px; font-weight: 400; color: var(--muted-foreground); }
+.collection-card-meta { display: flex; flex-wrap: nowrap; align-items: center; min-height: 24px; margin-top: 4px; gap: 4px; font-size: 12px; font-weight: 400; color: var(--muted-foreground); }
 .dark .collection-card-meta { color: #e7e5e2; }
 .collection-book-count { flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; height: 22px; border-radius: 999px; background: color-mix(in srgb, var(--foreground) 8%, transparent); color: inherit; }
 .collection-book-count svg, .collection-card-updated svg { width: 16px; height: 16px; stroke-width: 1; }
 .collection-meta-dot { flex-shrink: 0; display: inline-flex; width: 24px; justify-content: center; }
-.collection-card-updated { display: inline-flex; align-items: center; gap: 4px; min-width: 0; white-space: nowrap; }
+.collection-card-updated { display: inline-flex; align-items: center; gap: 6px; min-width: 0; white-space: nowrap; }
 .collection-card-updated svg { flex-shrink: 0; }
 .collection-card:hover .collection-card-meta { color: var(--muted-foreground); }
 .dark .collection-card:hover .collection-card-meta { color: #e7e5e2; }
