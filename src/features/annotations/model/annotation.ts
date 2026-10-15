@@ -1,3 +1,14 @@
+export const annotationColors = {
+  lilac: "#d9cae9",
+  sage: "#d6dfbd",
+  peach: "#f0c6ac",
+  butter: "#eee0a6",
+  rose: "#e7bdcc",
+  sky: "#b8d7ed",
+  mint: "#bde0d0",
+  sand: "#ded1bd",
+}
+
 export type Annotation = {
   id: string
   bookId: string
@@ -5,14 +16,12 @@ export type Annotation = {
   content: string
   note: string
   page?: number
-  color: "lilac" | "sage" | "peach"
+  color: keyof typeof annotationColors
   starred: boolean
   createdAt: string
 }
 
 export type AnnotationDetails = Omit<Annotation, "id" | "createdAt" | "starred">
-
-export const annotationColors = { lilac: "#d9cae9", sage: "#d6dfbd", peach: "#f0c6ac" }
 
 // Original preview entries for the app's fictional sample books.
 export const sampleAnnotations: Annotation[] = [
