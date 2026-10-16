@@ -1,12 +1,13 @@
 "use client"
 
 import { useState, type CSSProperties } from "react"
-import { ArrowDownAZIcon, ArrowDownZAIcon, BookOpenIcon, SlidersHorizontalIcon } from "lucide-react"
+import { ArrowDownAZIcon, ArrowDownZAIcon, BookOpenIcon, SlidersHorizontalIcon, XIcon } from "lucide-react"
 import { Button } from "@/shared/ui/button"
 import { Slider } from "@/shared/ui/slider"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu"
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store"
 import { BookGallery } from "./book-gallery"
+import { NextReadDialog } from "./next-read-dialog"
 
 const coverSizes = [128, 160, 192, 224, 256]
 const readingFilters = [
@@ -35,6 +36,7 @@ export function LibraryPage() {
       <div className="gallery-heading library-toolbar">
         <div className="library-title"><h1>Your library</h1><span aria-live="polite">{visibleBooks.length} {visibleBooks.length === 1 ? "book" : "books"}</span></div>
         <div className="library-controls">
+          <NextReadDialog />
           <div className="cover-size-control">
             <BookOpenIcon className="size-3.5 text-muted-foreground" aria-hidden="true" />
             <Slider min={0} max={coverSizes.length - 1} step={1} value={[sizeStep]} onValueChange={(value) => setSizeStep(Array.isArray(value) ? value[0] : value)} thumbProps={{ getAriaLabel: () => "Book cover size", getAriaValueText: (_, value) => `${["Small", "Medium", "Large", "Extra large", "Largest"][value]} covers` }} />
@@ -56,11 +58,13 @@ export function LibraryPage() {
                   <DropdownMenuRadioItem value="za"><ArrowDownZAIcon />Title: Z–A</DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </DropdownMenuGroup>
+              {(filter !== "all" || sort !== "default") && <><DropdownMenuSeparator /><DropdownMenuItem onClick={() => { setFilter("all"); setSort("default") }}><XIcon />Reset filters and sorting</DropdownMenuItem></>}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
-      <BookGallery books={visibleBooks} emptyMessage="No books match this filter. Choose another reading status." />
+      <BookGallery books={visibleBooks} emptyMessage={books.length === 0 ? "Your library is empty. Add your first book using the Add book button in the header." : "No books match this filter."} />
+      {visibleBooks.length === 0 && filter !== "all" && <div className="mt-4 text-center"><Button variant="outline" size="sm" onClick={() => setFilter("all")}><XIcon />Clear filter</Button></div>}
     </section>
   )
 }

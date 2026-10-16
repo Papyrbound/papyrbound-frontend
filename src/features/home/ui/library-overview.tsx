@@ -2,10 +2,9 @@
 
 import { useState, type CSSProperties } from "react"
 import Link from "next/link"
-import { ArrowRightIcon, ArrowUpRightIcon, BookOpenIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, FolderIcon, HighlighterIcon, MoreHorizontalIcon, PinIcon } from "lucide-react"
+import { ArrowRightIcon, ArrowUpRightIcon, BookOpenIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, FolderIcon, HighlighterIcon, PinIcon } from "lucide-react"
 import { Button } from "@/shared/ui/button"
 import { Card } from "@/shared/ui/card"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/shared/ui/sheet"
 import { type SampleBook } from "../model/sample-books"
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store"
@@ -65,7 +64,7 @@ export function LibraryOverview() {
             <div className="home-featured-progress"><div className="home-progress" role="progressbar" aria-label={`${currentBook.title} reading progress`} aria-valuenow={currentBook.progress} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${currentBook.progress}%` }} /></div><span>{currentBook.progress}%</span></div>
             <div className="home-featured-actions">
               <Button size="sm" onClick={() => setSelected(currentBook)}>View book<ArrowRightIcon /></Button>
-              <DropdownMenu><DropdownMenuTrigger render={<Button variant="outline" size="icon-sm" />} aria-label={`Options for ${currentBook.title}`}><MoreHorizontalIcon /></DropdownMenuTrigger><DropdownMenuContent align="start" className="w-48"><DropdownMenuItem onClick={() => setSelected(currentBook)}><BookOpenIcon />Book details</DropdownMenuItem><DropdownMenuItem onClick={() => markAsRead(currentBook.id)}><CheckIcon />Mark as read</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
+              <Button variant="outline" size="sm" onClick={() => markAsRead(currentBook.id)}><CheckIcon />Mark as read</Button>
             </div>
           </div>
         </Card>}

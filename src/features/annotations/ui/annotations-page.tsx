@@ -58,7 +58,7 @@ export function AnnotationsPage() {
   }
 
   return <section className="annotations-page" aria-label="Annotations">
-    <header className="annotations-heading"><div><h1>Your annotations</h1><p>Highlights and thoughts worth coming back to.</p></div><Button disabled={books.length === 0} onClick={() => setEditor({})}><PlusIcon />New annotation</Button></header>
+    <header className="annotations-heading"><div><h1>Your annotations</h1><p>Highlights and thoughts worth coming back to.</p></div>{available.length > 0 && <Button disabled={books.length === 0} onClick={() => setEditor({})}><PlusIcon />New annotation</Button>}</header>
     <div className="annotations-toolbar">
       <div className="annotation-filters" role="group" aria-label="Filter annotations">{filters.map((item) => <Button key={item.id} size="sm" variant={filter === item.id ? "secondary" : "ghost"} aria-pressed={filter === item.id} onClick={() => setFilter(item.id)}>{item.id === "starred" && <StarIcon />}{item.label}<span className="annotation-filter-count">{available.filter((annotation) => item.id === "all" || (item.id === "starred" ? annotation.starred : annotation.kind === item.id)).length}</span></Button>)}</div>
       <div className="annotation-tools">

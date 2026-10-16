@@ -95,7 +95,7 @@ export function CollectionsPage() {
       <div className="gallery-heading"><h1>{selected.name}</h1><span>{collectionBooks(selected).length} {collectionBooks(selected).length === 1 ? "book" : "books"}</span></div>
       <BookGallery books={collectionBooks(selected)} onAddBooks={() => setEditor({ collection: selected })} />
     </section> : <section className="collections-page" aria-label="Collections">
-      <div className="collections-heading"><div><h1>Your collections</h1><p>{collections.length} {collections.length === 1 ? "collection" : "collections"} · Books brought together by you</p></div><Button onClick={() => setEditor({})}><PlusIcon />New collection</Button></div>
+      <div className="collections-heading"><div><h1>Your collections</h1><p>{collections.length} {collections.length === 1 ? "collection" : "collections"} · Books brought together by you</p></div>{collections.length > 0 && <Button onClick={() => setEditor({})}><PlusIcon />New collection</Button>}</div>
           <div className="collection-cards">{[...collections].sort((first, second) => Number(second.pinned) - Number(first.pinned)).map((collection) => {
             const previewBooks = collectionBooks(collection)
             return <Card key={collection.id} className="collection-card" style={{ "--collection-color": collection.color } as CSSProperties}>

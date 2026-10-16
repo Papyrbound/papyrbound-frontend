@@ -35,8 +35,7 @@ export function BookGallery({ books, listId, onAddBooks, emptyMessage = "No book
         {books.map((book) => (
           <article key={book.id} className="gallery-book">
             <div className="gallery-book-stage">
-              <button type="button" className="gallery-cover-button" onClick={() => setSelected(book)} aria-label={`View ${book.title}`}><BookCover book={book} /></button>
-              <div className="gallery-cover-actions"><Button type="button" size="sm" onClick={() => setSelected(book)}>View book</Button></div>
+              <button type="button" className="gallery-cover-button" onClick={() => setSelected(book)} aria-label={`View ${book.title}`}><BookCover book={book} /><span className="gallery-cover-actions" aria-hidden="true">View book</span></button>
             </div>
             <div className="gallery-book-caption">
               <h2 className="sr-only">{book.title}</h2>
@@ -65,7 +64,7 @@ export function BookGallery({ books, listId, onAddBooks, emptyMessage = "No book
                       </DropdownMenuSubContent>
                     </DropdownMenuSub>
                   </DropdownMenuGroup>
-                  {listId && <><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onClick={() => toggleBook(listId, book.id)}><Trash2Icon />Remove from this list</DropdownMenuItem></>}
+                  {listId && listId !== "completed" && <><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onClick={() => toggleBook(listId, book.id)}><Trash2Icon />Remove from this list</DropdownMenuItem></>}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem variant="destructive" onClick={() => {
                     confirmedDeletion.current = false

@@ -5,6 +5,7 @@ import Link from "next/link"
 import { IconBookFilled, IconCircleCheckFilled, IconHeartFilled, IconTagFilled } from "@tabler/icons-react"
 import { usePathname, useSearchParams, useRouter } from "next/navigation"
 import {
+  ArrowUpRightIcon,
   BookOpenIcon,
   CheckCircle2Icon,
   ChevronDownIcon,
@@ -193,22 +194,7 @@ export function NavReadingLists() {
         <button type="button" className="list-section-toggle" aria-expanded={sectionOpen} aria-controls="reading-lists-menu" onClick={() => setSectionOpen((open) => !open)}>
           Reading lists <ChevronDownIcon className={`list-heading-action size-3 ${sectionOpen ? "" : "-rotate-90"}`} aria-hidden="true" />
         </button>
-        <DropdownMenu>
-          <DropdownMenuTrigger render={<Button variant="ghost" size="icon-xs" className="list-heading-action" />} aria-label="Reading list options"><MoreHorizontalIcon /></DropdownMenuTrigger>
-          <DropdownMenuContent side="bottom" align="end">
-            <DropdownMenuItem onClick={() => setSectionOpen((open) => !open)}>{sectionOpen ? "Collapse lists" : "Expand lists"}</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => openEditor()}><PlusIcon /> Custom Reading List</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          className="list-heading-action"
-          onClick={() => openEditor()}
-          aria-label="Custom Reading List"
-        >
-          <PlusIcon />
-        </Button>
+        <Button nativeButton={false} variant="ghost" size="icon-xs" className="list-heading-action" aria-label="View all reading lists" title="View all reading lists" render={<Link href="/reading-lists" onClick={() => setOpenMobile(false)} />}><ArrowUpRightIcon /></Button>
       </div>}
 
       <SidebarMenu id="reading-lists-menu" hidden={!sectionOpen && !isCollapsed}>

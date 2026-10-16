@@ -53,7 +53,7 @@ export function BookSearchDialog() {
         <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm transition-opacity duration-180 data-starting-style:opacity-0 data-ending-style:opacity-0" />
         <Dialog.Popup initialFocus={inputRef} finalFocus={triggerRef} className="book-search-dialog">
           <Dialog.Title className="pr-10 text-lg font-semibold">Search books</Dialog.Title>
-          <Dialog.Description className="mt-1 text-xs text-muted-foreground">Search the sample library by title, author, or genre.</Dialog.Description>
+          <Dialog.Description className="mt-1 text-xs text-muted-foreground">Search your library by title, author, or genre.</Dialog.Description>
           {selected ? (
             <div className="mt-6">
               <Button variant="ghost" onClick={() => setSelected(null)}><ArrowLeftIcon /> Back to results</Button>
@@ -66,7 +66,7 @@ export function BookSearchDialog() {
             <>
               <div className="relative mt-6">
                 <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-                <Input ref={inputRef} autoFocus type="search" aria-label="Search sample books" placeholder="Find a book…" value={query} onChange={(event) => setQuery(event.target.value)} className="h-11 pl-9" />
+                <Input ref={inputRef} autoFocus type="search" aria-label="Search your books" placeholder="Find a book…" value={query} onChange={(event) => setQuery(event.target.value)} className="h-11 pl-9" />
               </div>
               <div className="book-list mt-4">
                 {results.map((book) => (
@@ -78,7 +78,7 @@ export function BookSearchDialog() {
                 ))}
               </div>
               <p role="status" className={results.length ? "sr-only" : "py-10 text-center text-muted-foreground"}>
-                {results.length ? `${results.length} sample books found` : "No books match. Try another title, author, or genre."}
+                {results.length ? `${results.length} books found` : "No books match. Try another title, author, or genre."}
               </p>
             </>
           )}
