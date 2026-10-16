@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { IconBookFilled, IconCircleCheckFilled, IconHeartFilled, IconTagFilled } from "@tabler/icons-react"
 import { usePathname, useSearchParams, useRouter } from "next/navigation"
 import {
   BookOpenIcon,
@@ -55,6 +56,13 @@ const listIcons: Record<ReadingListIcon, LucideIcon> = {
   tag: TagIcon,
 }
 
+const customListIcons = {
+  heart: IconHeartFilled,
+  "book-open": IconBookFilled,
+  completed: IconCircleCheckFilled,
+  tag: IconTagFilled,
+}
+
 function ReadingListMenuItem({
   item,
   isActive,
@@ -71,7 +79,7 @@ function ReadingListMenuItem({
   onEdit: (list: ReadingList) => void
 }) {
   const { isMobile } = useSidebar()
-  const ListIcon = listIcons[item.icon]
+  const ListIcon = item.isDefault ? listIcons[item.icon] : customListIcons[item.icon]
 
   return (
     <SidebarMenuItem>
@@ -83,7 +91,7 @@ function ReadingListMenuItem({
         className="reading-list-link"
       >
         <ListIcon
-          className="size-4 fill-none"
+          className="size-4"
           style={item.color ? { color: item.color } : undefined}
           aria-hidden="true"
         />
@@ -189,7 +197,7 @@ export function NavReadingLists() {
           <DropdownMenuTrigger render={<Button variant="ghost" size="icon-xs" className="list-heading-action" />} aria-label="Reading list options"><MoreHorizontalIcon /></DropdownMenuTrigger>
           <DropdownMenuContent side="bottom" align="end">
             <DropdownMenuItem onClick={() => setSectionOpen((open) => !open)}>{sectionOpen ? "Collapse lists" : "Expand lists"}</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => openEditor()}><PlusIcon /> Create reading list</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => openEditor()}><PlusIcon /> Custom Reading List</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         <Button
@@ -197,7 +205,7 @@ export function NavReadingLists() {
           size="icon-xs"
           className="list-heading-action"
           onClick={() => openEditor()}
-          aria-label="Create reading list"
+          aria-label="Custom Reading List"
         >
           <PlusIcon />
         </Button>
@@ -255,14 +263,14 @@ export function NavReadingLists() {
                 <DropdownMenuSeparator />
                 {filteredOverflowLists.length > 0 ? (
                   filteredOverflowLists.map((item) => {
-                    const ListIcon = listIcons[item.icon]
+                    const ListIcon = item.isDefault ? listIcons[item.icon] : customListIcons[item.icon]
 
                     return (
                       <DropdownMenuItem
                         key={item.id}
                         render={<Link href={item.url} />}
                       >
-                        <ListIcon />
+                        <ListIcon style={item.color ? { color: item.color } : undefined} />
                         <span>{item.name}</span>
                       </DropdownMenuItem>
                     )
@@ -278,7 +286,7 @@ export function NavReadingLists() {
         ) : null}
 
         <SidebarMenuItem>
-          <SidebarMenuButton tooltip="Create reading list" onClick={() => openEditor()} className="reading-list-link"><PlusIcon /><span>Create a reading list</span></SidebarMenuButton>
+          <SidebarMenuButton tooltip="Custom Reading List" onClick={() => openEditor()} className="reading-list-link"><PlusIcon /><span>Custom Reading List</span></SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
       {isCreating && <ReadingListEditor list={editingList} onClose={() => setIsCreating(false)} onSave={(details) => {

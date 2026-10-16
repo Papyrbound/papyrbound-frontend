@@ -50,7 +50,7 @@ export function ReadingListEditor({ list, initialBookIds = [], onClose, onSave }
           }
         }}>
           <div className="pr-10">
-            <SheetTitle>{list ? "Edit reading list" : "Create reading list"}</SheetTitle>
+            <SheetTitle>{list ? "Edit reading list" : "Custom Reading List"}</SheetTitle>
             <SheetDescription className="sr-only">Name your list, choose a color, and search for books to add.</SheetDescription>
           </div>
           <fieldset className="list-color-picker mt-7">

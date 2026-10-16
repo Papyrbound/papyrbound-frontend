@@ -28,7 +28,7 @@ function getSnapshot(): Account {
               ...localProfile,
               name: typeof profile?.name === "string" && profile.name.trim() ? profile.name.trim().slice(0, 60) : localProfile.name,
               title: typeof profile?.title === "string" ? profile.title.slice(0, 60) : localProfile.title,
-              bio: typeof profile?.bio === "string" ? profile.bio.slice(0, 180) : "",
+              bio: typeof profile?.bio === "string" ? profile.bio.slice(0, 60) : "",
               avatarSeed: typeof profile?.avatarSeed === "string" && profile.avatarSeed ? profile.avatarSeed.slice(0, 100) : localProfile.avatarSeed,
             },
             preferences: {

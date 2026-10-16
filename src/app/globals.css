@@ -136,9 +136,11 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 .reader-title-card > p { color: var(--muted-foreground); font-size: 12px; line-height: 1.8; margin-top: 8px; min-height: 44px; }
 .reader-title-progress { display: flex; justify-content: space-between; gap: 8px; color: var(--muted-foreground); font-size: 11px; margin: 20px 0 10px; }
 .reader-title-card [data-slot="progress-track"] { height: 4px; }
-.reader-profile-dialog { max-height: calc(100dvh - 32px); overflow-y: auto; }
-.reader-avatar-picker[data-slot="toggle-group"] { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); width: 100%; }
-.reader-avatar-choice[data-slot="toggle-group-item"] { position: relative; height: 56px; min-width: 0; padding: 4px; border: 1px solid transparent; border-radius: 14px; }
+.reader-profile-dialog[data-slot="dialog-content"] { max-width: min(720px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; }
+.reader-avatar-picker[data-slot="toggle-group"] { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; }
+.reader-avatar-choice[data-slot="toggle-group-item"] { position: relative; height: 120px; min-width: 0; padding: 6px; border: 1px solid transparent; border-radius: 18px; }
+.reader-avatar-choice [data-slot="avatar"] { width: min(104px, 100%) !important; height: auto !important; aspect-ratio: 1; }
+.reader-avatar-choice img { width: 100%; height: 100%; }
 .reader-avatar-choice[aria-pressed="true"] { border-color: var(--foreground); background: var(--muted); }
 .reader-avatar-check { position: absolute; bottom: 1px; right: 1px; width: 14px !important; height: 14px !important; background: var(--primary); color: var(--primary-foreground); border-radius: 50%; padding: 2px; }
 .reader-settings { max-width: 980px; }
@@ -192,6 +194,7 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 .reader-recent-notes time { font-size: 11px; color: var(--muted-foreground); margin-top: auto; }
 @media (max-width: 1100px) { .reader-title-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 800px) {
+  .reader-avatar-picker[data-slot="toggle-group"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .reader-page { padding: 24px; }
   .reader-activity-grid { grid-template-columns: minmax(0, 1fr); }
   .reader-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -207,7 +210,11 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
   .reader-theme-options[data-slot="toggle-group"] { gap: 8px; }
   .reader-theme-option[data-slot="toggle-group-item"] { flex-wrap: wrap; justify-content: center; padding: 12px 8px; height: auto; min-height: 70px; gap: 8px; }
   .reader-theme-option > svg:last-child:not(:first-child) { display: none; }
-  .reader-avatar-picker[data-slot="toggle-group"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .reader-avatar-picker[data-slot="toggle-group"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 380px) {
+  .reader-avatar-picker[data-slot="toggle-group"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* Shared anatomy: quiet canvas, floating chrome, flat contained surfaces. */
@@ -605,10 +612,10 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 .reading-lists-section .list-pin-action { right: 28px; }
 .list-section-heading { display: flex; align-items: center; gap: 2px; padding: 0 8px; min-height: 36px; }
 .list-section-toggle { display: flex; flex: 1; align-items: center; gap: 4px; min-width: 0; text-align: left; font-size: 12px; cursor: pointer; }
-.list-section-heading:hover, .list-section-heading:focus-within { color: var(--foreground); }
+.list-section-heading:hover, .list-section-heading:has(:focus-visible) { color: var(--foreground); }
 .list-heading-action { opacity: 0; transition: opacity 150ms; }
 .list-section-heading:hover .list-heading-action,
-.list-section-heading:focus-within .list-heading-action,
+.list-section-heading:has(:focus-visible) .list-heading-action,
 .list-heading-action[aria-expanded="true"] { opacity: 1; }
 #reading-lists-menu[hidden] { display: none; }
 .reading-list-sheet[data-slot="sheet-content"] { inset: 12px 12px 12px auto; height: auto; width: min(480px, calc(100vw - 24px)); max-width: 480px; border: none; border-radius: 24px; padding: 28px; background: color-mix(in srgb, var(--list-color) 45%, var(--card)); transition: background-color 200ms, translate 200ms, transform 200ms, opacity 200ms; }
