@@ -18,8 +18,11 @@ import {
 } from "@/features/reading-lists/model/reading-list"
 import { sampleBooks, type SampleBook } from "@/features/home/model/sample-books"
 
+export type ReadingActivityEvent = { id: string; bookTitle: string; kind: "added" | "completed" | "unread" | "deleted"; at: string }
+
 type ReadingListsContextValue = {
   books: SampleBook[]
+  activity: ReadingActivityEvent[]
   addBook: (details: { title: string; author: string }) => void
   markAsRead: (bookId: string) => void
   markAsUnread: (bookId: string) => void
@@ -39,6 +42,11 @@ const ReadingListsContext = createContext<ReadingListsContextValue | null>(
 export function ReadingListsProvider({ children }: PropsWithChildren) {
   const [books, setBooks] = useState<(SampleBook & { previousProgress?: number })[]>(sampleBooks)
   const [lists, setLists] = useState<ReadingList[]>(defaultReadingLists)
+  const [activity, setActivity] = useState<ReadingActivityEvent[]>([])
+  const recordActivity = useCallback((bookTitle: string, kind: ReadingActivityEvent["kind"]) => {
+    const event: ReadingActivityEvent = { id: crypto.randomUUID(), bookTitle, kind, at: new Date().toISOString() }
+    setActivity((current) => [event, ...current].slice(0, 200))
+  }, [])
 
   const addBook = useCallback((details: { title: string; author: string }) => {
     if (!details.title.trim() || !details.author.trim()) return
@@ -48,28 +56,38 @@ export function ReadingListsProvider({ children }: PropsWithChildren) {
       paper: "#d9cae9", ink: "#494059", tone: "var(--content-lilac)", art: "orbit",
     }
     setBooks((current) => [...current, book])
-  }, [])
+    recordActivity(book.title, "added")
+  }, [recordActivity])
 
   const markAsRead = useCallback((bookId: string) => {
+    const target = books.find((book) => book.id === bookId)
+    if (!target || target.progress >= 100) return
     setBooks((current) => current.map((book) => book.id === bookId && book.progress < 100 ? { ...book, previousProgress: book.progress, progress: 100 } : book))
     setLists((current) => current.map((list) => list.id === "completed"
       ? { ...list, bookIds: [...new Set([...(list.bookIds ?? []), bookId])] }
       : list))
-  }, [])
+    recordActivity(target.title, "completed")
+  }, [books, recordActivity])
 
   const markAsUnread = useCallback((bookId: string) => {
+    const target = books.find((book) => book.id === bookId)
+    if (!target || target.progress < 100) return
     setBooks((current) => current.map((book) => book.id === bookId && book.progress >= 100
       ? { ...book, progress: book.previousProgress ?? 0, previousProgress: undefined }
       : book))
     setLists((current) => current.map((list) => list.id === "completed"
       ? { ...list, bookIds: list.bookIds?.filter((id) => id !== bookId) }
       : list))
-  }, [])
+    recordActivity(target.title, "unread")
+  }, [books, recordActivity])
 
   const deleteBook = useCallback((bookId: string) => {
+    const target = books.find((book) => book.id === bookId)
+    if (!target) return
     setBooks((current) => current.filter((book) => book.id !== bookId))
     setLists((current) => current.map((list) => ({ ...list, bookIds: list.bookIds?.filter((id) => id !== bookId) })))
-  }, [])
+    recordActivity(target.title, "deleted")
+  }, [books, recordActivity])
 
   const createList = useCallback((details: ReadingListDetails) => {
     const trimmedName = details.name.trim()
@@ -141,8 +159,8 @@ export function ReadingListsProvider({ children }: PropsWithChildren) {
   }, [])
 
   const value = useMemo(
-    () => ({ books, addBook, markAsRead, markAsUnread, deleteBook, lists, createList, updateList, deleteList, togglePinned, toggleBook }),
-    [books, addBook, markAsRead, markAsUnread, deleteBook, lists, createList, updateList, deleteList, togglePinned, toggleBook]
+    () => ({ books, activity, addBook, markAsRead, markAsUnread, deleteBook, lists, createList, updateList, deleteList, togglePinned, toggleBook }),
+    [books, activity, addBook, markAsRead, markAsUnread, deleteBook, lists, createList, updateList, deleteList, togglePinned, toggleBook]
   )
 
   return (

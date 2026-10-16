@@ -11,6 +11,7 @@ import { AddBookDialog } from "@/features/library/ui/add-book-dialog"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/shared/ui/breadcrumb"
 import { useCollections } from "@/features/collections/stores/collections-store"
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store"
+import { updatePreferences } from "@/features/profile/stores/account-store"
 
 const routeLabels: Record<string, string> = {
   "/": "Home",
@@ -18,6 +19,9 @@ const routeLabels: Record<string, string> = {
   "/collections": "Collections",
   "/annotations": "Annotations",
   "/reading-lists": "Reading lists",
+  "/reading-titles": "Reading titles",
+  "/reading-activity": "Reading activity",
+  "/settings": "Settings",
 }
 
 function subscribe(callback: () => void) {
@@ -73,7 +77,7 @@ export function AppHeader() {
         variant="ghost"
         size="icon"
         aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
-        onClick={() => document.documentElement.classList.toggle("dark")}
+        onClick={() => updatePreferences({ theme: dark ? "light" : "dark" })}
       >
         {dark ? <SunIcon /> : <MoonIcon />}
       </Button>

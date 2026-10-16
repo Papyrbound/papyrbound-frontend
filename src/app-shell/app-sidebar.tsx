@@ -5,7 +5,6 @@ import Link from "next/link"
 
 import { mainNavigation } from "@/app-shell/navigation"
 import { NavMain } from "@/app-shell/nav-main"
-import { localProfile } from "@/features/profile/model/profile"
 import { NavProfile } from "@/features/profile/ui/nav-profile"
 import { NavReadingLists } from "@/features/reading-lists/ui/nav-reading-lists"
 import {
@@ -44,7 +43,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         </Suspense>
       </SidebarContent>
       <SidebarFooter>
-        <NavProfile profile={localProfile} />
+        <NavProfile />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
