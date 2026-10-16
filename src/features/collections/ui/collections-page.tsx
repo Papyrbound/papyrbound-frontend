@@ -4,7 +4,7 @@ import { useRef, useState, type CSSProperties } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { ArrowLeftIcon, BookOpenIcon, CheckIcon, FolderPlusIcon, LibraryIcon, MoreVerticalIcon, PencilIcon, PinIcon, PinOffIcon, PlusIcon, RotateCwFadingClockIcon, SearchIcon, Trash2Icon } from "lucide-react"
 import { Button } from "@/shared/ui/button"
-import { Card } from "@/shared/ui/card"
+import { RevealCard as Card, RevealText } from "@/shared/ui/reading-motion"
 import { Checkbox } from "@/shared/ui/checkbox"
 import { Input } from "@/shared/ui/input"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/shared/ui/dialog"
@@ -92,13 +92,13 @@ export function CollectionsPage() {
   return <>
     {selected ? <section className="library-gallery collections-detail">
       <div className="mb-6 flex items-center justify-between gap-3"><Button variant="ghost" onClick={() => router.push("/collections")}><ArrowLeftIcon />Collections</Button><Button variant="secondary" onClick={() => setEditor({ collection: selected })}><PencilIcon />Edit collection</Button></div>
-      <div className="gallery-heading"><h1>{selected.name}</h1><span>{collectionBooks(selected).length} {collectionBooks(selected).length === 1 ? "book" : "books"}</span></div>
+      <div className="gallery-heading"><h1><RevealText>{selected.name}</RevealText></h1><span>{collectionBooks(selected).length} {collectionBooks(selected).length === 1 ? "book" : "books"}</span></div>
       <BookGallery books={collectionBooks(selected)} onAddBooks={() => setEditor({ collection: selected })} />
     </section> : <section className="collections-page" aria-label="Collections">
-      <div className="collections-heading"><div><h1>Your collections</h1><p>{collections.length} {collections.length === 1 ? "collection" : "collections"} · Books brought together by you</p></div>{collections.length > 0 && <Button onClick={() => setEditor({})}><PlusIcon />New collection</Button>}</div>
-          <div className="collection-cards">{[...collections].sort((first, second) => Number(second.pinned) - Number(first.pinned)).map((collection) => {
+      <div className="collections-heading"><div><h1><RevealText>Your collections</RevealText></h1><p>{collections.length} {collections.length === 1 ? "collection" : "collections"} · Books brought together by you</p></div>{collections.length > 0 && <Button onClick={() => setEditor({})}><PlusIcon />New collection</Button>}</div>
+          <div className="collection-cards">{[...collections].sort((first, second) => Number(second.pinned) - Number(first.pinned)).map((collection, index) => {
             const previewBooks = collectionBooks(collection)
-            return <Card key={collection.id} className="collection-card" style={{ "--collection-color": collection.color } as CSSProperties}>
+            return <Card index={index} key={collection.id} className="collection-card" style={{ "--collection-color": collection.color } as CSSProperties}>
               <Button variant="ghost" className="collection-open" onClick={() => openCollection(collection.id)} aria-label={`Open ${collection.name}, ${previewBooks.length} ${previewBooks.length === 1 ? "book" : "books"}`}>
                 <span className="collection-preview" aria-hidden="true">
                   <span className="collection-cover-stack">{previewBooks.slice(0, 3).map((book) => <span className="collection-preview-cover" key={book.id}><BookCover book={book} /></span>)}</span>

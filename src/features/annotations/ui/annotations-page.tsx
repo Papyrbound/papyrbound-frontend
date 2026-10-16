@@ -1,6 +1,7 @@
 "use client"
 
-import { useRef, useState, type CSSProperties } from "react"
+import { useId, useRef, useState, type CSSProperties } from "react"
+import { LayoutGroup, m } from "motion/react"
 import { BookOpenIcon, ChevronDownIcon, HighlighterIcon, LayoutGridIcon, ListIcon, MoreHorizontalIcon, NotebookPenIcon, PencilIcon, PlusIcon, SearchIcon, StarIcon, Trash2Icon, XIcon } from "lucide-react"
 import { useAnnotations } from "@/features/annotations/stores/annotations-store"
 import { annotationColors, type Annotation, type AnnotationDetails } from "@/features/annotations/model/annotation"
@@ -9,7 +10,7 @@ import { BookCover } from "@/features/home/ui/book-cover"
 import { AnnotationEditor } from "./annotation-editor"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
-import { Card } from "@/shared/ui/card"
+import { RevealCard as Card, RevealText, useReadingMotion } from "@/shared/ui/reading-motion"
 import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/shared/ui/alert-dialog"
@@ -24,6 +25,8 @@ type Filter = typeof filters[number]["id"]
 const dateFormat = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" })
 
 export function AnnotationsPage() {
+  const filterGroupId = useId()
+  const reduced = useReadingMotion()
   const { books } = useReadingLists()
   const { annotations, setAnnotations } = useAnnotations()
   const [query, setQuery] = useState("")
@@ -58,9 +61,9 @@ export function AnnotationsPage() {
   }
 
   return <section className="annotations-page" aria-label="Annotations">
-    <header className="annotations-heading"><div><h1>Your annotations</h1><p>Highlights and thoughts worth coming back to.</p></div>{available.length > 0 && <Button disabled={books.length === 0} onClick={() => setEditor({})}><PlusIcon />New annotation</Button>}</header>
+    <header className="annotations-heading"><div><h1><RevealText>Your annotations</RevealText></h1><p>Highlights and thoughts worth coming back to.</p></div>{available.length > 0 && <Button disabled={books.length === 0} onClick={() => setEditor({})}><PlusIcon />New annotation</Button>}</header>
     <div className="annotations-toolbar">
-      <div className="annotation-filters" role="group" aria-label="Filter annotations">{filters.map((item) => <Button key={item.id} size="sm" variant={filter === item.id ? "secondary" : "ghost"} aria-pressed={filter === item.id} onClick={() => setFilter(item.id)}>{item.id === "starred" && <StarIcon />}{item.label}<span className="annotation-filter-count">{available.filter((annotation) => item.id === "all" || (item.id === "starred" ? annotation.starred : annotation.kind === item.id)).length}</span></Button>)}</div>
+      <LayoutGroup id={filterGroupId}><div className="annotation-filters" role="group" aria-label="Filter annotations">{filters.map((item) => <Button key={item.id} size="sm" variant="ghost" className="annotation-filter-tab" aria-pressed={filter === item.id} onClick={() => setFilter(item.id)}>{filter === item.id && <m.span layoutId="active-filter" className="annotation-filter-indicator" transition={{ type: "spring", stiffness: 450, damping: 36, duration: reduced ? 0 : undefined }} />}{item.id === "starred" && <StarIcon />}{item.label}<span className="annotation-filter-count">{available.filter((annotation) => item.id === "all" || (item.id === "starred" ? annotation.starred : annotation.kind === item.id)).length}</span></Button>)}</div></LayoutGroup>
       <div className="annotation-tools">
         <div className="annotation-search"><SearchIcon aria-hidden="true" /><Input type="search" aria-label="Search annotations" placeholder="Search your annotations…" value={query} onChange={(event) => setQuery(event.target.value)} /></div>
         <DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="sm" className="annotation-book-filter" />} aria-label={`Filter by book: ${selectedBook?.title ?? "All books"}`}><BookOpenIcon /><span className="truncate">{selectedBook?.title ?? "All books"}</span><ChevronDownIcon /></DropdownMenuTrigger><DropdownMenuContent className="w-64"><DropdownMenuRadioGroup value={bookFilter} onValueChange={setBookFilter}><DropdownMenuRadioItem value="all">All books</DropdownMenuRadioItem>{books.filter((book) => annotatedBookIds.has(book.id)).map((book) => <DropdownMenuRadioItem key={book.id} value={book.id}>{book.title}</DropdownMenuRadioItem>)}</DropdownMenuRadioGroup></DropdownMenuContent></DropdownMenu>
@@ -76,9 +79,9 @@ export function AnnotationsPage() {
       </ToggleGroup>
       </div>
     </div>
-    <div className={`annotation-grid${layout === "list" ? " annotation-list" : ""}`}>{visible.map((annotation) => {
+    <div className={`annotation-grid${layout === "list" ? " annotation-list" : ""}`}>{visible.map((annotation, index) => {
       const book = booksById.get(annotation.bookId)!
-      return <Card key={annotation.id} className="annotation-card" style={{ "--annotation-color": annotationColors[annotation.color] } as CSSProperties}>
+      return <Card index={index} key={annotation.id} className="annotation-card" style={{ "--annotation-color": annotationColors[annotation.color] } as CSSProperties}>
         <div className="annotation-source"><div className="annotation-book-cover" aria-hidden="true"><BookCover book={book} /></div><div className="min-w-0 flex-1"><h2>{book.title}</h2><p>{book.author}{annotation.page ? ` · Page ${annotation.page}` : ""}</p></div><Button variant="ghost" size="icon-sm" className="annotation-star" aria-label={`${annotation.starred ? "Unstar" : "Star"} annotation from ${book.title}${annotation.page ? `, page ${annotation.page}` : ""}`} aria-pressed={annotation.starred} onClick={() => setAnnotations((current) => current.map((item) => item.id === annotation.id ? { ...item, starred: !item.starred } : item))}><StarIcon fill={annotation.starred ? "currentColor" : "none"} /></Button></div>
         <div className="annotation-body">
         {annotation.kind === "highlight" ? <blockquote className="annotation-passage"><p>{annotation.content}</p></blockquote> : <p className="annotation-note-content">{annotation.content}</p>}

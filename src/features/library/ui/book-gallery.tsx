@@ -1,6 +1,8 @@
 "use client"
 
 import { useRef, useState } from "react"
+import { AnimatePresence, m } from "motion/react"
+import { readingEase, useReadingMotion } from "@/shared/ui/reading-motion"
 import { CheckIcon, HeartIcon, ListPlusIcon, MoreHorizontalIcon, PlusIcon, Trash2Icon } from "lucide-react"
 import { Button } from "@/shared/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuGroup, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/shared/ui/dropdown-menu"
@@ -27,13 +29,15 @@ export function BookGallery({ books, listId, onAddBooks, emptyMessage = "No book
   const confirmedDeletion = useRef(false)
   const { setCollections } = useCollections()
   const { lists, toggleBook, createList, markAsRead, markAsUnread, deleteBook } = useReadingLists()
+  const reduced = useReadingMotion()
 
   return (
     <>
       <div ref={galleryRef} tabIndex={-1} className="library-book-grid outline-none">
         {onAddBooks && <button type="button" className="gallery-add-book" onClick={onAddBooks}><PlusIcon className="size-7" aria-hidden="true" /><span>Add books</span></button>}
-        {books.map((book) => (
-          <article key={book.id} className="gallery-book">
+        <AnimatePresence initial={true} mode="popLayout">
+        {books.map((book, index) => (
+          <m.article key={book.id} className="gallery-book" layout={reduced ? false : "position"} initial={reduced ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ opacity: { duration: reduced ? 0 : 0.2 }, y: { duration: reduced ? 0 : 0.4, delay: reduced ? 0 : Math.min(index, 6) * 0.035, ease: readingEase }, layout: { type: "spring", stiffness: 380, damping: 36 } }}>
             <div className="gallery-book-stage">
               <button type="button" className="gallery-cover-button" onClick={() => setSelected(book)} aria-label={`View ${book.title}`}><BookCover book={book} /><span className="gallery-cover-actions" aria-hidden="true">View book</span></button>
             </div>
@@ -74,8 +78,9 @@ export function BookGallery({ books, listId, onAddBooks, emptyMessage = "No book
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-          </article>
+          </m.article>
         ))}
+        </AnimatePresence>
       </div>
       {books.length === 0 && <p className="gallery-empty" role="status">{emptyMessage}</p>}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} onOpenChangeComplete={(open) => { if (!open) setDeletingBook(null) }}>

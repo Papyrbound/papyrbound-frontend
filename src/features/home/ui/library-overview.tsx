@@ -2,21 +2,20 @@
 
 import { useState, type CSSProperties } from "react"
 import Link from "next/link"
-import { ArrowRightIcon, ArrowUpRightIcon, BookOpenIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, FolderIcon, HighlighterIcon, PinIcon } from "lucide-react"
+import { ArrowRightIcon, ArrowUpRightIcon, BookOpenIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, FolderIcon, LibraryIcon, PinIcon } from "lucide-react"
 import { Button } from "@/shared/ui/button"
 import { Card } from "@/shared/ui/card"
+import { Progress } from "@/shared/ui/progress"
+import { RevealCard, RevealText } from "@/shared/ui/reading-motion"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/shared/ui/sheet"
 import { type SampleBook } from "../model/sample-books"
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store"
 import { useCollections } from "@/features/collections/stores/collections-store"
-import { useAnnotations } from "@/features/annotations/stores/annotations-store"
-import { annotationColors } from "@/features/annotations/model/annotation"
 import { BookCover } from "./book-cover"
 
 export function LibraryOverview() {
   const { books, lists, markAsRead } = useReadingLists()
   const { collections } = useCollections()
-  const { annotations } = useAnnotations()
   const [selected, setSelected] = useState<SampleBook | null>(null)
   const readingBooks = books.filter((book) => book.progress > 0 && book.progress < 100)
   const [activeBookId, setActiveBookId] = useState<string | null>(null)
@@ -26,24 +25,25 @@ export function LibraryOverview() {
   const completedCount = books.filter((book) => book.progress >= 100).length
   const bookIds = new Set(books.map((book) => book.id))
   const featuredCollections = [...collections].sort((a, b) => Number(b.pinned) - Number(a.pinned)).slice(0, 2)
-  const highlights = annotations.filter((annotation) => annotation.kind === "highlight" && bookIds.has(annotation.bookId))
-  const featuredHighlight = highlights.find((annotation) => annotation.starred) ?? highlights[0]
-  const highlightBook = books.find((book) => book.id === featuredHighlight?.bookId)
-  const wishlistCount = lists.find((list) => list.id === "want-to-read")?.bookIds?.filter((id) => bookIds.has(id)).length ?? 0
+  const wishlistIds = lists.find((list) => list.id === "want-to-read")?.bookIds ?? []
+  const wishlistCount = wishlistIds.filter((id) => bookIds.has(id)).length
+  const unreadBooks = books.filter((book) => book.progress <= 0)
+  const nextBook = wishlistIds.map((id) => unreadBooks.find((book) => book.id === id)).find(Boolean) ?? unreadBooks[0]
+  const nextFromList = nextBook ? wishlistIds.includes(nextBook.id) : false
 
   return (
     <div className="home-overview">
       <header className="home-heading">
-        <div><p className="home-eyebrow">Your reading space</p><h1>Welcome back.</h1><p className="home-intro">A book to return to. A new one to discover.</p></div>
-        <div className="home-summary" aria-label="Library summary">
-          <span><strong>{books.length}</strong>books</span>
-          <span><strong>{readingBooks.length}</strong>in progress</span>
-          <span><strong>{completedCount}</strong>completed</span>
-        </div>
+        <div><p className="home-eyebrow">Your reading space</p><h1><RevealText>Welcome back.</RevealText></h1><p className="home-intro">A book to return to. A new one to discover.</p></div>
+        <Button nativeButton={false} role="link" variant="ghost" className="home-library-shortcut" render={<Link href="/library" />}>
+          <span className="home-library-icon"><LibraryIcon /></span>
+          <span><strong>Your library</strong><span>{books.length} {books.length === 1 ? "book" : "books"} on your shelf</span></span>
+          <ArrowUpRightIcon className="size-4 text-muted-foreground" />
+        </Button>
       </header>
 
       <div className="home-bento">
-      <Card className="home-bento-tile home-bento-reading" aria-labelledby="home-reading-title">
+      <RevealCard index={0} className="home-bento-tile home-bento-reading" aria-labelledby="home-reading-title">
         <div className="home-section-heading">
           <h2 id="home-reading-title"><BookOpenIcon className="mr-2 inline size-4" />Continue reading</h2>
           <div className="flex items-center gap-2">
@@ -55,7 +55,7 @@ export function LibraryOverview() {
             <Button nativeButton={false} role="link" variant="ghost" size="sm" render={<Link href="/library" />}>View all<ArrowRightIcon /></Button>
           </div>
         </div>
-        {currentBook && <Card className="home-featured-read" style={{ "--book-color": currentBook.paper } as CSSProperties}>
+        {currentBook && <Card key={currentBook.id} className="home-featured-read" style={{ "--book-color": currentBook.paper } as CSSProperties}>
           <div className="home-featured-art" aria-hidden="true"><BookCover book={currentBook} /></div>
           <Button variant="ghost" className="home-featured-cover" onClick={() => setSelected(currentBook)} aria-label={`View ${currentBook.title}`}><BookCover book={currentBook} /></Button>
           <div className="home-featured-info" aria-live="polite">
@@ -69,15 +69,22 @@ export function LibraryOverview() {
           </div>
         </Card>}
         {readingBooks.length === 0 && <Card className="home-empty"><BookOpenIcon /><div><h3>A new chapter is waiting</h3><p>Explore your library to find your next read.</p></div><Button nativeButton={false} role="link" variant="secondary" render={<Link href="/library" />}>Browse books<ChevronRightIcon /></Button></Card>}
-      </Card>
-        <Button nativeButton={false} role="link" variant="ghost" className="home-notebook home-bento-notebook" render={<Link href="/annotations" />} style={{ "--highlight-color": featuredHighlight ? annotationColors[featuredHighlight.color] : annotationColors.lilac } as CSSProperties}>
-          <div className="home-notebook-label"><HighlighterIcon /><span>From your notebook</span><ArrowUpRightIcon /></div>
-          {featuredHighlight && highlightBook ? <>
-            <blockquote>{featuredHighlight.content}</blockquote>
-            <p>{highlightBook.title}{featuredHighlight.page ? ` · Page ${featuredHighlight.page}` : ""}</p>
-          </> : <><h2>Keep the words that stay with you.</h2><p>Your highlights and personal thoughts, together in one place.</p></>}
-        </Button>
-        <Card className="home-bento-tile home-bento-recent" aria-labelledby="home-recent-title">
+      </RevealCard>
+        <RevealCard index={1} className="home-bento-tile home-bento-next" aria-labelledby="home-next-title" style={{ "--next-color": nextBook?.paper ?? "var(--content-sage)" } as CSSProperties}>
+          <div className="home-next-heading"><h2 id="home-next-title">Up next</h2><span>A fresh chapter</span></div>
+          {nextBook ? <>
+            <p className="home-next-source">{nextFromList ? "From your Want To Read list" : "Waiting in your library"}</p>
+            <div className="home-next-book">
+              <div className="home-next-cover" aria-hidden="true"><BookCover book={nextBook} /></div>
+              <div className="home-next-info"><h3>{nextBook.title}</h3><p>{nextBook.author}</p><span>{nextBook.genre}{nextBook.pages > 0 ? ` · ${nextBook.pages} pages` : ""}</span></div>
+            </div>
+            <div className="home-next-action"><Button variant="secondary" size="sm" onClick={() => setSelected(nextBook)}>Explore book<ArrowRightIcon /></Button></div>
+          </> : <>
+            <div className="home-next-empty"><BookOpenIcon className="size-8" /><h3>Make room for your next story.</h3><p>Add an unread book to your library and it will appear here.</p></div>
+            <div className="home-next-action"><Button nativeButton={false} role="link" variant="secondary" size="sm" render={<Link href="/library" />}>Browse library<ArrowRightIcon /></Button></div>
+          </>}
+        </RevealCard>
+        <RevealCard index={2} className="home-bento-tile home-bento-recent" aria-labelledby="home-recent-title">
           <div className="home-section-heading"><h2 id="home-recent-title">Recently added</h2><Button nativeButton={false} role="link" variant="ghost" size="sm" render={<Link href="/library" />}>View all<ChevronRightIcon /></Button></div>
           <div className="home-recent-grid">{recentBooks.map((book) => (
             <Button key={book.id} variant="ghost" className="home-recent-book" onClick={() => setSelected(book)} aria-label={`View ${book.title} by ${book.author}`}>
@@ -88,8 +95,8 @@ export function LibraryOverview() {
           {recentBooks.length === 0 && <p className="home-section-empty">Books you add will appear here.</p>}
 
 
-        </Card>
-          <Card className="home-bento-tile home-bento-collections" aria-labelledby="home-collections-title">
+        </RevealCard>
+          <RevealCard index={3} className="home-bento-tile home-bento-collections" aria-labelledby="home-collections-title">
             <div className="home-section-heading"><h2 id="home-collections-title">Your collections</h2><Button nativeButton={false} role="link" variant="ghost" size="sm" aria-label="View all collections" render={<Link href="/collections" />}><ChevronRightIcon /></Button></div>
             <div className="home-collection-list">{featuredCollections.map((collection) => {
               const collectionBooks = collection.bookIds.map((id) => books.find((book) => book.id === id)).filter((book): book is SampleBook => Boolean(book))
@@ -99,14 +106,15 @@ export function LibraryOverview() {
               </Button>
             })}</div>
             {featuredCollections.length === 0 && <Button nativeButton={false} role="link" variant="outline" render={<Link href="/collections" />}>Create a collection<ChevronRightIcon /></Button>}
-          </Card>
-        <Button nativeButton={false} role="link" variant="ghost" className="home-wishlist home-bento-wishlist" render={<Link href="/reading-lists?list=want-to-read" />}>
-          <span className="home-wishlist-icon"><BookOpenIcon /></span>
-          <span className="home-wishlist-total">{wishlistCount}</span>
-          <span className="home-wishlist-title">Want to read</span>
-          <span className="home-wishlist-description">{wishlistCount ? `${wishlistCount === 1 ? "A book" : "Books"} for your next chapter` : "Make room for your next read"}</span>
-          <ArrowUpRightIcon className="home-wishlist-arrow" />
-        </Button>
+          </RevealCard>
+        <RevealCard index={4} className="home-bento-tile home-reading-snapshot" aria-labelledby="home-snapshot-title">
+          <div className="home-snapshot-heading"><h2 id="home-snapshot-title">Your reading</h2><Button nativeButton={false} role="link" variant="ghost" size="icon-xs" aria-label="View reading activity" render={<Link href="/reading-activity" />}><ArrowUpRightIcon /></Button></div>
+          <div className="home-snapshot-total"><strong>{completedCount}</strong><span>/ {books.length}</span></div>
+          <p className="home-snapshot-caption">books finished</p>
+          <Progress value={books.length ? completedCount / books.length * 100 : 0} aria-label={`${completedCount} of ${books.length} books completed`} />
+          <dl className="home-snapshot-details"><div><dt><span className="home-status-dot home-status-reading" />In progress</dt><dd>{readingBooks.length}</dd></div><div><dt><span className="home-status-dot" />Not started</dt><dd>{unreadBooks.length}</dd></div></dl>
+          <Button nativeButton={false} role="link" variant="ghost" size="sm" className="home-snapshot-queue" render={<Link href="/reading-lists?list=want-to-read" />}><span>Want To Read <span className="home-queue-count">{wishlistCount}</span></span><ChevronRightIcon /></Button>
+        </RevealCard>
       </div>
 
       <Sheet open={selected !== null} onOpenChange={(open) => { if (!open) setSelected(null) }}>

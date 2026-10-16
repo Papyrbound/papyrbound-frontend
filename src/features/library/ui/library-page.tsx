@@ -8,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store"
 import { BookGallery } from "./book-gallery"
 import { NextReadDialog } from "./next-read-dialog"
+import { RevealText } from "@/shared/ui/reading-motion"
 
 const coverSizes = [128, 160, 192, 224, 256]
 const readingFilters = [
@@ -34,7 +35,7 @@ export function LibraryPage() {
   return (
     <section className="library-gallery" data-resizable="true" aria-label="Your library" style={{ "--gallery-size": `${coverSizes[sizeStep]}px` } as CSSProperties}>
       <div className="gallery-heading library-toolbar">
-        <div className="library-title"><h1>Your library</h1><span aria-live="polite">{visibleBooks.length} {visibleBooks.length === 1 ? "book" : "books"}</span></div>
+        <div className="library-title"><h1><RevealText>Your library</RevealText></h1><span aria-live="polite">{visibleBooks.length} {visibleBooks.length === 1 ? "book" : "books"}</span></div>
         <div className="library-controls">
           <NextReadDialog />
           <div className="cover-size-control">
