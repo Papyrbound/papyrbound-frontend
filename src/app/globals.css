@@ -424,24 +424,32 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 .home-library-shortcut > span:nth-child(2) { display: grid; gap: 4px; }
 .home-library-shortcut strong { font-size: 12px; font-weight: 500; }
 .home-library-shortcut > span:nth-child(2) > span { font-size: 11px; color: var(--muted-foreground); }
-.home-reading-snapshot[data-slot="card"] { grid-area: wishlist; background: color-mix(in srgb, var(--content-sage) 9%, var(--card)); }
-.home-snapshot-heading { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
-.home-snapshot-heading h2 { font-size: 13px; font-weight: 500; }
-.home-snapshot-total { display: flex; align-items: baseline; gap: 6px; margin-top: 20px; font-variant-numeric: tabular-nums; }
-.home-snapshot-total strong { font-size: 38px; font-weight: 400; letter-spacing: -1.5px; line-height: 1; }
-.home-snapshot-total > span { color: var(--muted-foreground); font-size: 14px; }
-.home-snapshot-caption { margin: 6px 0 14px; font-size: 11px; color: var(--muted-foreground); }
-.home-reading-snapshot [data-slot="progress-track"] { height: 4px; background: color-mix(in srgb, var(--foreground) 10%, transparent); }
-.home-snapshot-details { display: grid; gap: 12px; margin: 20px 0; }
-.home-snapshot-details > div, .home-snapshot-details dt { display: flex; align-items: center; gap: 7px; }
-.home-snapshot-details > div { justify-content: space-between; font-size: 11px; }
-.home-snapshot-details dt { color: var(--muted-foreground); }
-.home-snapshot-details dd { font-variant-numeric: tabular-nums; }
-.home-status-dot { width: 5px; height: 5px; flex-shrink: 0; border-radius: 50%; background: var(--muted-foreground); opacity: .6; }
-.home-status-reading { background: var(--content-sage); opacity: 1; }
-.home-snapshot-queue[data-slot="button"] { height: auto; min-height: 34px; width: 100%; justify-content: space-between; gap: 4px; margin-top: auto; border-top: 1px solid var(--border); border-radius: 0; padding: 12px 0 0; font-size: 10px; }
-.home-snapshot-queue > span { display: flex; align-items: center; gap: 5px; }
-.home-queue-count { padding: 1px 5px; border-radius: 5px; background: var(--muted); font-size: 10px; font-variant-numeric: tabular-nums; }
+/* Daily reading goals */
+.home-reading-goals[data-slot="card"] { grid-area: wishlist; }
+.home-goals-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.home-goals-heading h2 { font-size: 14px; font-weight: 500; }
+.home-goal-meter { position: relative; width: 100%; max-width: 160px; margin: 10px auto 8px; }
+.home-goal-chart[data-slot="chart"] { width: 100%; height: 86px; aspect-ratio: auto; }
+.home-goal-value { position: absolute; inset: 24% 0 0; display: flex; flex-direction: column; justify-content: end; align-items: center; gap: 1px; }
+.home-goal-value > span { font-size: 9px; color: var(--muted-foreground); }
+.home-goal-value > span:first-child { color: var(--foreground); font-weight: 500; }
+.home-goal-value strong { font-size: 30px; font-weight: 400; letter-spacing: -1px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.home-goal-value small { margin-left: 4px; font-size: 10px; letter-spacing: 0; color: var(--muted-foreground); }
+.home-goal-log[data-slot="button"] { width: 100%; height: 28px; min-height: 28px; margin: 2px 0 10px; font-size: 11px; }
+.home-goal-week { display: flex; justify-content: space-between; gap: 4px; max-width: 210px; width: 100%; margin: 0 auto; }
+.home-goal-day { width: 20px; flex: 0 1 20px; aspect-ratio: 1; display: grid; place-items: center; border: 1px solid var(--border); border-radius: 50%; font-size: 9px; color: var(--muted-foreground); }
+.home-goal-day.is-today { border-color: var(--primary); color: var(--foreground); }
+.home-goal-day.is-complete { background: var(--primary); border-color: transparent; color: var(--primary-foreground); }
+.home-goal-day svg { width: 11px; height: 11px; }
+.home-goal-streak { margin: 6px 0 10px; text-align: center; font-size: 10px; color: var(--muted-foreground); }
+.home-goal-books { display: flex; align-items: center; gap: 8px; min-height: 34px; margin-top: auto; padding-top: 8px; border-top: 1px solid var(--border); }
+.home-goal-books > div:first-child { display: flex; align-items: center; gap: 6px; margin-right: auto; }
+.home-goal-books h3 { font-size: 10px; font-weight: 500; }
+.home-goal-books > div:first-child > span { font-size: 10px; color: var(--muted-foreground); }
+.home-goal-covers { display: flex; gap: 4px; }
+.home-goal-covers [data-slot="button"] { display: block; width: 16px; height: auto; padding: 0; border-radius: 2px; }
+.home-goal-covers .cover-type { font-size: 2px; }
+.home-goal-covers .cover-credit { display: none; }
 .home-bento-next[data-slot="card"] { grid-area: notebook; background: color-mix(in srgb, var(--next-color) 10%, var(--card)); }
 .home-next-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .home-next-heading h2 { font-size: 14px; font-weight: 500; }
@@ -484,13 +492,6 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 }
 @media (max-width: 1150px) {
   .home-bento { grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-areas: "reading reading reading reading notebook notebook" "recent recent recent recent collections collections" "wishlist wishlist wishlist wishlist collections collections"; }
-  .home-reading-snapshot[data-slot="card"] { display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: "heading heading" "total details" "caption details" "progress details" "queue queue"; column-gap: 24px; }
-  .home-snapshot-heading { grid-area: heading; }
-  .home-snapshot-total { grid-area: total; }
-  .home-snapshot-caption { grid-area: caption; }
-  .home-reading-snapshot > [data-slot="progress"] { grid-area: progress; }
-  .home-snapshot-details { grid-area: details; align-self: center; }
-  .home-snapshot-queue { grid-area: queue; margin-top: 20px !important; }
   .home-bento-reading .home-section-heading > div { gap: 0; }
   .home-bento-reading .home-featured-info h3 { font-size: 17px; }
   .home-bento-collections .home-collection { flex-wrap: wrap; }
@@ -860,8 +861,8 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 @media (hover: hover) and (pointer: fine) {
   .home-recent-book .book-cover, .home-featured-cover .book-cover, .gallery-cover-button { transition: transform 350ms var(--motion-reading-ease), box-shadow 350ms ease, filter 180ms ease; }
   .home-recent-book:hover .book-cover, .home-featured-cover:hover .book-cover { transform: translateY(-3px) rotate(-1.5deg); box-shadow: inset 4px 0 0 rgb(0 0 0 / 12%), 0 10px 18px rgb(0 0 0 / 16%); }
-  .home-next-action svg, .home-library-shortcut > svg, .home-section-heading a svg, .home-snapshot-queue > svg { transition: translate 240ms var(--motion-reading-ease); }
-  .home-next-action a:hover svg, .home-next-action button:hover svg, .home-section-heading a:hover svg, .home-snapshot-queue:hover > svg { translate: 3px 0; }
+  .home-next-action svg, .home-library-shortcut > svg, .home-section-heading a svg { transition: translate 240ms var(--motion-reading-ease); }
+  .home-next-action a:hover svg, .home-next-action button:hover svg, .home-section-heading a:hover svg { translate: 3px 0; }
   .home-library-shortcut:hover > svg { translate: 2px -2px; }
   [data-slot="slider-thumb"]:hover { scale: 1.1; }
 }
@@ -873,5 +874,5 @@ html[data-reduce-motion="true"] .home-next-action svg, html[data-reduce-motion="
   .reading-word-mask > span, [data-reading-reveal] { transform: none !important; opacity: 1 !important; }
   .home-intro, .home-featured-read { animation: none !important; }
   .book-cover, .gallery-cover-button, [data-slot="button"], [data-slot="slider-thumb"] { transform: none !important; scale: 1 !important; translate: none !important; }
-  .home-next-action svg, .home-library-shortcut > svg, .home-section-heading a svg, .home-snapshot-queue > svg { translate: none !important; }
+  .home-next-action svg, .home-library-shortcut > svg, .home-section-heading a svg { translate: none !important; }
 }

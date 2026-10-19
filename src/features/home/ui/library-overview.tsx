@@ -5,13 +5,13 @@ import Link from "next/link"
 import { ArrowRightIcon, ArrowUpRightIcon, BookOpenIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, FolderIcon, LibraryIcon, PinIcon } from "lucide-react"
 import { Button } from "@/shared/ui/button"
 import { Card } from "@/shared/ui/card"
-import { Progress } from "@/shared/ui/progress"
 import { RevealCard, RevealText } from "@/shared/ui/reading-motion"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/shared/ui/sheet"
 import { type SampleBook } from "../model/sample-books"
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store"
 import { useCollections } from "@/features/collections/stores/collections-store"
 import { BookCover } from "./book-cover"
+import { ReadingGoalsCard } from "./reading-goals-card"
 
 export function LibraryOverview() {
   const { books, lists, markAsRead } = useReadingLists()
@@ -22,11 +22,8 @@ export function LibraryOverview() {
   const readingIndex = Math.max(0, readingBooks.findIndex((book) => book.id === activeBookId))
   const currentBook = readingBooks[readingIndex]
   const recentBooks = books.slice(-4).reverse()
-  const completedCount = books.filter((book) => book.progress >= 100).length
-  const bookIds = new Set(books.map((book) => book.id))
   const featuredCollections = [...collections].sort((a, b) => Number(b.pinned) - Number(a.pinned)).slice(0, 2)
   const wishlistIds = lists.find((list) => list.id === "want-to-read")?.bookIds ?? []
-  const wishlistCount = wishlistIds.filter((id) => bookIds.has(id)).length
   const unreadBooks = books.filter((book) => book.progress <= 0)
   const nextBook = wishlistIds.map((id) => unreadBooks.find((book) => book.id === id)).find(Boolean) ?? unreadBooks[0]
   const nextFromList = nextBook ? wishlistIds.includes(nextBook.id) : false
@@ -107,14 +104,7 @@ export function LibraryOverview() {
             })}</div>
             {featuredCollections.length === 0 && <Button nativeButton={false} role="link" variant="outline" render={<Link href="/collections" />}>Create a collection<ChevronRightIcon /></Button>}
           </RevealCard>
-        <RevealCard index={4} className="home-bento-tile home-reading-snapshot" aria-labelledby="home-snapshot-title">
-          <div className="home-snapshot-heading"><h2 id="home-snapshot-title">Your reading</h2><Button nativeButton={false} role="link" variant="ghost" size="icon-xs" aria-label="View reading activity" render={<Link href="/reading-activity" />}><ArrowUpRightIcon /></Button></div>
-          <div className="home-snapshot-total"><strong>{completedCount}</strong><span>/ {books.length}</span></div>
-          <p className="home-snapshot-caption">books finished</p>
-          <Progress value={books.length ? completedCount / books.length * 100 : 0} aria-label={`${completedCount} of ${books.length} books completed`} />
-          <dl className="home-snapshot-details"><div><dt><span className="home-status-dot home-status-reading" />In progress</dt><dd>{readingBooks.length}</dd></div><div><dt><span className="home-status-dot" />Not started</dt><dd>{unreadBooks.length}</dd></div></dl>
-          <Button nativeButton={false} role="link" variant="ghost" size="sm" className="home-snapshot-queue" render={<Link href="/reading-lists?list=want-to-read" />}><span>Want To Read <span className="home-queue-count">{wishlistCount}</span></span><ChevronRightIcon /></Button>
-        </RevealCard>
+        <ReadingGoalsCard books={books} onSelect={setSelected} />
       </div>
 
       <Sheet open={selected !== null} onOpenChange={(open) => { if (!open) setSelected(null) }}>
