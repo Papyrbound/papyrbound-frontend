@@ -10,6 +10,7 @@ import { BookCover } from "@/features/home/ui/book-cover"
 import { AnnotationEditor } from "./annotation-editor"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/shared/ui/accordion"
 import { RevealCard as Card, RevealText, useReadingMotion } from "@/shared/ui/reading-motion"
 import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu"
@@ -42,6 +43,7 @@ export function AnnotationsPage() {
   // Entries from deleted books are excluded, like the library's other book views.
   const available = annotations.filter((annotation) => booksById.has(annotation.bookId))
   const annotatedBookIds = new Set(available.map((annotation) => annotation.bookId))
+  const [expandedBooks, setExpandedBooks] = useState<string[]>(() => available.length ? [available[0].bookId] : [])
   const normalizedQuery = query.trim().toLowerCase()
   const visible = available.filter((annotation) => {
     const book = booksById.get(annotation.bookId)!
@@ -52,11 +54,18 @@ export function AnnotationsPage() {
   const selectedBook = booksById.get(bookFilter)
   const visibleBookCount = new Set(visible.map((item) => item.bookId)).size
   const hasFilters = query !== "" || filter !== "all" || bookFilter !== "all"
+  const grouped = new Map<string, Annotation[]>()
+  for (const annotation of visible) {
+    const group = grouped.get(annotation.bookId)
+    if (group) group.push(annotation)
+    else grouped.set(annotation.bookId, [annotation])
+  }
 
   function saveAnnotation(details: AnnotationDetails) {
     const editingId = editor?.annotation?.id
     setAnnotations((current) => editingId ? current.map((item) => item.id === editingId ? { ...item, ...details, ...(item.kind === "highlight" ? { content: item.content, kind: item.kind, bookId: item.bookId, page: item.page } : {}) } : item) : [{ ...details, id: crypto.randomUUID(), starred: false, createdAt: new Date().toISOString() }, ...current])
     setEditor(null)
+    setExpandedBooks((current) => current.includes(details.bookId) ? current : [...current, details.bookId])
     if (!editingId) { setQuery(""); setFilter("all"); setBookFilter("all"); setSort("newest") }
   }
 
@@ -79,10 +88,18 @@ export function AnnotationsPage() {
       </ToggleGroup>
       </div>
     </div>
-    <div className={`annotation-grid${layout === "list" ? " annotation-list" : ""}`}>{visible.map((annotation, index) => {
-      const book = booksById.get(annotation.bookId)!
+    <Accordion multiple value={expandedBooks} onValueChange={setExpandedBooks} className="annotation-book-groups">{[...grouped].map(([bookId, entries]) => {
+      const book = booksById.get(bookId)!
+      return <AccordionItem key={bookId} value={bookId} className="annotation-book-group">
+        <AccordionTrigger className="annotation-book-trigger">
+          <span className="annotation-group-cover" aria-hidden="true"><BookCover book={book} /></span>
+          <span className="annotation-group-info"><span className="annotation-group-title">{book.title}</span><span className="annotation-group-author">{book.author}</span></span>
+          <span className="annotation-group-count">{entries.length}<span className="sr-only"> {entries.length === 1 ? "annotation" : "annotations"}</span></span>
+        </AccordionTrigger>
+        <AccordionContent className="annotation-group-content">
+        <div className={`annotation-grid${layout === "list" ? " annotation-list" : ""}`}>{entries.map((annotation, index) => {
       return <Card index={index} key={annotation.id} className="annotation-card" style={{ "--annotation-color": annotationColors[annotation.color] } as CSSProperties}>
-        <div className="annotation-source"><div className="annotation-book-cover" aria-hidden="true"><BookCover book={book} /></div><div className="min-w-0 flex-1"><h2>{book.title}</h2><p>{book.author}{annotation.page ? ` · Page ${annotation.page}` : ""}</p></div><Button variant="ghost" size="icon-sm" className="annotation-star" aria-label={`${annotation.starred ? "Unstar" : "Star"} annotation from ${book.title}${annotation.page ? `, page ${annotation.page}` : ""}`} aria-pressed={annotation.starred} onClick={() => setAnnotations((current) => current.map((item) => item.id === annotation.id ? { ...item, starred: !item.starred } : item))}><StarIcon fill={annotation.starred ? "currentColor" : "none"} /></Button></div>
+        <div className="annotation-source"><span className="annotation-location">{annotation.page ? `Page ${annotation.page}` : annotation.kind === "highlight" ? "Saved passage" : "Reading note"}</span><Button variant="ghost" size="icon-sm" className="annotation-star" aria-label={`${annotation.starred ? "Unstar" : "Star"} annotation from ${book.title}${annotation.page ? `, page ${annotation.page}` : ""}`} aria-pressed={annotation.starred} onClick={() => setAnnotations((current) => current.map((item) => item.id === annotation.id ? { ...item, starred: !item.starred } : item))}><StarIcon fill={annotation.starred ? "currentColor" : "none"} /></Button></div>
         <div className="annotation-body">
         {annotation.kind === "highlight" ? <blockquote className="annotation-passage"><p>{annotation.content}</p></blockquote> : <p className="annotation-note-content">{annotation.content}</p>}
         {annotation.note && <p className="annotation-thought">{annotation.note}</p>}
@@ -90,6 +107,9 @@ export function AnnotationsPage() {
         <div className="annotation-footer"><span className="annotation-kind">{annotation.kind === "highlight" ? <HighlighterIcon /> : <NotebookPenIcon />}{annotation.kind === "highlight" ? "Highlight" : "Note"}</span><time dateTime={annotation.createdAt}>{dateFormat.format(new Date(annotation.createdAt))}</time><DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" />} aria-label={`Options for ${book.title}${annotation.page ? `, page ${annotation.page}` : ""}`}><MoreHorizontalIcon /></DropdownMenuTrigger><DropdownMenuContent align="end" className="w-48"><DropdownMenuItem onClick={() => setEditor({ annotation })}><PencilIcon />{annotation.kind === "highlight" ? "Highlight options" : "Edit note"}</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onClick={() => { setDeleting(annotation); setDeleteOpen(true) }}><Trash2Icon />Delete annotation</DropdownMenuItem></DropdownMenuContent></DropdownMenu></div>
       </Card>
     })}</div>
+        </AccordionContent>
+      </AccordionItem>
+    })}</Accordion>
     {visible.length === 0 && <div className="annotations-empty"><NotebookPenIcon /><h2>{hasFilters ? "No matching annotations" : "A place for what stays with you"}</h2><p>{hasFilters ? "Try another book or a different search." : "Save a passage or write your first note about a book."}</p>{hasFilters ? <Button variant="secondary" onClick={() => { setQuery(""); setFilter("all"); setBookFilter("all") }}><XIcon />Clear filters</Button> : <Button disabled={books.length === 0} onClick={() => setEditor({})}><PlusIcon />New annotation</Button>}</div>}
     {editor && <AnnotationEditor annotation={editor.annotation} books={books} defaultBookId={selectedBook?.id ?? books[0]?.id ?? ""} onSave={saveAnnotation} onClose={() => setEditor(null)} />}
     <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen} onOpenChangeComplete={(open) => { if (!open) setDeleting(null) }}><AlertDialogContent initialFocus={cancelDeleteRef}><AlertDialogHeader><AlertDialogTitle>Delete annotation?</AlertDialogTitle><AlertDialogDescription>This annotation and its attached thoughts will be removed. Your book will stay in your library.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel ref={cancelDeleteRef}>Cancel</AlertDialogCancel><AlertDialogAction variant="destructive" onClick={() => { setAnnotations((current) => current.filter((item) => item.id !== deleting?.id)); setDeleteOpen(false) }}>Delete annotation</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>

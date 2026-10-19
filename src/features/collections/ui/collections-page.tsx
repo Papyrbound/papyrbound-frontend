@@ -66,9 +66,6 @@ export function CollectionsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const selectedId = searchParams.get("collection")
-  function openCollection(id: string) {
-    router.push(`/collections?collection=${encodeURIComponent(id)}`)
-  }
   const [editor, setEditor] = useState<{ collection?: Collection } | null>(null)
   const [deleting, setDeleting] = useState<Collection | null>(null)
   const [now, setNow] = useState(() => new Date().getTime())
@@ -98,24 +95,27 @@ export function CollectionsPage() {
       <div className="collections-heading"><div><h1><RevealText>Your collections</RevealText></h1><p>{collections.length} {collections.length === 1 ? "collection" : "collections"} · Books brought together by you</p></div>{collections.length > 0 && <Button onClick={() => setEditor({})}><PlusIcon />New collection</Button>}</div>
           <div className="collection-cards">{[...collections].sort((first, second) => Number(second.pinned) - Number(first.pinned)).map((collection, index) => {
             const previewBooks = collectionBooks(collection)
-            return <Card index={index} key={collection.id} className="collection-card" style={{ "--collection-color": collection.color } as CSSProperties}>
-              <Button variant="ghost" className="collection-open" onClick={() => openCollection(collection.id)} aria-label={`Open ${collection.name}, ${previewBooks.length} ${previewBooks.length === 1 ? "book" : "books"}`}>
+            return <Card index={index} key={collection.id} className="collection-card" style={{ "--collection-color": collection.color } as CSSProperties} onClick={(event) => {
+              if ((event.target as HTMLElement).closest("button, a, [role='menuitem'], [data-slot='dropdown-menu-content']")) return
+              router.push(`/collections?collection=${encodeURIComponent(collection.id)}`)
+            }}>
+              <div className="collection-open">
                 <span className="collection-preview" aria-hidden="true">
                   <span className="collection-cover-stack">{previewBooks.slice(0, 3).map((book) => <span className="collection-preview-cover" key={book.id}><BookCover book={book} /></span>)}</span>
                   {previewBooks.length === 0 && <BookOpenIcon className="collection-preview-empty" />}
                 </span>
-              </Button>
+              </div>
               <div className="collection-card-footer">
                 <div className="collection-card-info">
                   <div className="collection-title-row">
-                    <Button variant="ghost" className="collection-card-title" onClick={() => openCollection(collection.id)}>{collection.name}</Button>
+                    <Button variant="ghost" className="collection-card-title" onClick={() => router.push(`/collections?collection=${encodeURIComponent(collection.id)}`)} aria-label={`Open ${collection.name}, ${previewBooks.length} ${previewBooks.length === 1 ? "book" : "books"}`}>{collection.name}</Button>
                     {collection.pinned && <Button variant="ghost" size="icon-xs" className="collection-pin" aria-label={`Unpin ${collection.name}`} onClick={() => togglePinned(collection)}><PinIcon aria-hidden="true" /></Button>}
                   </div>
-                  <div className="collection-card-meta">
+                  <Button variant="ghost" className="collection-card-meta" aria-label={`Open books in ${collection.name}`} onClick={() => router.push(`/collections?collection=${encodeURIComponent(collection.id)}`)}>
                     <span className="collection-book-count" aria-label={`${previewBooks.length} books`}><LibraryIcon aria-hidden="true" />{previewBooks.length}</span>
                     <span aria-hidden="true" className="collection-meta-dot">·</span>
                     <span className="collection-card-updated" aria-label={`Last book added: ${lastAddedLabel(collection.lastBookAddedAt, now)}`}><RotateCwFadingClockIcon aria-hidden="true" />{collection.lastBookAddedAt ? <time dateTime={collection.lastBookAddedAt}>{lastAddedLabel(collection.lastBookAddedAt, now)}</time> : "No books added"}</span>
-                  </div>
+                  </Button>
                 </div>
               <DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" className="collection-menu" />} aria-label={`Options for ${collection.name}`}><MoreVerticalIcon /></DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56"><DropdownMenuItem onClick={() => setEditor({ collection })}><PencilIcon />Edit collection</DropdownMenuItem><DropdownMenuItem onClick={() => togglePinned(collection)}>{collection.pinned ? <PinOffIcon /> : <PinIcon />}{collection.pinned ? "Unpin collection" : "Pin collection"}</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onClick={() => setDeleting(collection)}><Trash2Icon />Delete collection</DropdownMenuItem></DropdownMenuContent>
