@@ -730,63 +730,45 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 .annotations-results { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 0; color: var(--muted-foreground); font-size: 12px; }
 .annotation-layout-controls { display: flex; align-items: center; gap: 12px; margin-left: auto; }
 .annotations-results button { font-size: 12px; }
-.annotation-book-groups[data-slot="accordion"] { gap: 16px; border: 0; border-radius: 0; overflow: visible; }
-.annotation-book-group[data-slot="accordion-item"] { border: 1px solid var(--border); border-radius: 20px; background: var(--card); overflow: hidden; }
-.annotation-book-trigger[data-slot="accordion-trigger"] { align-items: center; gap: 16px; padding: 18px 20px; border-radius: 20px; }
-.annotation-book-trigger[data-slot="accordion-trigger"]:hover { text-decoration: none; background: var(--row-hover); }
-.annotation-book-trigger[data-slot="accordion-trigger"]:focus-visible { outline: 2px solid var(--ring); outline-offset: -3px; }
-.annotation-group-cover { display: block; width: 40px; flex-shrink: 0; }
-.annotation-group-cover .cover-type { font-size: 5px; }
+.annotation-book-groups[data-slot="accordion"] { gap: 8px; border: 0; border-radius: 0; overflow: visible; }
+.annotation-book-group[data-slot="accordion-item"] { border: 0; border-radius: 0; background: transparent; overflow: hidden; }
+.annotation-book-trigger[data-slot="accordion-trigger"] { align-items: center; gap: 20px; padding: 24px 0; border: 0; border-radius: 0; }
+.annotation-book-trigger[data-slot="accordion-trigger"]:hover { text-decoration: none; background: transparent; }
+.annotation-book-trigger[data-slot="accordion-trigger"]:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; }
+.annotation-group-cover { display: block; width: 52px; flex-shrink: 0; }
+.annotation-group-cover .cover-type { font-size: 6px; }
 .annotation-group-cover .cover-credit { font-size: 2px; }
-.annotation-group-info { display: grid; gap: 4px; min-width: 0; flex: 1; }
-.annotation-group-title { font-size: 15px; font-weight: 500; overflow-wrap: anywhere; }
+.annotation-group-info { display: grid; gap: 6px; min-width: 0; max-width: 55%; }
+.annotation-group-title { font-size: 16px; font-weight: 500; overflow-wrap: anywhere; }
 .annotation-group-author { font-size: 12px; font-weight: 400; color: var(--muted-foreground); }
-.annotation-group-count { padding: 3px 8px; border-radius: 999px; background: var(--muted); color: var(--muted-foreground); font-size: 11px; font-weight: 400; font-variant-numeric: tabular-nums; }
-.annotation-book-group [data-slot="accordion-content"] { padding: 0 20px; }
-.annotation-group-content { padding-bottom: 20px; }
+.annotation-group-rule { flex: 1; height: 1px; min-width: 16px; background: var(--border); }
+.annotation-group-count { font-size: 11px; font-weight: 400; color: var(--muted-foreground); white-space: nowrap; }
+.annotation-book-group [data-slot="accordion-content"] { padding: 0; }
+.annotation-group-content { padding: 0 0 20px 72px; }
 .annotation-group-content p { margin-bottom: 0; }
+.annotation-entries { display: flex; flex-direction: column; }
+.annotation-entry { min-width: 0; padding: 16px; border-radius: var(--radius-md); background: color-mix(in srgb, var(--card) 60%, transparent); }
+.annotation-entry + .annotation-entry { margin-top: 8px; border-top: 1px solid var(--border); }
+.annotation-source { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .annotation-location { flex: 1; font-size: 12px; color: var(--muted-foreground); }
-.annotation-group-content .annotation-source { margin-bottom: 14px; }
-.annotation-group-content .annotation-list .annotation-card[data-slot="card"] { grid-template-columns: 112px minmax(0, 1fr) 112px; }
+.annotation-body { min-width: 0; max-width: 900px; }
 @media (max-width: 700px) {
-  .annotation-book-trigger[data-slot="accordion-trigger"] { gap: 12px; padding: 16px; }
-  .annotation-book-group [data-slot="accordion-content"] { padding: 0 16px; }
-  .annotation-group-content .annotation-list .annotation-card[data-slot="card"] { grid-template-columns: minmax(0, 1fr); }
+  .annotation-book-trigger[data-slot="accordion-trigger"] { gap: 12px; padding: 20px 0; flex-wrap: wrap; }
+  .annotation-group-cover { width: 40px; }
+  .annotation-group-info { flex: 1; max-width: none; }
+  .annotation-group-title { font-size: 14px; }
+  .annotation-group-rule { display: none; }
+  .annotation-group-count span { display: none; }
+  .annotation-group-content { padding-left: 0; }
 }
-.annotation-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); align-items: start; gap: 20px; }
-.annotation-body { min-width: 0; }
-.annotation-list { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-.annotation-list .annotation-card[data-slot="card"] { display: grid; grid-template-columns: minmax(180px, 220px) minmax(0, 1fr) 112px; align-items: start; column-gap: 24px; padding: 20px; border-radius: 16px; }
-.annotation-list .annotation-source { margin-bottom: 0; }
-.annotation-list .annotation-source h2 { white-space: normal; overflow-wrap: anywhere; }
-.annotation-list .annotation-passage { font-size: 15px; padding: 10px 14px; }
-.annotation-list .annotation-note-content { font-size: 14px; line-height: 1.75; }
-.annotation-list .annotation-thought { margin-top: 10px; font-size: 12px; }
-.annotation-list .annotation-footer { display: grid; grid-template-columns: 1fr 28px; gap: 8px; margin-top: 0; }
-.annotation-list .annotation-kind { grid-column: 1; justify-self: start; }
-.annotation-list .annotation-footer time { grid-column: 1; margin-left: 0; }
-.annotation-list .annotation-footer > button { grid-column: 2; grid-row: 1 / 3; align-self: center; margin-right: 0; }
-@media (max-width: 1000px) {
-  .annotation-list .annotation-card[data-slot="card"] { grid-template-columns: minmax(0, 1fr); gap: 14px; }
-  .annotation-list .annotation-footer { display: flex; }
-  .annotation-list .annotation-footer time { margin-left: auto; }
-}
-.annotation-card[data-slot="card"] { min-width: 0; padding: 22px; gap: 0; border-radius: 20px; border: 1px solid color-mix(in srgb, var(--foreground) 7%, transparent); background: var(--card); box-shadow: none; }
-.annotation-source { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
-.annotation-book-cover { width: 30px; flex-shrink: 0; }
-.annotation-book-cover .book-cover { border-radius: 2px 3px 3px 2px; }
-.annotation-book-cover .cover-type { font-size: 3px; padding: 4px 2px 0; }
-.annotation-book-cover .cover-credit { font-size: 1.5px; }
-.annotation-source h2 { font-size: 13px; line-height: 20px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.annotation-source p { font-size: 11px; color: var(--muted-foreground); margin-top: 2px; }
 .annotation-star { color: var(--muted-foreground); }
 .annotation-star[aria-pressed="true"] { color: #8a6b36; }
 .dark .annotation-star[aria-pressed="true"] { color: #d6be87; }
-.annotation-passage { border-left: 3px solid var(--annotation-color); background: color-mix(in srgb, var(--annotation-color) 17%, transparent); padding: 14px 16px; border-radius: 0 12px 12px 0; font-size: 17px; line-height: 1.65; letter-spacing: -.2px; }
+.annotation-passage { border-left: 3px solid var(--annotation-color); background: transparent; padding: 0 0 0 16px; border-radius: 0; font-size: 15px; line-height: 1.65; letter-spacing: -.2px; }
 .annotation-passage p, .annotation-note-content, .annotation-thought { white-space: pre-wrap; overflow-wrap: anywhere; }
-.annotation-note-content { font-size: 16px; line-height: 1.8; }
+.annotation-note-content { font-size: 15px; line-height: 1.8; }
 .annotation-thought { color: var(--muted-foreground); font-size: 13px; line-height: 1.8; margin-top: 18px; }
-.annotation-footer { display: flex; align-items: center; gap: 12px; margin-top: 24px; color: var(--muted-foreground); font-size: 11px; }
+.annotation-footer { display: flex; align-items: center; gap: 12px; margin-top: 14px; color: var(--muted-foreground); font-size: 11px; }
 .annotation-kind { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 999px; background: color-mix(in srgb, var(--annotation-color) 12%, transparent); }
 .annotation-kind svg { width: 13px; height: 13px; }
 .annotation-footer time { margin-left: auto; }
@@ -805,8 +787,6 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
   .annotation-tools { width: 100%; }
   .annotation-search { flex: 1 0 100%; width: 100%; min-width: 0; }
   .annotation-book-filter { max-width: 100%; }
-  .annotation-grid { gap: 16px; }
-  .annotation-card[data-slot="card"] { padding: 18px; }
 }
 .collection-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 384px)); gap: 20px; }
 .collection-card[data-slot="card"] { cursor: pointer; position: relative; overflow: hidden; padding: 16px; gap: 0; border: 1px solid transparent; border-radius: 24px; box-shadow: none; background: transparent; transition: background-color 180ms, color 180ms; }

@@ -2,7 +2,7 @@
 
 import { useId, useRef, useState, type CSSProperties } from "react"
 import { LayoutGroup, m } from "motion/react"
-import { BookOpenIcon, ChevronDownIcon, HighlighterIcon, LayoutGridIcon, ListIcon, MoreHorizontalIcon, NotebookPenIcon, PencilIcon, PlusIcon, SearchIcon, StarIcon, Trash2Icon, XIcon } from "lucide-react"
+import { BookOpenIcon, ChevronDownIcon, HighlighterIcon, MoreHorizontalIcon, NotebookPenIcon, PencilIcon, PlusIcon, SearchIcon, StarIcon, Trash2Icon, XIcon } from "lucide-react"
 import { useAnnotations } from "@/features/annotations/stores/annotations-store"
 import { annotationColors, type Annotation, type AnnotationDetails } from "@/features/annotations/model/annotation"
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store"
@@ -11,8 +11,7 @@ import { AnnotationEditor } from "./annotation-editor"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/shared/ui/accordion"
-import { RevealCard as Card, RevealText, useReadingMotion } from "@/shared/ui/reading-motion"
-import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group"
+import { RevealText, useReadingMotion } from "@/shared/ui/reading-motion"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/shared/ui/alert-dialog"
 
@@ -34,7 +33,6 @@ export function AnnotationsPage() {
   const [filter, setFilter] = useState<Filter>("all")
   const [bookFilter, setBookFilter] = useState("all")
   const [sort, setSort] = useState("newest")
-  const [layout, setLayout] = useState("grid")
   const [editor, setEditor] = useState<{ annotation?: Annotation } | null>(null)
   const [deleting, setDeleting] = useState<Annotation | null>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -82,10 +80,7 @@ export function AnnotationsPage() {
       <p aria-live="polite">{visible.length} {visible.length === 1 ? "annotation" : "annotations"}{bookFilter === "all" && ` across ${visibleBookCount} ${visibleBookCount === 1 ? "book" : "books"}`}</p>
       <div className="annotation-layout-controls">
       <DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="sm" />} aria-label="Sort annotations">{sort === "newest" ? "Newest first" : "Oldest first"}<ChevronDownIcon /></DropdownMenuTrigger><DropdownMenuContent><DropdownMenuRadioGroup value={sort} onValueChange={setSort}><DropdownMenuRadioItem value="newest">Newest first</DropdownMenuRadioItem><DropdownMenuRadioItem value="oldest">Oldest first</DropdownMenuRadioItem></DropdownMenuRadioGroup></DropdownMenuContent></DropdownMenu>
-      <ToggleGroup value={[layout]} onValueChange={(value) => { if (value[0]) setLayout(value[0]) }} size="sm" spacing={1} aria-label="Annotation layout" className="rounded-full bg-muted/50 p-1">
-        <ToggleGroupItem value="grid" aria-label="Grid layout" className="rounded-full"><LayoutGridIcon /></ToggleGroupItem>
-        <ToggleGroupItem value="list" aria-label="List layout" className="rounded-full"><ListIcon /></ToggleGroupItem>
-      </ToggleGroup>
+
       </div>
     </div>
     <Accordion multiple value={expandedBooks} onValueChange={setExpandedBooks} className="annotation-book-groups">{[...grouped].map(([bookId, entries]) => {
@@ -94,18 +89,18 @@ export function AnnotationsPage() {
         <AccordionTrigger className="annotation-book-trigger">
           <span className="annotation-group-cover" aria-hidden="true"><BookCover book={book} /></span>
           <span className="annotation-group-info"><span className="annotation-group-title">{book.title}</span><span className="annotation-group-author">{book.author}</span></span>
-          <span className="annotation-group-count">{entries.length}<span className="sr-only"> {entries.length === 1 ? "annotation" : "annotations"}</span></span>
+          <span className="annotation-group-rule" aria-hidden="true" /><span className="annotation-group-count">{entries.length}<span> {entries.length === 1 ? "annotation" : "annotations"}</span></span>
         </AccordionTrigger>
         <AccordionContent className="annotation-group-content">
-        <div className={`annotation-grid${layout === "list" ? " annotation-list" : ""}`}>{entries.map((annotation, index) => {
-      return <Card index={index} key={annotation.id} className="annotation-card" style={{ "--annotation-color": annotationColors[annotation.color] } as CSSProperties}>
+        <div className="annotation-entries">{entries.map((annotation) => {
+      return <article key={annotation.id} className="annotation-entry" style={{ "--annotation-color": annotationColors[annotation.color] } as CSSProperties}>
         <div className="annotation-source"><span className="annotation-location">{annotation.page ? `Page ${annotation.page}` : annotation.kind === "highlight" ? "Saved passage" : "Reading note"}</span><Button variant="ghost" size="icon-sm" className="annotation-star" aria-label={`${annotation.starred ? "Unstar" : "Star"} annotation from ${book.title}${annotation.page ? `, page ${annotation.page}` : ""}`} aria-pressed={annotation.starred} onClick={() => setAnnotations((current) => current.map((item) => item.id === annotation.id ? { ...item, starred: !item.starred } : item))}><StarIcon fill={annotation.starred ? "currentColor" : "none"} /></Button></div>
         <div className="annotation-body">
         {annotation.kind === "highlight" ? <blockquote className="annotation-passage"><p>{annotation.content}</p></blockquote> : <p className="annotation-note-content">{annotation.content}</p>}
         {annotation.note && <p className="annotation-thought">{annotation.note}</p>}
         </div>
         <div className="annotation-footer"><span className="annotation-kind">{annotation.kind === "highlight" ? <HighlighterIcon /> : <NotebookPenIcon />}{annotation.kind === "highlight" ? "Highlight" : "Note"}</span><time dateTime={annotation.createdAt}>{dateFormat.format(new Date(annotation.createdAt))}</time><DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" />} aria-label={`Options for ${book.title}${annotation.page ? `, page ${annotation.page}` : ""}`}><MoreHorizontalIcon /></DropdownMenuTrigger><DropdownMenuContent align="end" className="w-48"><DropdownMenuItem onClick={() => setEditor({ annotation })}><PencilIcon />{annotation.kind === "highlight" ? "Highlight options" : "Edit note"}</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onClick={() => { setDeleting(annotation); setDeleteOpen(true) }}><Trash2Icon />Delete annotation</DropdownMenuItem></DropdownMenuContent></DropdownMenu></div>
-      </Card>
+      </article>
     })}</div>
         </AccordionContent>
       </AccordionItem>
