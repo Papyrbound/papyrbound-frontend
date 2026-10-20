@@ -731,9 +731,9 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 .annotation-layout-controls { display: flex; align-items: center; gap: 12px; margin-left: auto; }
 .annotations-results button { font-size: 12px; }
 .annotation-book-groups[data-slot="accordion"] { gap: 8px; border: 0; border-radius: 0; overflow: visible; }
-.annotation-book-group[data-slot="accordion-item"] { border: 0; border-radius: 0; background: transparent; overflow: hidden; }
-.annotation-book-trigger[data-slot="accordion-trigger"] { align-items: center; gap: 20px; padding: 24px 0; border: 0; border-radius: 0; }
-.annotation-book-trigger[data-slot="accordion-trigger"]:hover { text-decoration: none; background: transparent; }
+.annotation-book-group[data-slot="accordion-item"] { border: 0; border-radius: 0; background: transparent; overflow: visible; }
+.annotation-book-trigger[data-slot="accordion-trigger"] { align-items: center; gap: 20px; width: 100%; margin-inline: 0; padding: 24px 14px; border: 0; border-radius: var(--radius-lg); cursor: pointer; transition: background-color 160ms ease; }
+.annotation-book-trigger[data-slot="accordion-trigger"]:hover { text-decoration: none; background: var(--row-hover); }
 .annotation-book-trigger[data-slot="accordion-trigger"]:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; }
 .annotation-group-cover { display: block; width: 52px; flex-shrink: 0; }
 .annotation-group-cover .cover-type { font-size: 6px; }
@@ -753,7 +753,7 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 .annotation-location { flex: 1; font-size: 12px; color: var(--muted-foreground); }
 .annotation-body { min-width: 0; max-width: 900px; }
 @media (max-width: 700px) {
-  .annotation-book-trigger[data-slot="accordion-trigger"] { gap: 12px; padding: 20px 0; flex-wrap: wrap; }
+  .annotation-book-trigger[data-slot="accordion-trigger"] { gap: 12px; padding: 20px 14px; flex-wrap: wrap; }
   .annotation-group-cover { width: 40px; }
   .annotation-group-info { flex: 1; max-width: none; }
   .annotation-group-title { font-size: 14px; }
