@@ -5,9 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: var(--font-inter);
-  --font-heading: var(--font-inter);
-  --font-mono: ui-monospace, Consolas, monospace;
+  --font-sans: var(--font-app);
+  --font-heading: var(--font-app);
+  --font-mono: var(--font-app);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -48,6 +48,7 @@
 
 :root {
   color-scheme: light;
+  --font-app: "Baru Sans Demo", "Inter", ui-sans-serif, system-ui, sans-serif;
   --canvas-base: #f5f5f5;
   --background: #ffffff;
   --card: #ffffff;
@@ -105,15 +106,17 @@
 
 @layer base {
   * { @apply border-border outline-ring/50; }
+  html { font-family: var(--font-app); }
   body {
     @apply text-foreground;
     background: var(--canvas-base);
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-app);
     font-size: 14px;
     line-height: 1.625;
     font-synthesis: none;
   }
   h1, h2, h3 { font-weight: 500; line-height: 1.2; }
+  button, input, textarea, select { font: inherit; }
   button, a, input { -webkit-tap-highlight-color: transparent; }
 }
 
@@ -793,15 +796,16 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 .collection-card:hover { background: color-mix(in srgb, var(--collection-color) 5%, transparent); color: var(--foreground); }
 .collection-open { display: flex; flex-direction: column; justify-content: flex-start; width: 100%; height: auto; padding: 0; border: none; border-radius: 0; gap: 0; white-space: normal; overflow: visible; background: transparent; color: inherit; }
 .collection-open:hover { background: transparent; }
-.collection-preview { position: relative; display: flex; width: 100%; aspect-ratio: 355 / 209; border-radius: 24px; overflow: hidden; align-items: flex-end; justify-content: center; padding: 40px 20px 24px; background: color-mix(in srgb, var(--collection-color) 18%, var(--card)); }
-.collection-cover-stack { position: relative; display: flex; align-items: flex-end; justify-content: center; gap: 10px; }
-.collection-preview-cover { display: block; width: 68px; flex-shrink: 0; transform-origin: bottom center; }
-.collection-preview-cover:nth-child(2) { width: 78px; }
-.collection-preview-cover:nth-child(1) { transform: rotate(-5deg); }
-.collection-preview-cover:nth-child(3) { transform: rotate(5deg); }
+.collection-preview { position: relative; display: flex; width: 100%; aspect-ratio: 355 / 209; border-radius: 24px; overflow: hidden; align-items: flex-start; justify-content: center; padding: 18px 10px 0; background: color-mix(in srgb, var(--collection-color) 18%, var(--card)); }
+.collection-cover-stack { position: relative; display: flex; width: 100%; align-items: flex-start; justify-content: center; }
+.collection-preview-cover { display: block; width: 47%; flex-shrink: 0; transform-origin: top center; }
+.collection-preview-cover:nth-child(2) { position: relative; z-index: 1; width: 45%; margin-left: -20%; transform: translateY(20px); }
+.collection-preview-cover:nth-child(3) { margin-left: -20%; }
+.collection-preview-cover:nth-child(1) { transform: translateY(30px) rotate(-5deg); }
+.collection-preview-cover:nth-child(3) { transform: translateY(30px) rotate(5deg); }
 .collection-preview-cover .book-cover { border-radius: 4px 7px 7px 4px; box-shadow: inset 3px 0 0 rgb(0 0 0 / 10%), 3px 6px 10px rgb(0 0 0 / 12%); }
-.collection-preview-cover .cover-type { font-size: 9px; padding: 8px 5px 0; }
-.collection-preview-cover .cover-credit { font-size: 4px; }
+.collection-preview-cover .cover-type { font-size: 10px; padding: 9px 6px 0; }
+.collection-preview-cover .cover-credit { font-size: 5px; }
 .collection-card-footer { display: flex; align-items: center; gap: 12px; padding-top: 16px; }
 .collection-card-info { flex: 1; min-width: 0; text-align: left; }
 .collection-title-row { display: flex; align-items: center; gap: 6px; min-width: 0; }

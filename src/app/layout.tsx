@@ -8,14 +8,7 @@ import { AppearanceProvider } from "@/features/profile/ui/appearance-provider";
 import { ReadingMotionProvider } from "@/shared/ui/reading-motion";
 import { TooltipProvider } from "@/shared/ui/tooltip";
 import { SidebarInset, SidebarProvider } from "@/shared/ui/sidebar";
-import { cn } from "@/shared/lib/utils";
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
 
 export const metadata: Metadata = {
   title: "Papyrbound",
@@ -26,7 +19,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", "font-sans", inter.variable)}
+      className="h-full antialiased font-sans"
     >
       <body className="min-h-full flex flex-col">
         <AppearanceProvider>
