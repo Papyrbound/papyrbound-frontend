@@ -101,7 +101,7 @@ export function CollectionsPage() {
             }}>
               <div className="collection-open">
                 <span className="collection-preview" aria-hidden="true">
-                  <span className="collection-cover-stack">{previewBooks.slice(0, 3).map((book) => <span className="collection-preview-cover" key={book.id}><BookCover book={book} /></span>)}</span>
+                  <span className="collection-cover-stack">{previewBooks.slice(0, 4).map((book) => <span className="collection-preview-cover" key={book.id}><BookCover book={book} /></span>)}</span>
                   {previewBooks.length === 0 && <BookOpenIcon className="collection-preview-empty" />}
                 </span>
               </div>
