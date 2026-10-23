@@ -1,4 +1,4 @@
-export type ReadingListIcon = "heart" | "book-open" | "completed" | "tag"
+export type ReadingListIcon = "heart" | "book-open" | "completed" | "tag";
 
 export const readingListColors = [
   { name: "Lilac", value: "#ded4ed" },
@@ -7,30 +7,30 @@ export const readingListColors = [
   { name: "Sand", value: "#e6dfbd" },
   { name: "Mint", value: "#cce5de" },
   { name: "Peach", value: "#f2dacb" },
-] as const
+] as const;
 
 export type ReadingListDetails = {
-  name: string
-  color: string
-  bookIds: string[]
-}
+  name: string;
+  color: string;
+  bookIds: string[];
+};
 
 export type ReadingList = {
-  id: string
-  name: string
-  url: string
-  icon: ReadingListIcon
-  isDefault?: boolean
-  isPinned?: boolean
-  sortOrder: number
-  color?: string
-  bookIds?: string[]
-}
+  id: string;
+  name: string;
+  url: string;
+  icon: ReadingListIcon;
+  isDefault?: boolean;
+  isPinned?: boolean;
+  sortOrder: number;
+  color?: string;
+  bookIds?: string[];
+};
 
-export const MAX_PINNED_CUSTOM_LISTS = 5
+export const MAX_PINNED_CUSTOM_LISTS = 5;
 
 export function getReadingListUrl(id: string) {
-  return `/reading-lists?list=${encodeURIComponent(id)}`
+  return `/reading-lists?list=${encodeURIComponent(id)}`;
 }
 
 export const defaultReadingLists: ReadingList[] = [
@@ -61,4 +61,4 @@ export const defaultReadingLists: ReadingList[] = [
     isPinned: true,
     sortOrder: 2,
   },
-]
+];

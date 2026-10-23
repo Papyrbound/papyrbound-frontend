@@ -1,3 +1,5 @@
-import { ReadingActivityPage } from "@/features/profile/ui/reading-activity-page"
+import { ReadingActivityPage } from "@/features/profile/ui/reading-activity-page";
 
-export default function ReadingActivityRoute() { return <ReadingActivityPage /> }
+export default function ReadingActivityRoute() {
+  return <ReadingActivityPage />;
+}

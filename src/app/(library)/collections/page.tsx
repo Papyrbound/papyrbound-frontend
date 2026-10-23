@@ -1,6 +1,10 @@
-import { CollectionsPage } from "@/features/collections/ui/collections-page"
-import { Suspense } from "react"
+import { CollectionsPage } from "@/features/collections/ui/collections-page";
+import { Suspense } from "react";
 
 export default function CollectionsRoute() {
-  return <Suspense fallback={null}><CollectionsPage /></Suspense>
+  return (
+    <Suspense fallback={null}>
+      <CollectionsPage />
+    </Suspense>
+  );
 }

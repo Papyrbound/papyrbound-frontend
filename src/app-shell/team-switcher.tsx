@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState, type ReactNode } from "react"
+import { useState, type ReactNode } from "react";
 
 import {
   DropdownMenu,
@@ -11,26 +11,26 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu"
+} from "@/shared/ui/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/shared/ui/sidebar"
-import { ChevronDownIcon, PlusIcon } from "lucide-react"
+} from "@/shared/ui/sidebar";
+import { ChevronDownIcon, PlusIcon } from "lucide-react";
 
 export function TeamSwitcher({
   teams,
 }: {
   teams: {
-    name: string
-    logo: ReactNode
-    plan: string
-  }[]
+    name: string;
+    logo: ReactNode;
+    plan: string;
+  }[];
 }) {
-  const [activeTeam, setActiveTeam] = useState(teams[0])
+  const [activeTeam, setActiveTeam] = useState(teams[0]);
   if (!activeTeam) {
-    return null
+    return null;
   }
   return (
     <SidebarMenu>
@@ -84,5 +84,5 @@ export function TeamSwitcher({
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }

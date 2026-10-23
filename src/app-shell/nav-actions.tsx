@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
+import { useState } from "react";
+import Link from "next/link";
 import {
   BookOpenIcon,
   FolderHeartIcon,
@@ -10,14 +10,10 @@ import {
   NotebookPenIcon,
   StarIcon,
   type LucideIcon,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Button } from "@/shared/ui/button"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/shared/ui/popover"
+import { Button } from "@/shared/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import {
   Sidebar,
   SidebarContent,
@@ -26,13 +22,13 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/shared/ui/sidebar"
+} from "@/shared/ui/sidebar";
 
 type HeaderAction = {
-  label: string
-  url: string
-  icon: LucideIcon
-}
+  label: string;
+  url: string;
+  icon: LucideIcon;
+};
 
 const actionGroups: HeaderAction[][] = [
   [
@@ -43,10 +39,10 @@ const actionGroups: HeaderAction[][] = [
     { label: "Reading lists", url: "/reading-lists", icon: ListIcon },
     { label: "Annotations", url: "/annotations", icon: NotebookPenIcon },
   ],
-]
+];
 
 export function NavActions() {
-  const [isFavorite, setIsFavorite] = useState(false)
+  const [isFavorite, setIsFavorite] = useState(false);
 
   return (
     <div className="flex items-center gap-2 text-sm">
@@ -106,5 +102,5 @@ export function NavActions() {
         </PopoverContent>
       </Popover>
     </div>
-  )
+  );
 }

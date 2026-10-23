@@ -1,40 +1,211 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { BookOpenIcon, CheckIcon, HighlighterIcon, HistoryIcon, PlusIcon, RotateCcwIcon, Trash2Icon } from "lucide-react"
-import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store"
-import { useAnnotations } from "@/features/annotations/stores/annotations-store"
-import { BookCover } from "@/features/home/ui/book-cover"
-import { Button } from "@/shared/ui/button"
-import { Card } from "@/shared/ui/card"
-import { Progress } from "@/shared/ui/progress"
+import Link from "next/link";
+import {
+  BookOpenIcon,
+  CheckIcon,
+  HighlighterIcon,
+  HistoryIcon,
+  PlusIcon,
+  RotateCcwIcon,
+  Trash2Icon,
+} from "lucide-react";
+import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
+import { useAnnotations } from "@/features/annotations/stores/annotations-store";
+import { BookCover } from "@/features/home/ui/book-cover";
+import { Button } from "@/shared/ui/button";
+import { Card } from "@/shared/ui/card";
+import { Progress } from "@/shared/ui/progress";
 
-const eventDetails = { added: { label: "Added to library", icon: PlusIcon }, completed: { label: "Marked as read", icon: CheckIcon }, unread: { label: "Marked as unread", icon: RotateCcwIcon }, deleted: { label: "Removed from library", icon: Trash2Icon } }
-const dateFormat = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" })
-const timeFormat = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit" })
+const eventDetails = {
+  added: { label: "Added to library", icon: PlusIcon },
+  completed: { label: "Marked as read", icon: CheckIcon },
+  unread: { label: "Marked as unread", icon: RotateCcwIcon },
+  deleted: { label: "Removed from library", icon: Trash2Icon },
+};
+const dateFormat = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+});
+const timeFormat = new Intl.DateTimeFormat("en-US", {
+  hour: "numeric",
+  minute: "2-digit",
+});
 
 export function ReadingActivityPage() {
-  const { books, activity } = useReadingLists()
-  const { annotations } = useAnnotations()
-  const currentBooks = books.filter((book) => book.progress > 0 && book.progress < 100)
-  const completed = books.filter((book) => book.progress >= 100).length
-  const estimatedPages = books.reduce((total, book) => total + Math.round(book.pages * book.progress / 100), 0)
-  const bookIds = new Set(books.map((book) => book.id))
-  const notes = annotations.filter((annotation) => bookIds.has(annotation.bookId))
-  const recentNotes = [...notes].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 3)
-  return <section className="reader-page max-[800px]:p-6 max-[600px]:px-5 max-[600px]:pt-5 max-[600px]:pb-9 p-[28px_40px_48px] w-full min-w-0 max-w-[1280px] m-[0_auto]" aria-labelledby="activity-heading">
-    <header className="reader-page-heading [&_p:not(.reader-kicker)]:mt-2 [&_p:not(.reader-kicker)]:text-[13px] [&_p:not(.reader-kicker)]:text-muted-foreground max-[600px]:[&_h1]:text-2xl flex flex-wrap items-center justify-between gap-[20px] mb-[28px] [&_h1]:text-[28px] [&_h1]:[line-height:1.2] [&_h1]:font-medium [&_h1]:tracking-[-.8px]"><div><p className="reader-kicker text-[11px] text-muted-foreground mb-[8px]">One page at a time</p><h1 id="activity-heading">Reading activity</h1><p>A look at the books and thoughts you’re spending time with.</p></div><Button nativeButton={false} role="link" variant="outline" render={<Link href="/library" />}>Open library</Button></header>
-    <div className="reader-stats-grid grid grid-cols-4 gap-[16px] max-[800px]:grid-cols-2">{[
-      { label: "In progress", value: currentBooks.length, icon: BookOpenIcon },
-      { label: "Completed", value: completed, icon: CheckIcon },
-      { label: "Highlights & notes", value: notes.length, icon: HighlighterIcon },
-      { label: "Estimated pages read", value: estimatedPages, icon: HistoryIcon },
-    ].map(({ label, value, icon: Icon }) => <Card key={label} className="reader-stat gap-2 rounded-[20px] p-[22px] shadow-none ring-0 [&>svg]:w-[18px] [&>svg]:h-[18px] [&>svg]:text-muted-foreground [&>svg]:mb-[12px] [&_strong]:text-[32px] [&_strong]:[line-height:1] [&_strong]:font-normal [&_strong]:tracking-[-1px] [&>span]:text-[11px] [&>span]:text-muted-foreground"><Icon /><strong>{value}</strong><span>{label}</span></Card>)}</div>
-    <p className="reader-section-caption text-[12px] [line-height:1.8] text-muted-foreground m-[20px_0]">Page totals are estimated from each book’s length and current progress. Reading time and streaks aren’t tracked yet.</p>
-    <div className="reader-activity-grid grid grid-cols-2 items-start gap-5 max-[800px]:grid-cols-1">
-      <Card className="reader-activity-panel min-w-0 gap-0 rounded-[20px] p-6 shadow-none ring-0 [&_h2]:text-base [&_h2]:font-medium max-[600px]:p-5"><h2>On your bookmark</h2><p className="reader-setting-help text-[12px] text-muted-foreground [line-height:1.8] mt-[6px]">Your books in progress.</p><div className="reader-progress-books mt-[24px] grid gap-[24px]">{currentBooks.map((book) => <div className="reader-progress-book [&_[data-slot=progress-track]]:h-1 flex items-center gap-[12px] [&_h3]:text-[13px] [&_h3]:[line-height:1.5] [&_p]:text-[11px] [&_p]:text-muted-foreground [&_p]:mt-[3px] [&_p]:mb-[10px] [&>span]:shrink-0 [&>span]:text-muted-foreground [&>span]:text-[11px]" key={book.id}><div className="reader-progress-cover w-[38px] shrink-0 [&_.book-cover]:rounded-[2px_4px_4px_2px] [&_.cover-type]:text-[4px] [&_.cover-credit]:text-[2px]"><BookCover book={book} /></div><div className="min-w-0 flex-1"><h3>{book.title}</h3><p>{book.author}</p><Progress value={book.progress} aria-label={`${book.title} progress`} /></div><span>{book.progress}%</span></div>)}</div>{currentBooks.length === 0 && <p className="reader-inline-empty p-[28px_0_8px] text-[13px] text-muted-foreground">Your next chapter is waiting in your library.</p>}</Card>
-      <Card className="reader-activity-panel min-w-0 gap-0 rounded-[20px] p-6 shadow-none ring-0 [&_h2]:text-base [&_h2]:font-medium max-[600px]:p-5"><h2>This session</h2><p className="reader-setting-help text-[12px] text-muted-foreground [line-height:1.8] mt-[6px]">Book additions and status changes while the app is open.</p>{activity.length ? <ol className="reader-event-list [&_li_p]:text-xs [&_li_span:not(.reader-event-icon)]:text-[11px] [&_li_span:not(.reader-event-icon)]:text-muted-foreground [&_time]:text-[11px] [&_time]:text-muted-foreground mt-[22px] grid gap-[20px] max-h-[340px] overflow-y-auto [&_li]:flex [&_li]:items-center [&_li]:gap-[12px] [&_li>div]:min-w-[0] [&_li>div]:flex-1 [&_time]:shrink-0">{activity.map((event) => { const { label, icon: Icon } = eventDetails[event.kind]; return <li key={event.id}><span className="reader-event-icon flex items-center justify-center w-[30px] h-[30px] rounded-full bg-muted shrink-0 [&_svg]:w-[14px] [&_svg]:h-[14px]"><Icon /></span><div><p>{label}</p><span>{event.bookTitle}</span></div><time dateTime={event.at}>{timeFormat.format(new Date(event.at))}</time></li> })}</ol> : <div className="reader-activity-empty flex flex-col items-center text-center gap-[10px] p-[48px_10px_24px] text-muted-foreground [&>svg]:w-[26px] [&>svg]:h-[26px] [&>svg]:mb-[6px] [&_p]:text-[13px] [&_p]:text-foreground [&_span]:text-[11px]"><HistoryIcon /><p>No changes this session yet.</p><span>Add a book or mark one as read to see it here.</span></div>}</Card>
-    </div>
-    <Card className="reader-activity-panel mt-5 min-w-0 gap-0 rounded-[20px] p-6 shadow-none ring-0 [&_h2]:text-base [&_h2]:font-medium max-[600px]:p-5"><div className="flex items-center justify-between gap-4"><h2>Recent annotations</h2><Button nativeButton={false} role="link" size="sm" variant="ghost" render={<Link href="/annotations" />}>View all</Button></div>{recentNotes.length ? <div className="reader-recent-notes max-[800px]:grid-cols-1 max-[800px]:gap-2 [&_a:hover]:bg-muted [&_a:focus-visible]:outline-2 [&_a:focus-visible]:outline-ring [&_a:focus-visible]:outline-offset-2 grid [grid-template-columns:repeat(3,_minmax(0,_1fr))] gap-[20px] mt-[20px] [&_a]:flex [&_a]:[flex-direction:column] [&_a]:[align-items:flex-start] [&_a]:gap-[10px] [&_a]:p-[14px] [&_a]:rounded-[14px] [&_a]:[transition:background-color_150ms] [&_a]:min-w-[0] [&_p]:text-[13px] [&_p]:[line-height:1.8] [&_p]:[display:-webkit-box] [&_p]:[-webkit-line-clamp:3] [&_p]:[-webkit-box-orient:vertical] [&_p]:overflow-hidden [&_p]:[overflow-wrap:anywhere] [&_time]:text-[11px] [&_time]:text-muted-foreground [&_time]:mt-[auto]">{recentNotes.map((annotation) => <Link key={annotation.id} href="/annotations"><span className="text-xs text-muted-foreground">{books.find((book) => book.id === annotation.bookId)?.title}{annotation.page ? ` · Page ${annotation.page}` : ""}</span><p>{annotation.content}</p><time dateTime={annotation.createdAt}>{dateFormat.format(new Date(annotation.createdAt))}</time></Link>)}</div> : <p className="reader-inline-empty p-[28px_0_8px] text-[13px] text-muted-foreground">Your saved passages and notes will appear here.</p>}</Card>
-  </section>
+  const { books, activity } = useReadingLists();
+  const { annotations } = useAnnotations();
+  const currentBooks = books.filter(
+    (book) => book.progress > 0 && book.progress < 100,
+  );
+  const completed = books.filter((book) => book.progress >= 100).length;
+  const estimatedPages = books.reduce(
+    (total, book) => total + Math.round((book.pages * book.progress) / 100),
+    0,
+  );
+  const bookIds = new Set(books.map((book) => book.id));
+  const notes = annotations.filter((annotation) =>
+    bookIds.has(annotation.bookId),
+  );
+  const recentNotes = [...notes]
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, 3);
+  return (
+    <section
+      className="reader-page max-[800px]:p-6 max-[600px]:px-5 max-[600px]:pt-5 max-[600px]:pb-9 p-[28px_40px_48px] w-full min-w-0 max-w-[1280px] m-[0_auto]"
+      aria-labelledby="activity-heading"
+    >
+      <header className="reader-page-heading [&_p:not(.reader-kicker)]:mt-2 [&_p:not(.reader-kicker)]:text-[13px] [&_p:not(.reader-kicker)]:text-muted-foreground max-[600px]:[&_h1]:text-2xl flex flex-wrap items-center justify-between gap-[20px] mb-[28px] [&_h1]:text-[28px] [&_h1]:[line-height:1.2] [&_h1]:font-medium [&_h1]:tracking-[-.8px]">
+        <div>
+          <p className="reader-kicker text-[11px] text-muted-foreground mb-[8px]">
+            One page at a time
+          </p>
+          <h1 id="activity-heading">Reading activity</h1>
+          <p>A look at the books and thoughts you’re spending time with.</p>
+        </div>
+        <Button
+          nativeButton={false}
+          role="link"
+          variant="outline"
+          render={<Link href="/library" />}
+        >
+          Open library
+        </Button>
+      </header>
+      <div className="reader-stats-grid grid grid-cols-4 gap-[16px] max-[800px]:grid-cols-2">
+        {[
+          {
+            label: "In progress",
+            value: currentBooks.length,
+            icon: BookOpenIcon,
+          },
+          { label: "Completed", value: completed, icon: CheckIcon },
+          {
+            label: "Highlights & notes",
+            value: notes.length,
+            icon: HighlighterIcon,
+          },
+          {
+            label: "Estimated pages read",
+            value: estimatedPages,
+            icon: HistoryIcon,
+          },
+        ].map(({ label, value, icon: Icon }) => (
+          <Card
+            key={label}
+            className="reader-stat gap-2 rounded-[20px] p-[22px] shadow-none ring-0 [&>svg]:w-[18px] [&>svg]:h-[18px] [&>svg]:text-muted-foreground [&>svg]:mb-[12px] [&_strong]:text-[32px] [&_strong]:[line-height:1] [&_strong]:font-normal [&_strong]:tracking-[-1px] [&>span]:text-[11px] [&>span]:text-muted-foreground"
+          >
+            <Icon />
+            <strong>{value}</strong>
+            <span>{label}</span>
+          </Card>
+        ))}
+      </div>
+      <p className="reader-section-caption text-[12px] [line-height:1.8] text-muted-foreground m-[20px_0]">
+        Page totals are estimated from each book’s length and current progress.
+        Reading time and streaks aren’t tracked yet.
+      </p>
+      <div className="reader-activity-grid grid grid-cols-2 items-start gap-5 max-[800px]:grid-cols-1">
+        <Card className="reader-activity-panel min-w-0 gap-0 rounded-[20px] p-6 shadow-none ring-0 [&_h2]:text-base [&_h2]:font-medium max-[600px]:p-5">
+          <h2>On your bookmark</h2>
+          <p className="reader-setting-help text-[12px] text-muted-foreground [line-height:1.8] mt-[6px]">
+            Your books in progress.
+          </p>
+          <div className="reader-progress-books mt-[24px] grid gap-[24px]">
+            {currentBooks.map((book) => (
+              <div
+                className="reader-progress-book [&_[data-slot=progress-track]]:h-1 flex items-center gap-[12px] [&_h3]:text-[13px] [&_h3]:[line-height:1.5] [&_p]:text-[11px] [&_p]:text-muted-foreground [&_p]:mt-[3px] [&_p]:mb-[10px] [&>span]:shrink-0 [&>span]:text-muted-foreground [&>span]:text-[11px]"
+                key={book.id}
+              >
+                <div className="reader-progress-cover w-[38px] shrink-0 [&_.book-cover]:rounded-[2px_4px_4px_2px] [&_.cover-type]:text-[4px] [&_.cover-credit]:text-[2px]">
+                  <BookCover book={book} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3>{book.title}</h3>
+                  <p>{book.author}</p>
+                  <Progress
+                    value={book.progress}
+                    aria-label={`${book.title} progress`}
+                  />
+                </div>
+                <span>{book.progress}%</span>
+              </div>
+            ))}
+          </div>
+          {currentBooks.length === 0 && (
+            <p className="reader-inline-empty p-[28px_0_8px] text-[13px] text-muted-foreground">
+              Your next chapter is waiting in your library.
+            </p>
+          )}
+        </Card>
+        <Card className="reader-activity-panel min-w-0 gap-0 rounded-[20px] p-6 shadow-none ring-0 [&_h2]:text-base [&_h2]:font-medium max-[600px]:p-5">
+          <h2>This session</h2>
+          <p className="reader-setting-help text-[12px] text-muted-foreground [line-height:1.8] mt-[6px]">
+            Book additions and status changes while the app is open.
+          </p>
+          {activity.length ? (
+            <ol className="reader-event-list [&_li_p]:text-xs [&_li_span:not(.reader-event-icon)]:text-[11px] [&_li_span:not(.reader-event-icon)]:text-muted-foreground [&_time]:text-[11px] [&_time]:text-muted-foreground mt-[22px] grid gap-[20px] max-h-[340px] overflow-y-auto [&_li]:flex [&_li]:items-center [&_li]:gap-[12px] [&_li>div]:min-w-[0] [&_li>div]:flex-1 [&_time]:shrink-0">
+              {activity.map((event) => {
+                const { label, icon: Icon } = eventDetails[event.kind];
+                return (
+                  <li key={event.id}>
+                    <span className="reader-event-icon flex items-center justify-center w-[30px] h-[30px] rounded-full bg-muted shrink-0 [&_svg]:w-[14px] [&_svg]:h-[14px]">
+                      <Icon />
+                    </span>
+                    <div>
+                      <p>{label}</p>
+                      <span>{event.bookTitle}</span>
+                    </div>
+                    <time dateTime={event.at}>
+                      {timeFormat.format(new Date(event.at))}
+                    </time>
+                  </li>
+                );
+              })}
+            </ol>
+          ) : (
+            <div className="reader-activity-empty flex flex-col items-center text-center gap-[10px] p-[48px_10px_24px] text-muted-foreground [&>svg]:w-[26px] [&>svg]:h-[26px] [&>svg]:mb-[6px] [&_p]:text-[13px] [&_p]:text-foreground [&_span]:text-[11px]">
+              <HistoryIcon />
+              <p>No changes this session yet.</p>
+              <span>Add a book or mark one as read to see it here.</span>
+            </div>
+          )}
+        </Card>
+      </div>
+      <Card className="reader-activity-panel mt-5 min-w-0 gap-0 rounded-[20px] p-6 shadow-none ring-0 [&_h2]:text-base [&_h2]:font-medium max-[600px]:p-5">
+        <div className="flex items-center justify-between gap-4">
+          <h2>Recent annotations</h2>
+          <Button
+            nativeButton={false}
+            role="link"
+            size="sm"
+            variant="ghost"
+            render={<Link href="/annotations" />}
+          >
+            View all
+          </Button>
+        </div>
+        {recentNotes.length ? (
+          <div className="reader-recent-notes max-[800px]:grid-cols-1 max-[800px]:gap-2 [&_a:hover]:bg-muted [&_a:focus-visible]:outline-2 [&_a:focus-visible]:outline-ring [&_a:focus-visible]:outline-offset-2 grid [grid-template-columns:repeat(3,_minmax(0,_1fr))] gap-[20px] mt-[20px] [&_a]:flex [&_a]:[flex-direction:column] [&_a]:[align-items:flex-start] [&_a]:gap-[10px] [&_a]:p-[14px] [&_a]:rounded-[14px] [&_a]:[transition:background-color_150ms] [&_a]:min-w-[0] [&_p]:text-[13px] [&_p]:[line-height:1.8] [&_p]:[display:-webkit-box] [&_p]:[-webkit-line-clamp:3] [&_p]:[-webkit-box-orient:vertical] [&_p]:overflow-hidden [&_p]:[overflow-wrap:anywhere] [&_time]:text-[11px] [&_time]:text-muted-foreground [&_time]:mt-[auto]">
+            {recentNotes.map((annotation) => (
+              <Link key={annotation.id} href="/annotations">
+                <span className="text-xs text-muted-foreground">
+                  {books.find((book) => book.id === annotation.bookId)?.title}
+                  {annotation.page ? ` · Page ${annotation.page}` : ""}
+                </span>
+                <p>{annotation.content}</p>
+                <time dateTime={annotation.createdAt}>
+                  {dateFormat.format(new Date(annotation.createdAt))}
+                </time>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <p className="reader-inline-empty p-[28px_0_8px] text-[13px] text-muted-foreground">
+            Your saved passages and notes will appear here.
+          </p>
+        )}
+      </Card>
+    </section>
+  );
 }
