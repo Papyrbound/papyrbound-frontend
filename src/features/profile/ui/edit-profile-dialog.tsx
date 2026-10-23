@@ -25,7 +25,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
   const nameRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState("")
   return <Dialog open={open} onOpenChange={setOpen} onOpenChangeComplete={(isOpen) => { if (!isOpen) onClose() }}>
-    <DialogContent className="reader-profile-dialog" initialFocus={nameRef}>
+    <DialogContent className="reader-profile-dialog max-w-[min(720px,calc(100%-32px))] max-h-[calc(100dvh-32px)] overflow-y-auto" initialFocus={nameRef}>
       <DialogHeader><DialogTitle>Edit profile</DialogTitle><DialogDescription>A little more you. Saved on this device.</DialogDescription></DialogHeader>
       <form className="space-y-5" onSubmit={(event) => {
         event.preventDefault()
@@ -50,8 +50,8 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
             </div>
         </div>
         <fieldset><legend className="mb-3 text-sm">Choose your avatar</legend>
-          <ToggleGroup value={[avatarSeed]} onValueChange={(value) => { if (value[0]) setAvatarSeed(value[0]) }} aria-label="Profile avatar" className="reader-avatar-picker" spacing={2}>
-            {avatarSeeds.map((seed, index) => <ToggleGroupItem key={seed} value={seed} aria-label={`Avatar ${index + 1}`} className="reader-avatar-choice"><ReaderAvatar seed={seed} size={104} />{avatarSeed === seed && <CheckIcon className="reader-avatar-check" />}</ToggleGroupItem>)}
+          <ToggleGroup value={[avatarSeed]} onValueChange={(value) => { if (value[0]) setAvatarSeed(value[0]) }} aria-label="Profile avatar" className="reader-avatar-picker grid w-full grid-cols-4 max-[600px]:grid-cols-3 max-[380px]:grid-cols-2" spacing={2}>
+            {avatarSeeds.map((seed, index) => <ToggleGroupItem key={seed} value={seed} aria-label={`Avatar ${index + 1}`} className="reader-avatar-choice relative h-[120px] min-w-0 rounded-[18px] border border-transparent p-[6px] aria-pressed:border-foreground aria-pressed:bg-muted [&_[data-slot=avatar]]:w-[min(104px,100%)]! [&_[data-slot=avatar]]:h-auto! [&_[data-slot=avatar]]:aspect-square [&_img]:w-full [&_img]:h-full"><ReaderAvatar seed={seed} size={104} />{avatarSeed === seed && <CheckIcon className="reader-avatar-check absolute right-px bottom-px size-[14px]! rounded-full bg-primary p-[2px] text-primary-foreground" />}</ToggleGroupItem>)}
           </ToggleGroup>
           <p className="mt-2 text-[11px] text-muted-foreground">Avatars by <Link href="https://github.com/uxderrick/navii" target="_blank" rel="noreferrer" className="underline underline-offset-2">Navii</Link></p>
         </fieldset>

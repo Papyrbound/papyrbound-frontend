@@ -39,7 +39,7 @@ function CollectionEditor({ collection, onClose, onSave }: {
   return <Dialog open={open} onOpenChange={setOpen} onOpenChangeComplete={(isOpen) => {
     if (!isOpen) { if (pendingSave.current) onSave(pendingSave.current); else onClose() }
   }}>
-    <DialogContent initialFocus={titleRef} className="collection-editor">
+    <DialogContent initialFocus={titleRef} className="collection-editor max-h-[calc(100dvh-32px)] overflow-y-auto">
       <DialogHeader><DialogTitle>{collection ? "Edit collection" : "New collection"}</DialogTitle><DialogDescription>Give your books a place together.</DialogDescription></DialogHeader>
       <form className="space-y-5" onSubmit={(event) => {
         event.preventDefault()
@@ -51,7 +51,7 @@ function CollectionEditor({ collection, onClose, onSave }: {
         <fieldset><legend className="mb-2 text-sm">Collection color</legend><div className="flex gap-2">{colors.map((option) => <Button key={option.name} type="button" variant="outline" size="icon" aria-label={option.name} aria-pressed={color === option.value} style={{ background: option.value, color: "#36332f" }} onClick={() => setColor(option.value)}>{color === option.value && <CheckIcon />}</Button>)}</div></fieldset>
         <fieldset><legend className="mb-2 text-sm">Books · {bookIds.length} selected</legend>
           <div className="relative"><SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input type="search" aria-label="Search collection books" placeholder="Find a book…" className="pl-9" value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") event.preventDefault() }} /></div>
-          <div className="collection-book-picker mt-3">{results.map((book) => <label key={book.id} className="collection-book-option"><BookCover book={book} /><span className="min-w-0 flex-1"><span className="block truncate text-sm">{book.title}</span><span className="block truncate text-xs text-muted-foreground">{book.author}</span></span><Checkbox checked={bookIds.includes(book.id)} aria-label={`Include ${book.title}`} onCheckedChange={(checked) => setBookIds((current) => checked ? [...current, book.id] : current.filter((id) => id !== book.id))} /></label>)}
+          <div className="collection-book-picker mt-3 max-h-[220px] overflow-y-auto">{results.map((book) => <label key={book.id} className="collection-book-option [&_.cover-type]:hidden [&_.cover-credit]:hidden hover:bg-[var(--row-hover)] flex items-center gap-[12px] p-[8px] rounded-[12px] cursor-pointer [&_.book-cover]:w-[28px] [&_.book-cover]:rounded-[3px]"><BookCover book={book} /><span className="min-w-0 flex-1"><span className="block truncate text-sm">{book.title}</span><span className="block truncate text-xs text-muted-foreground">{book.author}</span></span><Checkbox checked={bookIds.includes(book.id)} aria-label={`Include ${book.title}`} onCheckedChange={(checked) => setBookIds((current) => checked ? [...current, book.id] : current.filter((id) => id !== book.id))} /></label>)}
           {results.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">No matching books.</p>}</div>
         </fieldset>
         <DialogFooter><Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button><Button type="submit" disabled={!name.trim()}>{collection ? "Save changes" : "Create collection"}</Button></DialogFooter>
@@ -87,43 +87,48 @@ export function CollectionsPage() {
   }
 
   return <>
-    {selected ? <section className="library-gallery collections-detail">
+    {selected ? <section className="library-gallery collections-detail w-full p-[24px_40px_48px] max-[1199px]:px-8 max-[1199px]:pt-6 max-[1199px]:pb-12 max-[767px]:px-5 max-[767px]:pt-4 max-[767px]:pb-10">
       <div className="mb-6 flex items-center justify-between gap-3"><Button variant="ghost" onClick={() => router.push("/collections")}><ArrowLeftIcon />Collections</Button><Button variant="secondary" onClick={() => setEditor({ collection: selected })}><PencilIcon />Edit collection</Button></div>
-      <div className="gallery-heading"><h1><RevealText>{selected.name}</RevealText></h1><span>{collectionBooks(selected).length} {collectionBooks(selected).length === 1 ? "book" : "books"}</span></div>
+      <div className="gallery-heading flex items-baseline gap-[12px] mb-[32px] [&_h1]:text-[20px] [&_h1]:font-medium [&>span]:text-[12px] [&>span]:text-muted-foreground"><h1><RevealText>{selected.name}</RevealText></h1><span>{collectionBooks(selected).length} {collectionBooks(selected).length === 1 ? "book" : "books"}</span></div>
       <BookGallery books={collectionBooks(selected)} onAddBooks={() => setEditor({ collection: selected })} />
-    </section> : <section className="collections-page" aria-label="Collections">
-      <div className="collections-heading"><div><h1><RevealText>Your collections</RevealText></h1><p>{collections.length} {collections.length === 1 ? "collection" : "collections"} · Books brought together by you</p></div>{collections.length > 0 && <Button onClick={() => setEditor({})}><PlusIcon />New collection</Button>}</div>
-          <div className="collection-cards">{[...collections].sort((first, second) => Number(second.pinned) - Number(first.pinned)).map((collection, index) => {
+    </section> : <section className="collections-page w-full px-10 pt-7 pb-12 max-[767px]:px-5 max-[767px]:pt-4 max-[767px]:pb-8" aria-label="Collections">
+      <div className="collections-heading max-[767px]:mb-7 max-[767px]:flex-wrap max-[767px]:items-start max-[767px]:gap-3 max-[767px]:[&_h1]:text-[22px] flex items-center justify-between gap-[20px] mb-[32px] [&_h1]:text-[28px] [&_h1]:[line-height:1.2] [&_h1]:font-medium [&_h1]:tracking-[-.045em] [&_p]:mt-[8px] [&_p]:text-[12px] [&_p]:text-muted-foreground"><div><h1><RevealText>Your collections</RevealText></h1><p>{collections.length} {collections.length === 1 ? "collection" : "collections"} · Books brought together by you</p></div>{collections.length > 0 && <Button onClick={() => setEditor({})}><PlusIcon />New collection</Button>}</div>
+          <div className="collection-cards max-[767px]:gap-4 grid [grid-template-columns:repeat(auto-fill,_minmax(min(100%,_320px),_384px))] gap-[20px]">{[...collections].sort((first, second) => Number(second.pinned) - Number(first.pinned)).map((collection, index) => {
             const previewBooks = collectionBooks(collection)
-            return <Card index={index} key={collection.id} className="collection-card" style={{ "--collection-color": collection.color } as CSSProperties} onClick={(event) => {
+            return <Card index={index} key={collection.id} className="collection-card group/collection relative cursor-pointer gap-0 overflow-hidden rounded-3xl border border-transparent bg-transparent p-4 shadow-none ring-0 transition-colors duration-180 hover:bg-[color-mix(in_srgb,var(--collection-color)_5%,transparent)] hover:text-foreground [&:has(.collection-card-title:focus-visible)]:outline-2 [&:has(.collection-card-title:focus-visible)]:outline-ring [&:has(.collection-card-title:focus-visible)]:outline-offset-2" style={{ "--collection-color": collection.color } as CSSProperties} onClick={(event) => {
               if ((event.target as HTMLElement).closest("button, a, [role='menuitem'], [data-slot='dropdown-menu-content']")) return
               router.push(`/collections?collection=${encodeURIComponent(collection.id)}`)
             }}>
-              <div className="collection-open">
-                <span className="collection-preview" aria-hidden="true">
-                  <span className="collection-cover-stack">{previewBooks.slice(0, 3).map((book) => <span className="collection-preview-cover" key={book.id}><BookCover book={book} /></span>)}</span>
-                  {previewBooks.length === 0 && <BookOpenIcon className="collection-preview-empty" />}
+              <div className="collection-open hover:bg-transparent flex flex-col justify-start w-full h-auto p-[0] border-0 rounded-[0] gap-[0] whitespace-normal overflow-visible bg-transparent [color:inherit]">
+                <span className="collection-preview relative flex w-full [aspect-ratio:355_/_209] rounded-[24px] overflow-hidden items-start justify-center p-[18px_10px_0] [background:color-mix(in_srgb,_var(--collection-color)_18%,_var(--card))]" aria-hidden="true">
+                  <span className="collection-cover-stack relative flex w-full items-start justify-center">
+                    {previewBooks.slice(0, 3).map((book, coverIndex) => <span
+                      className={`collection-preview-cover block w-[47%] shrink-0 origin-top [&_.book-cover]:rounded-[4px_7px_7px_4px] [&_.book-cover]:[box-shadow:inset_3px_0_0_rgb(0_0_0_/_10%),_3px_6px_10px_rgb(0_0_0_/_12%)] [&_.cover-type]:text-[10px] [&_.cover-type]:p-[9px_6px_0] [&_.cover-credit]:text-[5px]${coverIndex === 0 ? " translate-y-[30px] -rotate-5" : coverIndex === 1 ? " relative z-[1] -ml-[20%] w-[45%]! translate-y-[20px]" : " -ml-[20%] translate-y-[30px] rotate-5"}`}
+                      key={book.id}
+                    ><BookCover book={book} /></span>)}
+                  </span>
+                  {previewBooks.length === 0 && <BookOpenIcon className="collection-preview-empty w-[40px] h-[40px] [align-self:center] [color:#54524f]" />}
                 </span>
               </div>
-              <div className="collection-card-footer">
-                <div className="collection-card-info">
-                  <div className="collection-title-row">
-                    <Button variant="ghost" className="collection-card-title" onClick={() => router.push(`/collections?collection=${encodeURIComponent(collection.id)}`)} aria-label={`Open ${collection.name}, ${previewBooks.length} ${previewBooks.length === 1 ? "book" : "books"}`}>{collection.name}</Button>
-                    {collection.pinned && <Button variant="ghost" size="icon-xs" className="collection-pin" aria-label={`Unpin ${collection.name}`} onClick={() => togglePinned(collection)}><PinIcon aria-hidden="true" /></Button>}
+              <div className="collection-card-footer flex items-center gap-[12px] pt-[16px]">
+                <div className="collection-card-info flex-1 min-w-0 text-left">
+                  <div className="collection-title-row flex items-center gap-[6px] min-w-0">
+                    <Button variant="ghost" className="collection-card-title static block h-auto w-auto min-w-0 rounded-none border-0 bg-transparent p-0 text-left text-base leading-6 font-normal tracking-normal whitespace-normal text-inherit [overflow-wrap:anywhere]" onClick={() => router.push(`/collections?collection=${encodeURIComponent(collection.id)}`)} aria-label={`Open ${collection.name}, ${previewBooks.length} ${previewBooks.length === 1 ? "book" : "books"}`}>{collection.name}</Button>
+                    {collection.pinned && <Button variant="ghost" size="icon-xs" className="collection-pin relative z-[2] size-[22px]! min-w-[22px] shrink-0 rounded-full border-0 bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] p-[3px] text-muted-foreground transition-none hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-muted-foreground active:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] [&_svg]:size-4 [&_svg]:stroke-[1.5]" aria-label={`Unpin ${collection.name}`} onClick={() => togglePinned(collection)}><PinIcon aria-hidden="true" /></Button>}
                   </div>
-                  <Button variant="ghost" className="collection-card-meta" aria-label={`Open books in ${collection.name}`} onClick={() => router.push(`/collections?collection=${encodeURIComponent(collection.id)}`)}>
-                    <span className="collection-book-count" aria-label={`${previewBooks.length} books`}><LibraryIcon aria-hidden="true" />{previewBooks.length}</span>
-                    <span aria-hidden="true" className="collection-meta-dot">·</span>
-                    <span className="collection-card-updated" aria-label={`Last book added: ${lastAddedLabel(collection.lastBookAddedAt, now)}`}><RotateCwFadingClockIcon aria-hidden="true" />{collection.lastBookAddedAt ? <time dateTime={collection.lastBookAddedAt}>{lastAddedLabel(collection.lastBookAddedAt, now)}</time> : "No books added"}</span>
+                  <Button variant="ghost" className="collection-card-meta h-auto! w-full! justify-start rounded-none! border-0! bg-transparent! p-0! text-left scale-100! hover:bg-transparent! active:bg-transparent! group-hover/collection:text-muted-foreground dark:text-[#e7e5e2] dark:group-hover/collection:text-[#e7e5e2] flex flex-nowrap items-center min-h-[24px] mt-[4px] gap-[4px] text-[12px] font-normal text-muted-foreground" aria-label={`Open books in ${collection.name}`} onClick={() => router.push(`/collections?collection=${encodeURIComponent(collection.id)}`)}>
+                    <span className="collection-book-count [&_svg]:size-4 [&_svg]:stroke-1 shrink-0 inline-flex items-center gap-[4px] p-[2px_8px] h-[22px] rounded-full [background:color-mix(in_srgb,_var(--foreground)_8%,_transparent)] [color:inherit]" aria-label={`${previewBooks.length} books`}><LibraryIcon aria-hidden="true" />{previewBooks.length}</span>
+                    <span aria-hidden="true" className="collection-meta-dot shrink-0 inline-flex w-[24px] justify-center">·</span>
+                    <span className="collection-card-updated [&_svg]:size-4 [&_svg]:stroke-1 inline-flex items-center gap-[6px] min-w-0 whitespace-nowrap [&_svg]:shrink-0" aria-label={`Last book added: ${lastAddedLabel(collection.lastBookAddedAt, now)}`}><RotateCwFadingClockIcon aria-hidden="true" />{collection.lastBookAddedAt ? <time dateTime={collection.lastBookAddedAt}>{lastAddedLabel(collection.lastBookAddedAt, now)}</time> : "No books added"}</span>
                   </Button>
                 </div>
-              <DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" className="collection-menu" />} aria-label={`Options for ${collection.name}`}><MoreVerticalIcon /></DropdownMenuTrigger>
+              <DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" className="collection-menu relative z-[2] size-7! -mr-1 shrink-0 rounded-full bg-transparent p-1 text-inherit transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)] focus-visible:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)] aria-expanded:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)] [&_svg]:w-[20px] [&_svg]:h-[20px]" />} aria-label={`Options for ${collection.name}`}><MoreVerticalIcon /></DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56"><DropdownMenuItem onClick={() => setEditor({ collection })}><PencilIcon />Edit collection</DropdownMenuItem><DropdownMenuItem onClick={() => togglePinned(collection)}>{collection.pinned ? <PinOffIcon /> : <PinIcon />}{collection.pinned ? "Unpin collection" : "Pin collection"}</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onClick={() => setDeleting(collection)}><Trash2Icon />Delete collection</DropdownMenuItem></DropdownMenuContent>
               </DropdownMenu>
               </div>
             </Card>
           })}</div>
-      {collections.length === 0 && <Card className="collection-empty"><FolderPlusIcon className="size-10 text-muted-foreground" /><h2>Your next chapter starts here.</h2><p>Bring a few books together in your first collection.</p><Button onClick={() => setEditor({})}><PlusIcon />New collection</Button></Card>}
+      {collections.length === 0 && <Card className="collection-empty items-center px-6 py-12 text-center shadow-none ring-0 [&_h2]:text-[20px] [&_p]:text-[13px] [&_p]:text-muted-foreground"><FolderPlusIcon className="size-10 text-muted-foreground" /><h2>Your next chapter starts here.</h2><p>Bring a few books together in your first collection.</p><Button onClick={() => setEditor({})}><PlusIcon />New collection</Button></Card>}
     </section>}
     {editor && <CollectionEditor collection={editor.collection} onClose={() => setEditor(null)} onSave={saveCollection} />}
     <Dialog open={deleting !== null} onOpenChange={(open) => { if (!open) setDeleting(null) }}><DialogContent><DialogHeader><DialogTitle>Delete collection?</DialogTitle><DialogDescription>Delete “{deleting?.name}”? Its books will stay in your library.</DialogDescription></DialogHeader><DialogFooter><DialogClose render={<Button variant="ghost" />}>Cancel</DialogClose><Button variant="destructive" onClick={() => { setCollections((current) => current.filter((item) => item.id !== deleting?.id)); setDeleting(null) }}>Delete collection</Button></DialogFooter></DialogContent></Dialog>

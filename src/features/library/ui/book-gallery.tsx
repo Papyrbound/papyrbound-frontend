@@ -33,21 +33,21 @@ export function BookGallery({ books, listId, onAddBooks, emptyMessage = "No book
 
   return (
     <>
-      <div ref={galleryRef} tabIndex={-1} className="library-book-grid outline-none">
-        {onAddBooks && <button type="button" className="gallery-add-book" onClick={onAddBooks}><PlusIcon className="size-7" aria-hidden="true" /><span>Add books</span></button>}
+      <div ref={galleryRef} tabIndex={-1} className="library-book-grid relative grid grid-cols-[repeat(auto-fill,160px)] gap-x-7 gap-y-5 outline-none max-[767px]:grid-cols-[repeat(2,minmax(0,132px))] max-[767px]:gap-5">
+        {onAddBooks && <button type="button" className="gallery-add-book hover:bg-[var(--row-hover)] hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-[6px] max-[767px]:h-[198px] h-[240px] flex flex-col items-center justify-center gap-[12px] rounded-[18px] text-muted-foreground cursor-pointer [transition:background_150ms,_color_150ms]" onClick={onAddBooks}><PlusIcon className="size-7" aria-hidden="true" /><span>Add books</span></button>}
         <AnimatePresence initial={true} mode="popLayout">
         {books.map((book, index) => (
-          <m.article key={book.id} className="gallery-book" layout={reduced ? false : "position"} initial={reduced ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ opacity: { duration: reduced ? 0 : 0.2 }, y: { duration: reduced ? 0 : 0.4, delay: reduced ? 0 : Math.min(index, 6) * 0.035, ease: readingEase }, layout: { type: "spring", stiffness: 380, damping: 36 } }}>
-            <div className="gallery-book-stage">
-              <button type="button" className="gallery-cover-button" onClick={() => setSelected(book)} aria-label={`View ${book.title}`}><BookCover book={book} /><span className="gallery-cover-actions" aria-hidden="true">View book</span></button>
+          <m.article key={book.id} className="gallery-book group/book min-w-0" layout={reduced ? false : "position"} initial={reduced ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ opacity: { duration: reduced ? 0 : 0.2 }, y: { duration: reduced ? 0 : 0.4, delay: reduced ? 0 : Math.min(index, 6) * 0.035, ease: readingEase }, layout: { type: "spring", stiffness: 380, damping: 36 } }}>
+            <div className="gallery-book-stage max-[767px]:h-[198px] relative h-[240px] flex items-center justify-center">
+              <button type="button" className="gallery-cover-button group/cover hover:-translate-y-[3px] hover:-rotate-1 focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-[6px] max-[767px]:w-[min(132px,100%)] max-[767px]:[&_.cover-type]:text-[17px] relative w-[min(160px,_100%)] cursor-pointer rounded-[8px] [transition:transform_200ms]" onClick={() => setSelected(book)} aria-label={`View ${book.title}`}><BookCover book={book} /><span className="gallery-cover-actions group-hover/cover:opacity-100 group-focus-visible/cover:opacity-100 max-[767px]:hidden absolute left-[50%] bottom-[12px] [transform:translateX(-50%)] opacity-[0] [pointer-events:none] [transition:opacity_150ms] whitespace-nowrap rounded-full p-[7px_14px] text-[13px] [background:var(--foreground)] [color:var(--background)]" aria-hidden="true">View book</span></button>
             </div>
-            <div className="gallery-book-caption">
+            <div className="gallery-book-caption max-[767px]:w-[min(132px,100%)] flex items-center justify-between gap-[8px] pt-[4px] w-[min(160px,_100%)] [margin-inline:auto]">
               <h2 className="sr-only">{book.title}</h2>
-              <span className={book.progress <= 0 || book.progress >= 100 ? "gallery-book-status gallery-status-label" : "gallery-book-status"}>
+              <span className={book.progress <= 0 || book.progress >= 100 ? "gallery-book-status gallery-status-label rounded bg-muted px-[6px] py-[2px] text-[10px] font-medium text-muted-foreground tabular-nums" : "gallery-book-status text-[11px] text-muted-foreground tabular-nums"}>
                 {book.progress >= 100 ? "Completed" : book.progress > 0 ? `${book.progress}%` : "New"}
               </span>
               <DropdownMenu>
-                <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" className="gallery-book-menu" />} aria-label={`More options for ${book.title}`}><MoreHorizontalIcon /></DropdownMenuTrigger>
+                <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" className="gallery-book-menu group-hover/book:opacity-100 group-focus-within/book:opacity-100 aria-expanded:opacity-100 [@media(hover:none)]:opacity-100 max-[767px]:w-7 max-[767px]:opacity-100 shrink-0 opacity-[0] [transition:opacity_150ms]" />} aria-label={`More options for ${book.title}`}><MoreHorizontalIcon /></DropdownMenuTrigger>
                 <DropdownMenuContent side="bottom" align="end" className="w-64 max-w-[calc(100vw-2rem)]">
                   <DropdownMenuItem onClick={() => setSelected(book)}>View book details</DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -82,7 +82,7 @@ export function BookGallery({ books, listId, onAddBooks, emptyMessage = "No book
         ))}
         </AnimatePresence>
       </div>
-      {books.length === 0 && <p className="gallery-empty" role="status">{emptyMessage}</p>}
+      {books.length === 0 && <p className="gallery-empty mt-[32px] text-[13px] text-muted-foreground" role="status">{emptyMessage}</p>}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} onOpenChangeComplete={(open) => { if (!open) setDeletingBook(null) }}>
         <AlertDialogContent initialFocus={cancelRef} finalFocus={() => confirmedDeletion.current ? galleryRef.current : true}>
           <AlertDialogHeader>
@@ -109,7 +109,7 @@ export function BookGallery({ books, listId, onAddBooks, emptyMessage = "No book
       <Sheet open={selected !== null} onOpenChange={(open) => { if (!open) setSelected(null) }}>
         <SheetContent>
           <SheetHeader><SheetTitle>Book details</SheetTitle><SheetDescription>Title, author, and reading progress.</SheetDescription></SheetHeader>
-          {selected && <div className="px-6 pb-6"><div className="book-detail-cover"><BookCover book={selected} /></div><h2 className="text-2xl">{selected.title}</h2><p className="mt-2 text-muted-foreground">{selected.author}</p><dl className="mt-6 divide-y divide-border">{[["Genre", selected.genre], ["Length", `${selected.pages} pages`], ["Progress", selected.progress ? `${selected.progress}% read` : "Not started"]].map(([label, value]) => <div key={label} className="flex justify-between py-4"><dt className="text-muted-foreground">{label}</dt><dd>{value}</dd></div>)}</dl></div>}
+          {selected && <div className="px-6 pb-6"><div className="book-detail-cover w-[160px] m-[16px_auto_24px]"><BookCover book={selected} /></div><h2 className="text-2xl">{selected.title}</h2><p className="mt-2 text-muted-foreground">{selected.author}</p><dl className="mt-6 divide-y divide-border">{[["Genre", selected.genre], ["Length", `${selected.pages} pages`], ["Progress", selected.progress ? `${selected.progress}% read` : "Not started"]].map(([label, value]) => <div key={label} className="flex justify-between py-4"><dt className="text-muted-foreground">{label}</dt><dd>{value}</dd></div>)}</dl></div>}
         </SheetContent>
       </Sheet>
     </>

@@ -33,12 +33,12 @@ export function LibraryPage() {
   }
 
   return (
-    <section className="library-gallery" data-resizable="true" aria-label="Your library" style={{ "--gallery-size": `${coverSizes[sizeStep]}px` } as CSSProperties}>
-      <div className="gallery-heading library-toolbar">
-        <div className="library-title"><h1><RevealText>Your library</RevealText></h1><span aria-live="polite">{visibleBooks.length} {visibleBooks.length === 1 ? "book" : "books"}</span></div>
-        <div className="library-controls">
+    <section className="library-gallery w-full max-[1199px]:px-8 max-[1199px]:pt-6 max-[1199px]:pb-12 max-[767px]:px-5 max-[767px]:pt-4 max-[767px]:pb-10 [--gallery-cover:var(--gallery-size)] [transition:--gallery-size_180ms_ease-out] max-[767px]:[--gallery-cover:calc(var(--gallery-size)*.825)] [&_.library-book-grid]:[grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--gallery-cover)),var(--gallery-cover)))] [&_.gallery-book-stage]:h-auto [&_.gallery-book-stage]:aspect-[2/3] [&_.gallery-cover-button]:w-full [&_.gallery-book-caption]:w-full [&_.gallery-cover-button_.cover-type]:text-[clamp(16px,calc(var(--gallery-cover)*.12),30px)] p-[24px_40px_48px]" data-resizable="true" aria-label="Your library" style={{ "--gallery-size": `${coverSizes[sizeStep]}px` } as CSSProperties}>
+      <div className="gallery-heading library-toolbar max-[767px]:mb-5 max-[767px]:flex-wrap max-[767px]:gap-3 flex items-baseline gap-[12px] mb-[32px] items-center justify-between gap-[16px] [&_h1]:text-[20px] [&_h1]:font-medium [&>span]:text-[12px] [&>span]:text-muted-foreground">
+        <div className="library-title flex items-center gap-3 [&>span]:text-[12px] [&>span]:text-muted-foreground [&>span]:[white-space:nowrap]"><h1><RevealText>Your library</RevealText></h1><span aria-live="polite">{visibleBooks.length} {visibleBooks.length === 1 ? "book" : "books"}</span></div>
+        <div className="library-controls flex items-center gap-3 max-[767px]:grid max-[767px]:w-full max-[767px]:grid-cols-[1fr_auto] max-[767px]:gap-[10px] max-[767px]:[&_.next-read-trigger]:col-span-full max-[767px]:[&_.next-read-trigger]:justify-self-start flex-wrap justify-end max-w-full">
           <NextReadDialog />
-          <div className="cover-size-control">
+          <div className="cover-size-control [&_[data-slot=slider]]:w-[104px] [&_[data-slot=slider]]:shrink-0 max-[767px]:[&_[data-slot=slider]]:w-[72px] flex items-center gap-[8px]">
             <BookOpenIcon className="size-3.5 text-muted-foreground" aria-hidden="true" />
             <Slider min={0} max={coverSizes.length - 1} step={1} value={[sizeStep]} onValueChange={(value) => setSizeStep(Array.isArray(value) ? value[0] : value)} thumbProps={{ getAriaLabel: () => "Book cover size", getAriaValueText: (_, value) => `${["Small", "Medium", "Large", "Extra large", "Largest"][value]} covers` }} />
             <BookOpenIcon className="size-5 text-muted-foreground" aria-hidden="true" />

@@ -33,7 +33,7 @@ export function AnnotationEditor({ annotation, books, defaultBookId, onSave, onC
   return <Dialog open={open} onOpenChange={setOpen} onOpenChangeComplete={(isOpen) => {
     if (!isOpen) { if (pendingSave.current) onSave(pendingSave.current); else onClose() }
   }}>
-    <DialogContent initialFocus={isSavedHighlight ? noteRef : contentRef} className="annotation-editor">
+    <DialogContent initialFocus={isSavedHighlight ? noteRef : contentRef} className="annotation-editor max-h-[calc(100dvh-32px)] overflow-y-auto">
       <DialogHeader><DialogTitle>{isSavedHighlight ? "Highlight options" : annotation ? "Edit note" : "New annotation"}</DialogTitle><DialogDescription>{isSavedHighlight ? "Add your own thoughts or change the color. The original passage stays unchanged." : "Keep a passage or a thought close to its book."}</DialogDescription></DialogHeader>
       <form className="space-y-5" onSubmit={(event) => {
         event.preventDefault()

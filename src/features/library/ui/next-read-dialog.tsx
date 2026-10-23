@@ -31,7 +31,7 @@ export function NextReadDialog() {
       <DialogHeader><DialogTitle>Your next chapter</DialogTitle><DialogDescription>{inQueue ? "An unread pick from your Want To Read list." : "An unread pick from your library."}</DialogDescription></DialogHeader>
       {selected ? <>
         <div className="flex items-center gap-6 py-2">
-          <div className="next-read-cover w-28 shrink-0" aria-hidden="true"><BookCover book={selected} /></div>
+          <div className="next-read-cover w-28 shrink-0 [&_.cover-type]:text-[14px] [&_.cover-credit]:text-[6px]" aria-hidden="true"><BookCover book={selected} /></div>
           <div className="min-w-0"><h2 className="text-xl font-medium wrap-anywhere">{selected.title}</h2><p className="mt-2 text-sm text-muted-foreground">{selected.author}</p><p className="mt-4 text-xs text-muted-foreground">{selected.genre}{selected.pages > 0 ? ` · ${selected.pages} pages` : ""}</p><span className="mt-3 inline-block rounded-md bg-muted px-2 py-1 text-xs">Not started</span></div>
         </div>
         <DialogFooter>

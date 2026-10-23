@@ -41,7 +41,7 @@ export function ReadingListEditor({ list, initialBookIds = [], onClose, onSave }
       if (pendingSave.current) onSave(pendingSave.current)
       else onClose()
     }}>
-      <SheetContent initialFocus={nameRef} className="reading-list-sheet" style={{ "--list-color": color } as CSSProperties}>
+      <SheetContent initialFocus={nameRef} className="reading-list-sheet inset-[12px_12px_12px_auto]! h-auto! w-[min(480px,calc(100vw-24px))]! max-w-[480px]! rounded-3xl! border-0! p-7 bg-[color-mix(in_srgb,var(--list-color)_45%,var(--card))] dark:bg-[color-mix(in_srgb,var(--list-color)_14%,var(--card))] [transition:background-color_200ms,translate_200ms,transform_200ms,opacity_200ms] [&_[data-slot=sheet-description]]:text-inherit [&_[data-slot=sheet-description]]:opacity-75 max-[767px]:inset-2! max-[767px]:w-[calc(100vw-16px)]! max-[767px]:max-w-none! max-[767px]:p-6" style={{ "--list-color": color } as CSSProperties}>
         <form className="flex min-h-0 flex-1 flex-col" onSubmit={(event) => {
           event.preventDefault()
           if (name.trim()) {
@@ -53,16 +53,16 @@ export function ReadingListEditor({ list, initialBookIds = [], onClose, onSave }
             <SheetTitle>{list ? "Edit reading list" : "Custom Reading List"}</SheetTitle>
             <SheetDescription className="sr-only">Name your list, choose a color, and search for books to add.</SheetDescription>
           </div>
-          <fieldset className="list-color-picker mt-7">
+          <fieldset className="list-color-picker mt-7 flex gap-[12px] w-fit [align-self:center] p-[10px_14px] rounded-full bg-card">
             <legend className="sr-only">List color</legend>
             {readingListColors.map((option) => (
-              <label key={option.name} className="list-color-option" style={{ background: option.value }}>
+              <label key={option.name} className="list-color-option [&:has(input:checked)]:outline-2 [&:has(input:checked)]:outline-foreground [&:has(input:checked)]:outline-offset-[3px] [&:has(input:focus-visible)]:outline-[3px] [&:has(input:focus-visible)]:outline-ring [&:has(input:focus-visible)]:outline-offset-[3px] relative grid [place-items:center] w-[24px] h-[24px] rounded-full [color:#30312f] [&_input]:absolute [&_input]:[inset:0] [&_input]:w-full [&_input]:h-full [&_input]:[appearance:none] [&_input]:rounded-[50%] [&_input]:[cursor:pointer] [&_svg]:[pointer-events:none]" style={{ background: option.value }}>
                 <input type="radio" name="list-color" value={option.value} checked={color === option.value} onChange={() => setColor(option.value)} aria-label={option.name} />
                 {color === option.value && <CheckIcon className="size-3.5" aria-hidden="true" />}
               </label>
             ))}
           </fieldset>
-          <div className="list-editor-fields min-h-0 flex-1 overflow-y-auto py-7">
+          <div className="list-editor-fields [&_label]:text-[13px] [&_legend]:text-[13px] [&_[data-slot=input]]:bg-card min-h-0 flex-1 overflow-y-auto py-7 [scrollbar-width:thin] [scrollbar-color:color-mix(in_srgb,_var(--foreground)_25%,_transparent)_transparent]">
             <label htmlFor="reading-list-name">Name <span aria-hidden="true">*</span></label>
             <Input ref={nameRef} id="reading-list-name" value={name} onChange={(event) => setName(event.target.value)} placeholder="e.g. Slow Sunday reads" required maxLength={80} className="mt-2 h-11" />
             <fieldset className="mt-6">
@@ -79,7 +79,7 @@ export function ReadingListEditor({ list, initialBookIds = [], onClose, onSave }
               </div>
               <div className="mt-3 space-y-2">
                 {visibleBooks.map((book) => (
-                  <div key={book.id} className="list-book-option">
+                  <div key={book.id} className="list-book-option hover:bg-accent [&_[data-slot=button]]:size-7 [&_[data-slot=button]]:p-0 [&_[data-slot=button]_svg]:size-[14px] [&_.cover-type]:hidden [&_.cover-credit]:hidden flex items-center gap-[8px] p-[6px_10px] rounded-[10px] bg-card text-[12px] [line-height:1.35] [&_.book-cover]:w-[24px] [&_.book-cover]:shrink-0 [&_.book-cover]:rounded-[3px_5px_5px_3px] [&_.text-xs]:text-[10px]">
                     <BookCover book={book} />
                     <span className="min-w-0"><span className="block truncate">{book.title}</span><span className="block text-xs opacity-60">{book.author}</span></span>
                     <Button type="button" variant="ghost" size="icon-sm" className="ml-auto shrink-0" disabled={bookIds.includes(book.id)} aria-label={bookIds.includes(book.id) ? `${book.title} added` : `Add ${book.title}`} onClick={() => addBook(book.id)}>
