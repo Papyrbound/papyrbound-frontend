@@ -365,13 +365,13 @@ export function CollectionsPage() {
                   >
                     <div className="collection-open hover:bg-transparent flex flex-col justify-start w-full h-auto p-[0] border-0 rounded-[0] gap-[0] whitespace-normal overflow-visible bg-transparent [color:inherit]">
                       <span
-                        className="collection-preview relative block aspect-[50/49] w-full overflow-hidden"
+                        className="collection-preview relative block aspect-[6/5] w-full overflow-hidden"
                         aria-hidden="true"
                       >
                         <span className="collection-cover-stack relative block size-full">
                           {previewBooks.slice(0, 3).map((book, coverIndex) => (
                             <span
-                              className={`collection-preview-cover absolute block drop-shadow-[0_12px_14px_rgb(0_0_0_/_18%)] [&_.book-cover]:rounded-[5px_9px_9px_5px]${coverIndex === 0 ? " left-[8%] top-[3%] z-30 w-[58%] [&_.cover-type]:max-w-[78%] [&_.cover-type]:text-[18px] [&_.cover-credit]:text-[6px]" : coverIndex === 1 ? " left-[25%] top-[10%] z-20 w-[52%] [&_.cover-type]:left-[75%] [&_.cover-type]:top-[11%] [&_.cover-type]:text-[10px] [&_.cover-type]:font-medium [&_.cover-type]:[writing-mode:vertical-rl] [&_.cover-art]:hidden [&_.cover-credit]:hidden" : " left-[40%] top-[13%] z-10 w-[52%] [&_.cover-type]:left-[75%] [&_.cover-type]:top-[11%] [&_.cover-type]:text-[10px] [&_.cover-type]:font-medium [&_.cover-type]:[writing-mode:vertical-rl] [&_.cover-art]:hidden [&_.cover-credit]:hidden"}`}
+                              className={`collection-preview-cover absolute block drop-shadow-[0_12px_14px_rgb(0_0_0_/_18%)] [&_.book-cover]:rounded-[5px_9px_9px_5px]${coverIndex === 0 ? " left-[12%] top-[3%] z-30 w-[52%] [&_.cover-type]:max-w-[78%] [&_.cover-type]:text-base [&_.cover-credit]:text-[6px]" : coverIndex === 1 ? " left-[27%] top-[10%] z-20 w-[47%] [&_.cover-type]:left-[75%] [&_.cover-type]:top-[11%] [&_.cover-type]:text-[9px] [&_.cover-type]:font-medium [&_.cover-type]:[writing-mode:vertical-rl] [&_.cover-art]:hidden [&_.cover-credit]:hidden" : " left-[42%] top-[13%] z-10 w-[47%] [&_.cover-type]:left-[75%] [&_.cover-type]:top-[11%] [&_.cover-type]:text-[9px] [&_.cover-type]:font-medium [&_.cover-type]:[writing-mode:vertical-rl] [&_.cover-art]:hidden [&_.cover-credit]:hidden"}`}
                               key={book.id}
                             >
                               <BookCover book={book} />
@@ -383,12 +383,12 @@ export function CollectionsPage() {
                         )}
                       </span>
                     </div>
-                    <div className="collection-card-footer relative flex items-start justify-center pt-1">
-                      <div className="collection-card-info min-w-0 max-w-full text-center">
-                        <div className="collection-title-row flex min-w-0 items-center justify-center gap-1.5">
+                    <div className="collection-card-footer relative flex items-start justify-between pt-3">
+                      <div className="collection-card-info min-w-0 flex-1 pl-[12%] pr-9 text-left">
+                        <div className="collection-title-row flex min-w-0 items-center justify-start gap-1.5">
                           <Button
                             variant="ghost"
-                            className="collection-card-title static block h-auto w-auto min-w-0 rounded-none border-0 bg-transparent p-0 text-center text-lg leading-6 font-medium tracking-tight whitespace-normal text-inherit [overflow-wrap:anywhere]"
+                            className="collection-card-title static block h-auto w-auto min-w-0 rounded-none border-0 bg-transparent p-0 text-left text-lg leading-6 font-medium tracking-tight whitespace-normal text-inherit [overflow-wrap:anywhere]"
                             onClick={() =>
                               router.push(
                                 `/collections?collection=${encodeURIComponent(collection.id)}`,
@@ -412,7 +412,7 @@ export function CollectionsPage() {
                         </div>
                         <Button
                           variant="ghost"
-                          className="collection-card-meta h-auto! w-full! justify-center rounded-none! border-0! bg-transparent! p-0! text-center scale-100! hover:bg-transparent! active:bg-transparent! flex flex-wrap items-center min-h-[24px] mt-1 gap-1 text-xs font-normal text-muted-foreground"
+                          className="collection-card-meta mt-1 flex h-auto! min-h-[24px] w-auto! flex-wrap items-center justify-start gap-1 rounded-none! border-0! bg-transparent! p-0! text-left text-xs font-normal text-muted-foreground scale-100! hover:bg-transparent! active:bg-transparent!"
                           aria-label={`Open books in ${collection.name}`}
                           onClick={() =>
                             router.push(
@@ -457,7 +457,7 @@ export function CollectionsPage() {
                             <Button
                               variant="ghost"
                               size="icon-sm"
-                              className="collection-menu absolute bottom-0 right-0 z-[2] size-7! shrink-0 rounded-full bg-transparent p-1 text-muted-foreground transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)] hover:text-foreground focus-visible:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)] aria-expanded:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)] [&_svg]:size-5"
+                              className="collection-menu absolute right-0 top-3 z-[2] size-7! shrink-0 rounded-full bg-transparent p-1 text-muted-foreground transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)] hover:text-foreground focus-visible:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)] aria-expanded:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)] [&_svg]:size-5"
                             />
                           }
                           aria-label={`Options for ${collection.name}`}
