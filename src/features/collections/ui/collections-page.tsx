@@ -52,10 +52,10 @@ const colors = [
 ];
 
 const folderHueByColor: Record<string, string> = {
-  "#d9cae9": "94deg",
-  "#d6dfbd": "-95deg",
-  "#f0c6ac": "-155deg",
-  "#cfaaae": "125deg",
+  "#d9cae9": "185deg",
+  "#d6dfbd": "0deg",
+  "#f0c6ac": "-55deg",
+  "#cfaaae": "-90deg",
 };
 
 function lastAddedLabel(lastBookAddedAt: string | undefined, now: number) {
@@ -378,7 +378,7 @@ export function CollectionsPage() {
                         className="collection-preview relative block h-[204px] w-full overflow-hidden"
                         aria-hidden="true"
                       >
-                        <span className="pointer-events-none absolute inset-x-[3%] top-[15%] z-0 aspect-[1562/1007] bg-[url('/collection-folder.webp')] bg-contain bg-no-repeat [clip-path:inset(0_0_52%_0)] [filter:hue-rotate(var(--folder-rotation))]" />
+                        <span className="pointer-events-none absolute inset-x-[3%] top-[15%] z-0 aspect-[1562/1007] bg-[url('/collection-folder-matte.webp')] bg-contain bg-no-repeat [clip-path:inset(0_0_52%_0)] [filter:hue-rotate(var(--folder-rotation))_saturate(1.25)]" />
                         <span className="collection-cover-stack absolute inset-x-[14%] top-[12%] z-10 flex items-start justify-center">
                           {previewBooks.slice(0, 3).map((book, coverIndex) => (
                             <span
@@ -392,7 +392,7 @@ export function CollectionsPage() {
                         {previewBooks.length === 0 && (
                           <BookOpenIcon className="collection-preview-empty absolute left-1/2 top-[30%] z-10 size-9 -translate-x-1/2 text-muted-foreground" />
                         )}
-                        <span className="pointer-events-none absolute inset-x-[3%] top-[15%] z-20 aspect-[1562/1007] bg-[url('/collection-folder.webp')] bg-contain bg-no-repeat [clip-path:inset(44%_0_0_0)] [filter:hue-rotate(var(--folder-rotation))]" />
+                        <span className="pointer-events-none absolute inset-x-[3%] top-[15%] z-20 aspect-[1562/1007] bg-[url('/collection-folder-matte.webp')] bg-contain bg-no-repeat [clip-path:inset(44%_0_0_0)] [filter:hue-rotate(var(--folder-rotation))_saturate(1.25)]" />
                       </span>
                     </div>
                     <div className="collection-card-footer relative flex items-start justify-center pt-1">
