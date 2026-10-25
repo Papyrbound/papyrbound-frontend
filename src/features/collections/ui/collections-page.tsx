@@ -352,7 +352,7 @@ export function CollectionsPage() {
                   <Card
                     index={index}
                     key={collection.id}
-                    className="collection-card group/collection relative min-h-[312px] cursor-pointer gap-0 overflow-hidden rounded-[30px] border border-transparent bg-transparent px-5 pb-6 pt-7 shadow-none ring-0 transition-colors duration-200 hover:bg-[color-mix(in_srgb,var(--collection-color)_7%,var(--card))] hover:text-foreground [&:has(.collection-card-title:focus-visible)]:outline-2 [&:has(.collection-card-title:focus-visible)]:outline-ring [&:has(.collection-card-title:focus-visible)]:outline-offset-2"
+                    className="collection-card group/collection relative min-h-[326px] cursor-pointer gap-0 overflow-hidden rounded-[30px] border border-transparent bg-transparent px-5 pb-6 pt-7 shadow-none ring-0 transition-colors duration-200 hover:bg-[color-mix(in_srgb,var(--collection-color)_7%,var(--card))] hover:text-foreground [&:has(.collection-card-title:focus-visible)]:outline-2 [&:has(.collection-card-title:focus-visible)]:outline-ring [&:has(.collection-card-title:focus-visible)]:outline-offset-2"
                     style={
                       {
                         "--collection-color": collection.color,
@@ -375,11 +375,11 @@ export function CollectionsPage() {
                   >
                     <div className="collection-open hover:bg-transparent flex flex-col justify-start w-full h-auto p-[0] border-0 rounded-[0] gap-[0] whitespace-normal overflow-visible bg-transparent [color:inherit]">
                       <span
-                        className="collection-preview relative block h-[204px] w-full overflow-hidden"
+                        className="collection-preview relative block h-[218px] w-full overflow-hidden"
                         aria-hidden="true"
                       >
-                        <span className="pointer-events-none absolute inset-x-[3%] top-[15%] z-0 aspect-[1562/1007] bg-[url('/collection-folder-front.webp')] bg-contain bg-no-repeat [clip-path:inset(0_0_52%_0)] [filter:hue-rotate(var(--folder-rotation))_saturate(1.25)]" />
-                        <span className="collection-cover-stack absolute inset-x-[14%] top-[12%] z-10 flex items-start justify-center">
+                        <span className="pointer-events-none absolute inset-x-[-2%] top-[9%] z-0 aspect-[1563/1006] bg-[url('/collection-folder-vellum.webp')] bg-contain bg-no-repeat [clip-path:inset(0_0_52%_0)] [filter:hue-rotate(var(--folder-rotation))_saturate(1.15)]" />
+                        <span className="collection-cover-stack absolute inset-x-[12%] top-[9%] z-10 flex items-start justify-center">
                           {previewBooks.slice(0, 3).map((book, coverIndex) => (
                             <span
                               className={`collection-preview-cover block w-[37%] shrink-0 origin-bottom [&_.book-cover]:rounded-[4px_7px_7px_4px] [&_.book-cover]:[box-shadow:inset_3px_0_0_rgb(0_0_0_/_10%),_3px_6px_10px_rgb(0_0_0_/_12%)] [&_.cover-type]:p-[7px_5px_0] [&_.cover-type]:text-[9px] [&_.cover-credit]:text-[4px]${coverIndex === 0 ? " translate-y-[11px] -rotate-5" : coverIndex === 1 ? " relative z-[1] -ml-[7%] -translate-y-[4px]" : " -ml-[7%] translate-y-[11px] rotate-5"}`}
@@ -392,7 +392,7 @@ export function CollectionsPage() {
                         {previewBooks.length === 0 && (
                           <BookOpenIcon className="collection-preview-empty absolute left-1/2 top-[30%] z-10 size-9 -translate-x-1/2 text-muted-foreground" />
                         )}
-                        <span className="pointer-events-none absolute inset-x-[3%] top-[15%] z-20 aspect-[1562/1007] bg-[url('/collection-folder-front.webp')] bg-contain bg-no-repeat [clip-path:inset(44%_0_0_0)] [filter:hue-rotate(var(--folder-rotation))_saturate(1.25)]" />
+                        <span className="pointer-events-none absolute inset-x-[-2%] top-[9%] z-20 aspect-[1563/1006] bg-[url('/collection-folder-vellum.webp')] bg-contain bg-no-repeat opacity-80 backdrop-blur-[3px] [clip-path:inset(44%_0_0_0)] [filter:hue-rotate(var(--folder-rotation))_saturate(1.15)]" />
                       </span>
                     </div>
                     <div className="collection-card-footer relative flex items-start justify-center pt-1">
