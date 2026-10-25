@@ -337,7 +337,7 @@ export function CollectionsPage() {
               </Button>
             )}
           </div>
-          <div className="collection-cards grid justify-center gap-5 [grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),340px))] max-[767px]:gap-4">
+          <div className="collection-cards grid justify-start gap-5 [grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),340px))] max-[767px]:gap-4">
             {[...collections]
               .sort(
                 (first, second) => Number(second.pinned) - Number(first.pinned),
