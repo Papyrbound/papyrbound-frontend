@@ -51,13 +51,6 @@ const colors = [
   { name: "Rose", value: "#cfaaae" },
 ];
 
-const folderHueByColor: Record<string, string> = {
-  "#d9cae9": "185deg",
-  "#d6dfbd": "0deg",
-  "#f0c6ac": "-55deg",
-  "#cfaaae": "-90deg",
-};
-
 function lastAddedLabel(lastBookAddedAt: string | undefined, now: number) {
   if (!lastBookAddedAt) return "No books added";
   const days = Math.max(
@@ -356,9 +349,6 @@ export function CollectionsPage() {
                     style={
                       {
                         "--collection-color": collection.color,
-                        "--folder-rotation":
-                          folderHueByColor[collection.color.toLowerCase()] ??
-                          "0deg",
                       } as CSSProperties
                     }
                     onClick={(event) => {
@@ -375,14 +365,13 @@ export function CollectionsPage() {
                   >
                     <div className="collection-open hover:bg-transparent flex flex-col justify-start w-full h-auto p-[0] border-0 rounded-[0] gap-[0] whitespace-normal overflow-visible bg-transparent [color:inherit]">
                       <span
-                        className="collection-preview relative block h-[218px] w-full overflow-hidden"
+                        className="collection-preview relative block aspect-[50/49] w-full overflow-hidden"
                         aria-hidden="true"
                       >
-                        <span className="pointer-events-none absolute inset-x-[-2%] top-[9%] z-0 aspect-[1563/1006] bg-[url('/collection-folder-vellum.webp')] bg-contain bg-no-repeat [clip-path:inset(0_0_52%_0)] [filter:hue-rotate(var(--folder-rotation))_saturate(1.15)]" />
-                        <span className="collection-cover-stack absolute inset-x-[12%] top-[9%] z-10 flex items-start justify-center">
+                        <span className="collection-cover-stack relative block size-full">
                           {previewBooks.slice(0, 3).map((book, coverIndex) => (
                             <span
-                              className={`collection-preview-cover block w-[37%] shrink-0 origin-bottom [&_.book-cover]:rounded-[4px_7px_7px_4px] [&_.book-cover]:[box-shadow:inset_3px_0_0_rgb(0_0_0_/_10%),_3px_6px_10px_rgb(0_0_0_/_12%)] [&_.cover-type]:p-[7px_5px_0] [&_.cover-type]:text-[9px] [&_.cover-credit]:text-[4px]${coverIndex === 0 ? " translate-y-[11px] -rotate-5" : coverIndex === 1 ? " relative z-[1] -ml-[7%] -translate-y-[4px]" : " -ml-[7%] translate-y-[11px] rotate-5"}`}
+                              className={`collection-preview-cover absolute block drop-shadow-[0_12px_14px_rgb(0_0_0_/_18%)] [&_.book-cover]:rounded-[5px_9px_9px_5px]${coverIndex === 0 ? " left-[8%] top-[3%] z-30 w-[58%] [&_.cover-type]:max-w-[78%] [&_.cover-type]:text-[18px] [&_.cover-credit]:text-[6px]" : coverIndex === 1 ? " left-[25%] top-[10%] z-20 w-[52%] [&_.cover-type]:left-[75%] [&_.cover-type]:top-[11%] [&_.cover-type]:text-[10px] [&_.cover-type]:font-medium [&_.cover-type]:[writing-mode:vertical-rl] [&_.cover-art]:hidden [&_.cover-credit]:hidden" : " left-[40%] top-[13%] z-10 w-[52%] [&_.cover-type]:left-[75%] [&_.cover-type]:top-[11%] [&_.cover-type]:text-[10px] [&_.cover-type]:font-medium [&_.cover-type]:[writing-mode:vertical-rl] [&_.cover-art]:hidden [&_.cover-credit]:hidden"}`}
                               key={book.id}
                             >
                               <BookCover book={book} />
@@ -390,9 +379,8 @@ export function CollectionsPage() {
                           ))}
                         </span>
                         {previewBooks.length === 0 && (
-                          <BookOpenIcon className="collection-preview-empty absolute left-1/2 top-[30%] z-10 size-9 -translate-x-1/2 text-muted-foreground" />
+                          <BookOpenIcon className="collection-preview-empty absolute left-1/2 top-1/2 size-9 -translate-1/2 text-muted-foreground" />
                         )}
-                        <span className="pointer-events-none absolute inset-x-[-2%] top-[9%] z-20 aspect-[1563/1006] bg-[url('/collection-folder-vellum.webp')] bg-contain bg-no-repeat opacity-80 backdrop-blur-[24px] [clip-path:inset(44%_0_0_0)] [filter:hue-rotate(var(--folder-rotation))_saturate(1.15)] [mask-image:url('/collection-folder-vellum.webp')] [mask-repeat:no-repeat] [mask-size:contain]" />
                       </span>
                     </div>
                     <div className="collection-card-footer relative flex items-start justify-center pt-1">
