@@ -392,7 +392,7 @@ export function CollectionsPage() {
                         {previewBooks.length === 0 && (
                           <BookOpenIcon className="collection-preview-empty absolute left-1/2 top-[30%] z-10 size-9 -translate-x-1/2 text-muted-foreground" />
                         )}
-                        <span className="pointer-events-none absolute inset-x-[-2%] top-[9%] z-20 aspect-[1563/1006] bg-[url('/collection-folder-vellum.webp')] bg-contain bg-no-repeat opacity-80 backdrop-blur-[3px] [clip-path:inset(44%_0_0_0)] [filter:hue-rotate(var(--folder-rotation))_saturate(1.15)]" />
+                        <span className="pointer-events-none absolute inset-x-[-2%] top-[9%] z-20 aspect-[1563/1006] bg-[url('/collection-folder-vellum.webp')] bg-contain bg-no-repeat opacity-80 backdrop-blur-[24px] [clip-path:inset(44%_0_0_0)] [filter:hue-rotate(var(--folder-rotation))_saturate(1.15)] [mask-image:url('/collection-folder-vellum.webp')] [mask-repeat:no-repeat] [mask-size:contain]" />
                       </span>
                     </div>
                     <div className="collection-card-footer relative flex items-start justify-center pt-1">

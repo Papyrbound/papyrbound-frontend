@@ -3,11 +3,12 @@
 - Previous angled view: `docs/design-preview/collections-folder-matte-desktop.jpg` (1440 × 900 px).
 - Previous straight-on view: `docs/design-preview/collections-folder-front-desktop.jpg` (1440 × 900 px).
 - Rounded vellum view: `docs/design-preview/collections-folder-vellum-desktop.png` (1440 × 900 px).
+- Frosted pocket view: `docs/design-preview/collections-folder-blur-desktop.png` (1440 × 900 px).
 - Narrow view: `docs/design-preview/collections-folder-vellum-narrow.png`.
 
 **Findings**
 
-The folder remains straight on, with a slightly larger silhouette and softer rounded corners. Its front pocket is translucent and blurs the covers behind it, while the exposed cover artwork stays legible. The matte paperlike material and per-collection colors remain. No P0–P2 issue remains for the requested refinement.
+The folder remains straight on, with a slightly larger silhouette and softer rounded corners. Its front pocket has a stronger, silhouette-masked blur over the covers behind it, while the exposed cover artwork stays legible. The matte paperlike material and per-collection colors remain. No P0–P2 issue remains for the requested refinement.
 
 Papyrbound keeps real book covers, pin/menu controls, and the last-book-added date.
 
