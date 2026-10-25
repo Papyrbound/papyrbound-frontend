@@ -348,7 +348,7 @@ export function CollectionsPage() {
                   <Card
                     index={index}
                     key={collection.id}
-                    className="collection-card group/collection relative min-h-[326px] cursor-pointer gap-0 overflow-hidden rounded-[30px] border border-transparent bg-transparent px-5 pb-6 pt-7 shadow-none ring-0 transition-colors duration-200 hover:bg-[color-mix(in_srgb,var(--collection-color)_7%,var(--card))] hover:text-foreground [&:has(.collection-card-title:focus-visible)]:outline-2 [&:has(.collection-card-title:focus-visible)]:outline-ring [&:has(.collection-card-title:focus-visible)]:outline-offset-2"
+                    className="collection-card group/collection relative min-h-[326px] cursor-pointer gap-0 overflow-hidden rounded-[30px] border border-transparent bg-transparent px-5 pb-6 pt-7 shadow-none ring-0 hover:text-foreground before:pointer-events-none before:absolute before:inset-x-6 before:inset-y-4 before:rounded-[24px] before:bg-transparent before:transition-colors before:duration-200 before:content-[''] hover:before:bg-[color-mix(in_srgb,var(--collection-color)_7%,var(--card))] [&:has(.collection-card-title:focus-visible)]:outline-2 [&:has(.collection-card-title:focus-visible)]:outline-ring [&:has(.collection-card-title:focus-visible)]:outline-offset-2"
                     style={
                       {
                         "--collection-color": collection.color,
@@ -366,7 +366,7 @@ export function CollectionsPage() {
                       );
                     }}
                   >
-                    <div className="collection-open hover:bg-transparent flex flex-col justify-start w-full h-auto p-[0] border-0 rounded-[0] gap-[0] whitespace-normal overflow-visible bg-transparent [color:inherit]">
+                    <div className="collection-open relative z-10 hover:bg-transparent flex flex-col justify-start w-full h-auto p-[0] border-0 rounded-[0] gap-[0] whitespace-normal overflow-visible bg-transparent [color:inherit]">
                       <span
                         className="collection-preview relative block aspect-[6/5] w-full overflow-hidden"
                         aria-hidden="true"
@@ -386,7 +386,7 @@ export function CollectionsPage() {
                         )}
                       </span>
                     </div>
-                    <div className="collection-card-footer relative flex items-start justify-between pt-3">
+                    <div className="collection-card-footer relative z-10 flex items-start justify-between pt-3">
                       <div className="collection-card-info min-w-0 flex-1 pl-[12%] pr-9 text-left">
                         <div className="collection-title-row flex min-w-0 items-center justify-start gap-1.5">
                           <Button
