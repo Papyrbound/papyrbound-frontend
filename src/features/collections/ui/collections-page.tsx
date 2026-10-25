@@ -7,13 +7,11 @@ import {
   BookOpenIcon,
   CheckIcon,
   FolderPlusIcon,
-  LibraryIcon,
   MoreVerticalIcon,
   PencilIcon,
   PinIcon,
   PinOffIcon,
   PlusIcon,
-  RotateCwFadingClockIcon,
   SearchIcon,
   Trash2Icon,
 } from "lucide-react";
@@ -52,6 +50,13 @@ const colors = [
   { name: "Peach", value: "#f0c6ac" },
   { name: "Rose", value: "#cfaaae" },
 ];
+
+const folderHueByColor: Record<string, string> = {
+  "#d9cae9": "94deg",
+  "#d6dfbd": "-95deg",
+  "#f0c6ac": "-155deg",
+  "#cfaaae": "125deg",
+};
 
 function lastAddedLabel(lastBookAddedAt: string | undefined, now: number) {
   if (!lastBookAddedAt) return "No books added";
@@ -336,7 +341,7 @@ export function CollectionsPage() {
               </Button>
             )}
           </div>
-          <div className="collection-cards max-[767px]:gap-4 grid [grid-template-columns:repeat(auto-fill,_minmax(min(100%,_320px),_384px))] gap-[20px]">
+          <div className="collection-cards grid justify-center gap-5 [grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),340px))] max-[767px]:gap-4">
             {[...collections]
               .sort(
                 (first, second) => Number(second.pinned) - Number(first.pinned),
@@ -347,10 +352,13 @@ export function CollectionsPage() {
                   <Card
                     index={index}
                     key={collection.id}
-                    className="collection-card group/collection relative cursor-pointer gap-0 overflow-hidden rounded-3xl border border-transparent bg-transparent p-4 shadow-none ring-0 transition-colors duration-180 hover:bg-[color-mix(in_srgb,var(--collection-color)_5%,transparent)] hover:text-foreground [&:has(.collection-card-title:focus-visible)]:outline-2 [&:has(.collection-card-title:focus-visible)]:outline-ring [&:has(.collection-card-title:focus-visible)]:outline-offset-2"
+                    className="collection-card group/collection relative min-h-[312px] cursor-pointer gap-0 overflow-hidden rounded-[30px] border border-transparent bg-transparent px-5 pb-6 pt-7 shadow-none ring-0 transition-[background-color,transform] duration-200 hover:-translate-y-1 hover:bg-[color-mix(in_srgb,var(--collection-color)_7%,var(--card))] hover:text-foreground [&:has(.collection-card-title:focus-visible)]:outline-2 [&:has(.collection-card-title:focus-visible)]:outline-ring [&:has(.collection-card-title:focus-visible)]:outline-offset-2"
                     style={
                       {
                         "--collection-color": collection.color,
+                        "--folder-rotation":
+                          folderHueByColor[collection.color.toLowerCase()] ??
+                          "0deg",
                       } as CSSProperties
                     }
                     onClick={(event) => {
@@ -367,14 +375,14 @@ export function CollectionsPage() {
                   >
                     <div className="collection-open hover:bg-transparent flex flex-col justify-start w-full h-auto p-[0] border-0 rounded-[0] gap-[0] whitespace-normal overflow-visible bg-transparent [color:inherit]">
                       <span
-                        className="collection-preview relative block w-full [aspect-ratio:355_/_209] overflow-hidden rounded-[24px] [background:color-mix(in_srgb,_var(--collection-color)_18%,_var(--card))]"
+                        className="collection-preview relative block h-[204px] w-full overflow-hidden"
                         aria-hidden="true"
                       >
-                        <span className="pointer-events-none absolute inset-x-[4%] top-[5%] z-0 aspect-[1600/979] bg-[url('/collection-folder.webp')] bg-contain bg-no-repeat [clip-path:inset(0_0_54%_0)]" />
-                        <span className="collection-cover-stack absolute inset-x-[13%] top-[12%] z-10 flex items-start justify-center">
+                        <span className="pointer-events-none absolute inset-x-[3%] top-[15%] z-0 aspect-[1562/1007] bg-[url('/collection-folder.webp')] bg-contain bg-no-repeat [clip-path:inset(0_0_52%_0)] [filter:hue-rotate(var(--folder-rotation))]" />
+                        <span className="collection-cover-stack absolute inset-x-[14%] top-[12%] z-10 flex items-start justify-center">
                           {previewBooks.slice(0, 3).map((book, coverIndex) => (
                             <span
-                              className={`collection-preview-cover block w-[37%] shrink-0 origin-bottom [&_.book-cover]:rounded-[4px_7px_7px_4px] [&_.book-cover]:[box-shadow:inset_3px_0_0_rgb(0_0_0_/_10%),_3px_6px_10px_rgb(0_0_0_/_12%)] [&_.cover-type]:p-[7px_5px_0] [&_.cover-type]:text-[9px] [&_.cover-credit]:text-[4px]${coverIndex === 0 ? " translate-y-[13px] -rotate-8" : coverIndex === 1 ? " relative z-[1] -ml-[8%]" : " -ml-[8%] translate-y-[13px] rotate-8"}`}
+                              className={`collection-preview-cover block w-[37%] shrink-0 origin-bottom [&_.book-cover]:rounded-[4px_7px_7px_4px] [&_.book-cover]:[box-shadow:inset_3px_0_0_rgb(0_0_0_/_10%),_3px_6px_10px_rgb(0_0_0_/_12%)] [&_.cover-type]:p-[7px_5px_0] [&_.cover-type]:text-[9px] [&_.cover-credit]:text-[4px]${coverIndex === 0 ? " translate-y-[11px] -rotate-10" : coverIndex === 1 ? " relative z-[1] -ml-[7%] -translate-y-[4px]" : " -ml-[7%] translate-y-[11px] rotate-10"}`}
                               key={book.id}
                             >
                               <BookCover book={book} />
@@ -382,17 +390,17 @@ export function CollectionsPage() {
                           ))}
                         </span>
                         {previewBooks.length === 0 && (
-                          <BookOpenIcon className="collection-preview-empty absolute left-1/2 top-[28%] z-10 size-9 -translate-x-1/2 text-muted-foreground" />
+                          <BookOpenIcon className="collection-preview-empty absolute left-1/2 top-[30%] z-10 size-9 -translate-x-1/2 text-muted-foreground" />
                         )}
-                        <span className="pointer-events-none absolute inset-x-[4%] top-[5%] z-20 aspect-[1600/979] bg-[url('/collection-folder.webp')] bg-contain bg-no-repeat [clip-path:inset(43%_0_0_0)]" />
+                        <span className="pointer-events-none absolute inset-x-[3%] top-[15%] z-20 aspect-[1562/1007] bg-[url('/collection-folder.webp')] bg-contain bg-no-repeat [clip-path:inset(44%_0_0_0)] [filter:hue-rotate(var(--folder-rotation))]" />
                       </span>
                     </div>
-                    <div className="collection-card-footer flex items-center gap-[12px] pt-[16px]">
-                      <div className="collection-card-info flex-1 min-w-0 text-left">
-                        <div className="collection-title-row flex items-center gap-[6px] min-w-0">
+                    <div className="collection-card-footer relative flex items-start justify-center pt-1">
+                      <div className="collection-card-info min-w-0 max-w-full text-center">
+                        <div className="collection-title-row flex min-w-0 items-center justify-center gap-1.5">
                           <Button
                             variant="ghost"
-                            className="collection-card-title static block h-auto w-auto min-w-0 rounded-none border-0 bg-transparent p-0 text-left text-base leading-6 font-normal tracking-normal whitespace-normal text-inherit [overflow-wrap:anywhere]"
+                            className="collection-card-title static block h-auto w-auto min-w-0 rounded-none border-0 bg-transparent p-0 text-center text-lg leading-6 font-medium tracking-tight whitespace-normal text-inherit [overflow-wrap:anywhere]"
                             onClick={() =>
                               router.push(
                                 `/collections?collection=${encodeURIComponent(collection.id)}`,
@@ -416,7 +424,7 @@ export function CollectionsPage() {
                         </div>
                         <Button
                           variant="ghost"
-                          className="collection-card-meta h-auto! w-full! justify-start rounded-none! border-0! bg-transparent! p-0! text-left scale-100! hover:bg-transparent! active:bg-transparent! group-hover/collection:text-muted-foreground dark:text-[#e7e5e2] dark:group-hover/collection:text-[#e7e5e2] flex flex-nowrap items-center min-h-[24px] mt-[4px] gap-[4px] text-[12px] font-normal text-muted-foreground"
+                          className="collection-card-meta h-auto! w-full! justify-center rounded-none! border-0! bg-transparent! p-0! text-center scale-100! hover:bg-transparent! active:bg-transparent! flex flex-wrap items-center min-h-[24px] mt-1 gap-1 text-xs font-normal text-muted-foreground"
                           aria-label={`Open books in ${collection.name}`}
                           onClick={() =>
                             router.push(
@@ -425,25 +433,25 @@ export function CollectionsPage() {
                           }
                         >
                           <span
-                            className="collection-book-count [&_svg]:size-4 [&_svg]:stroke-1 shrink-0 inline-flex items-center gap-[4px] p-[2px_8px] h-[22px] rounded-full [background:color-mix(in_srgb,_var(--foreground)_8%,_transparent)] [color:inherit]"
+                            className="collection-book-count inline-flex shrink-0 items-center"
                             aria-label={`${previewBooks.length} books`}
                           >
-                            <LibraryIcon aria-hidden="true" />
-                            {previewBooks.length}
+                            {previewBooks.length}{" "}
+                            {previewBooks.length === 1 ? "book" : "books"}
                           </span>
                           <span
                             aria-hidden="true"
-                            className="collection-meta-dot shrink-0 inline-flex w-[24px] justify-center"
+                            className="collection-meta-dot inline-flex shrink-0 w-3 justify-center"
                           >
                             ·
                           </span>
                           <span
-                            className="collection-card-updated [&_svg]:size-4 [&_svg]:stroke-1 inline-flex items-center gap-[6px] min-w-0 whitespace-nowrap [&_svg]:shrink-0"
+                            className="collection-card-updated inline-flex min-w-0 items-center whitespace-nowrap"
                             aria-label={`Last book added: ${lastAddedLabel(collection.lastBookAddedAt, now)}`}
                           >
-                            <RotateCwFadingClockIcon aria-hidden="true" />
                             {collection.lastBookAddedAt ? (
                               <time dateTime={collection.lastBookAddedAt}>
+                                Added{" "}
                                 {lastAddedLabel(
                                   collection.lastBookAddedAt,
                                   now,
@@ -461,7 +469,7 @@ export function CollectionsPage() {
                             <Button
                               variant="ghost"
                               size="icon-sm"
-                              className="collection-menu relative z-[2] size-7! -mr-1 shrink-0 rounded-full bg-transparent p-1 text-inherit transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)] focus-visible:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)] aria-expanded:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)] [&_svg]:w-[20px] [&_svg]:h-[20px]"
+                              className="collection-menu absolute bottom-0 right-0 z-[2] size-7! shrink-0 rounded-full bg-transparent p-1 text-muted-foreground transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)] hover:text-foreground focus-visible:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)] aria-expanded:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)] [&_svg]:size-5"
                             />
                           }
                           aria-label={`Options for ${collection.name}`}
