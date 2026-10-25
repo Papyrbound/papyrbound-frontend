@@ -6,6 +6,7 @@ import {
   ArrowLeftIcon,
   BookOpenIcon,
   CheckIcon,
+  Clock3Icon,
   FolderPlusIcon,
   MoreVerticalIcon,
   PencilIcon,
@@ -412,7 +413,7 @@ export function CollectionsPage() {
                         </div>
                         <Button
                           variant="ghost"
-                          className="collection-card-meta mt-1 flex h-auto! min-h-[24px] w-auto! flex-wrap items-center justify-start gap-1 rounded-none! border-0! bg-transparent! p-0! text-left text-xs font-normal text-muted-foreground scale-100! hover:bg-transparent! active:bg-transparent!"
+                          className="collection-card-meta mt-1 flex h-auto! min-h-[24px] w-auto! flex-wrap items-center justify-start gap-x-4 gap-y-1 rounded-none! border-0! bg-transparent! p-0! text-left text-xs font-normal text-muted-foreground scale-100! hover:bg-transparent! active:bg-transparent!"
                           aria-label={`Open books in ${collection.name}`}
                           onClick={() =>
                             router.push(
@@ -421,22 +422,24 @@ export function CollectionsPage() {
                           }
                         >
                           <span
-                            className="collection-book-count inline-flex shrink-0 items-center"
+                            className="collection-book-count inline-flex shrink-0 items-center gap-1.5"
                             aria-label={`${previewBooks.length} books`}
                           >
+                            <BookOpenIcon
+                              aria-hidden="true"
+                              className="size-3.5"
+                            />
                             {previewBooks.length}{" "}
                             {previewBooks.length === 1 ? "book" : "books"}
                           </span>
                           <span
-                            aria-hidden="true"
-                            className="collection-meta-dot inline-flex shrink-0 w-3 justify-center"
-                          >
-                            ·
-                          </span>
-                          <span
-                            className="collection-card-updated inline-flex min-w-0 items-center whitespace-nowrap"
+                            className="collection-card-updated inline-flex min-w-0 items-center gap-1.5 whitespace-nowrap"
                             aria-label={`Last book added: ${lastAddedLabel(collection.lastBookAddedAt, now)}`}
                           >
+                            <Clock3Icon
+                              aria-hidden="true"
+                              className="size-3.5"
+                            />
                             {collection.lastBookAddedAt ? (
                               <time dateTime={collection.lastBookAddedAt}>
                                 Added{" "}
