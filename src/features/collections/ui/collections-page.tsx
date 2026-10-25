@@ -19,7 +19,7 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { Button } from "@/shared/ui/button";
-import { RevealCard as Card, RevealText } from "@/shared/ui/reading-motion";
+import { RevealCard as Card } from "@/shared/ui/reading-motion";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Input } from "@/shared/ui/input";
 import {
@@ -301,9 +301,7 @@ export function CollectionsPage() {
             </Button>
           </div>
           <div className="gallery-heading flex items-baseline gap-[12px] mb-[32px] [&_h1]:text-[20px] [&_h1]:font-medium [&>span]:text-[12px] [&>span]:text-muted-foreground">
-            <h1>
-              <RevealText>{selected.name}</RevealText>
-            </h1>
+            <h1>{selected.name}</h1>
             <span>
               {collectionBooks(selected).length}{" "}
               {collectionBooks(selected).length === 1 ? "book" : "books"}
@@ -321,9 +319,7 @@ export function CollectionsPage() {
         >
           <div className="collections-heading max-[767px]:mb-7 max-[767px]:flex-wrap max-[767px]:items-start max-[767px]:gap-3 max-[767px]:[&_h1]:text-[22px] flex items-center justify-between gap-[20px] mb-[32px] [&_h1]:text-[28px] [&_h1]:[line-height:1.2] [&_h1]:font-medium [&_h1]:tracking-[-.045em] [&_p]:mt-[8px] [&_p]:text-[12px] [&_p]:text-muted-foreground">
             <div>
-              <h1>
-                <RevealText>Your collections</RevealText>
-              </h1>
+              <h1>Your collections</h1>
               <p>
                 {collections.length}{" "}
                 {collections.length === 1 ? "collection" : "collections"} ·
