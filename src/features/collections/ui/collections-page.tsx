@@ -367,13 +367,14 @@ export function CollectionsPage() {
                   >
                     <div className="collection-open hover:bg-transparent flex flex-col justify-start w-full h-auto p-[0] border-0 rounded-[0] gap-[0] whitespace-normal overflow-visible bg-transparent [color:inherit]">
                       <span
-                        className="collection-preview relative flex w-full [aspect-ratio:355_/_209] rounded-[24px] overflow-hidden items-start justify-center p-[18px_10px_0] [background:color-mix(in_srgb,_var(--collection-color)_18%,_var(--card))]"
+                        className="collection-preview relative block w-full [aspect-ratio:355_/_209] overflow-hidden rounded-[24px] [background:color-mix(in_srgb,_var(--collection-color)_18%,_var(--card))]"
                         aria-hidden="true"
                       >
-                        <span className="collection-cover-stack relative flex w-full items-start justify-center">
+                        <span className="pointer-events-none absolute inset-x-[4%] top-[5%] z-0 aspect-[1600/979] bg-[url('/collection-folder.webp')] bg-contain bg-no-repeat [clip-path:inset(0_0_54%_0)]" />
+                        <span className="collection-cover-stack absolute inset-x-[13%] top-[12%] z-10 flex items-start justify-center">
                           {previewBooks.slice(0, 3).map((book, coverIndex) => (
                             <span
-                              className={`collection-preview-cover block w-[47%] shrink-0 origin-top [&_.book-cover]:rounded-[4px_7px_7px_4px] [&_.book-cover]:[box-shadow:inset_3px_0_0_rgb(0_0_0_/_10%),_3px_6px_10px_rgb(0_0_0_/_12%)] [&_.cover-type]:text-[10px] [&_.cover-type]:p-[9px_6px_0] [&_.cover-credit]:text-[5px]${coverIndex === 0 ? " translate-y-[30px] -rotate-5" : coverIndex === 1 ? " relative z-[1] -ml-[20%] w-[45%]! translate-y-[20px]" : " -ml-[20%] translate-y-[30px] rotate-5"}`}
+                              className={`collection-preview-cover block w-[37%] shrink-0 origin-bottom [&_.book-cover]:rounded-[4px_7px_7px_4px] [&_.book-cover]:[box-shadow:inset_3px_0_0_rgb(0_0_0_/_10%),_3px_6px_10px_rgb(0_0_0_/_12%)] [&_.cover-type]:p-[7px_5px_0] [&_.cover-type]:text-[9px] [&_.cover-credit]:text-[4px]${coverIndex === 0 ? " translate-y-[13px] -rotate-8" : coverIndex === 1 ? " relative z-[1] -ml-[8%]" : " -ml-[8%] translate-y-[13px] rotate-8"}`}
                               key={book.id}
                             >
                               <BookCover book={book} />
@@ -381,8 +382,9 @@ export function CollectionsPage() {
                           ))}
                         </span>
                         {previewBooks.length === 0 && (
-                          <BookOpenIcon className="collection-preview-empty w-[40px] h-[40px] [align-self:center] [color:#54524f]" />
+                          <BookOpenIcon className="collection-preview-empty absolute left-1/2 top-[28%] z-10 size-9 -translate-x-1/2 text-muted-foreground" />
                         )}
+                        <span className="pointer-events-none absolute inset-x-[4%] top-[5%] z-20 aspect-[1600/979] bg-[url('/collection-folder.webp')] bg-contain bg-no-repeat [clip-path:inset(43%_0_0_0)]" />
                       </span>
                     </div>
                     <div className="collection-card-footer flex items-center gap-[12px] pt-[16px]">
