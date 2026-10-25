@@ -424,7 +424,7 @@ export function CollectionsPage() {
                           }
                         >
                           <span
-                            className="collection-book-count inline-flex h-[22px] shrink-0 items-center gap-1 rounded-full bg-[#e7e5e2] px-2 text-[#42403d]"
+                            className="collection-book-count inline-flex h-[22px] shrink-0 items-center gap-1 rounded-full bg-[#c8c6c3] px-2 text-[#42403d]"
                             aria-label={`${previewBooks.length} books`}
                           >
                             <LibraryIcon
