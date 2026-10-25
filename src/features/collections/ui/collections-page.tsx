@@ -366,7 +366,7 @@ export function CollectionsPage() {
                       );
                     }}
                   >
-                    <div className="collection-open relative hover:bg-transparent flex flex-col justify-start w-full h-auto p-[0] border-0 rounded-[0] gap-[0] whitespace-normal overflow-visible bg-transparent [color:inherit]">
+                    <div className="collection-open hover:bg-transparent flex flex-col justify-start w-full h-auto p-[0] border-0 rounded-[0] gap-[0] whitespace-normal overflow-visible bg-transparent [color:inherit]">
                       <span
                         className="collection-preview relative block aspect-[6/5] w-full overflow-hidden"
                         aria-hidden="true"
@@ -385,17 +385,6 @@ export function CollectionsPage() {
                           <BookOpenIcon className="collection-preview-empty absolute left-1/2 top-1/2 size-9 -translate-1/2 text-muted-foreground" />
                         )}
                       </span>
-                      <Button
-                        variant="ghost"
-                        className="collection-pin group/pin absolute left-[12%] top-0 z-40 h-6 w-auto min-w-6 gap-1 rounded-full bg-[#e7e5e2] px-1.5 py-0 text-xs font-normal text-[#42403d] shadow-none transition-none hover:bg-[#e7e5e2] hover:text-[#42403d] active:bg-[#e7e5e2] [&_svg]:size-4 [&_svg]:stroke-[1.5]"
-                        aria-label={`${collection.pinned ? "Unpin" : "Pin"} ${collection.name}`}
-                        onClick={() => togglePinned(collection)}
-                      >
-                        <PinIcon aria-hidden="true" />
-                        <span className="hidden group-hover/pin:inline group-focus-visible/pin:inline">
-                          {collection.pinned ? "Unpin" : "Pin"}
-                        </span>
-                      </Button>
                     </div>
                     <div className="collection-card-footer relative flex items-start justify-between pt-3">
                       <div className="collection-card-info min-w-0 flex-1 pl-[12%] pr-9 text-left">
@@ -412,6 +401,17 @@ export function CollectionsPage() {
                           >
                             {collection.name}
                           </Button>
+                          {collection.pinned && (
+                            <Button
+                              variant="ghost"
+                              size="icon-xs"
+                              className="collection-pin relative z-[2] size-[22px]! min-w-[22px] shrink-0 rounded-full border-0 bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] p-[3px] text-muted-foreground transition-none hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-muted-foreground active:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] [&_svg]:size-4 [&_svg]:stroke-[1.5]"
+                              aria-label={`Unpin ${collection.name}`}
+                              onClick={() => togglePinned(collection)}
+                            >
+                              <PinIcon aria-hidden="true" />
+                            </Button>
+                          )}
                         </div>
                         <Button
                           variant="ghost"
