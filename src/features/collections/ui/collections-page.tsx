@@ -6,13 +6,15 @@ import {
   ArrowLeftIcon,
   BookOpenIcon,
   CheckIcon,
-  Clock3Icon,
+  DotIcon,
   FolderPlusIcon,
+  LibraryIcon,
   MoreVerticalIcon,
   PencilIcon,
   PinIcon,
   PinOffIcon,
   PlusIcon,
+  RotateCwFadingClockIcon,
   SearchIcon,
   Trash2Icon,
 } from "lucide-react";
@@ -364,7 +366,7 @@ export function CollectionsPage() {
                       );
                     }}
                   >
-                    <div className="collection-open hover:bg-transparent flex flex-col justify-start w-full h-auto p-[0] border-0 rounded-[0] gap-[0] whitespace-normal overflow-visible bg-transparent [color:inherit]">
+                    <div className="collection-open relative hover:bg-transparent flex flex-col justify-start w-full h-auto p-[0] border-0 rounded-[0] gap-[0] whitespace-normal overflow-visible bg-transparent [color:inherit]">
                       <span
                         className="collection-preview relative block aspect-[6/5] w-full overflow-hidden"
                         aria-hidden="true"
@@ -383,6 +385,17 @@ export function CollectionsPage() {
                           <BookOpenIcon className="collection-preview-empty absolute left-1/2 top-1/2 size-9 -translate-1/2 text-muted-foreground" />
                         )}
                       </span>
+                      <Button
+                        variant="ghost"
+                        className="collection-pin group/pin absolute left-[12%] top-0 z-40 h-6 w-auto min-w-6 gap-1 rounded-full bg-[#e7e5e2] px-1.5 py-0 text-xs font-normal text-[#42403d] shadow-none transition-none hover:bg-[#e7e5e2] hover:text-[#42403d] active:bg-[#e7e5e2] [&_svg]:size-4 [&_svg]:stroke-[1.5]"
+                        aria-label={`${collection.pinned ? "Unpin" : "Pin"} ${collection.name}`}
+                        onClick={() => togglePinned(collection)}
+                      >
+                        <PinIcon aria-hidden="true" />
+                        <span className="hidden group-hover/pin:inline group-focus-visible/pin:inline">
+                          {collection.pinned ? "Unpin" : "Pin"}
+                        </span>
+                      </Button>
                     </div>
                     <div className="collection-card-footer relative flex items-start justify-between pt-3">
                       <div className="collection-card-info min-w-0 flex-1 pl-[12%] pr-9 text-left">
@@ -399,21 +412,10 @@ export function CollectionsPage() {
                           >
                             {collection.name}
                           </Button>
-                          {collection.pinned && (
-                            <Button
-                              variant="ghost"
-                              size="icon-xs"
-                              className="collection-pin relative z-[2] size-[22px]! min-w-[22px] shrink-0 rounded-full border-0 bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] p-[3px] text-muted-foreground transition-none hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-muted-foreground active:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] [&_svg]:size-4 [&_svg]:stroke-[1.5]"
-                              aria-label={`Unpin ${collection.name}`}
-                              onClick={() => togglePinned(collection)}
-                            >
-                              <PinIcon aria-hidden="true" />
-                            </Button>
-                          )}
                         </div>
                         <Button
                           variant="ghost"
-                          className="collection-card-meta mt-1 flex h-auto! min-h-[24px] w-auto! flex-wrap items-center justify-start gap-x-4 gap-y-1 rounded-none! border-0! bg-transparent! p-0! text-left text-xs font-normal text-muted-foreground scale-100! hover:bg-transparent! active:bg-transparent!"
+                          className="collection-card-meta mt-1 flex h-auto! min-h-6 w-auto! flex-wrap items-center justify-start gap-0 rounded-none! border-0! bg-transparent! p-0! text-left text-xs font-normal text-muted-foreground scale-100! hover:bg-transparent! active:bg-transparent!"
                           aria-label={`Open books in ${collection.name}`}
                           onClick={() =>
                             router.push(
@@ -422,27 +424,31 @@ export function CollectionsPage() {
                           }
                         >
                           <span
-                            className="collection-book-count inline-flex shrink-0 items-center gap-1.5"
+                            className="collection-book-count inline-flex h-[22px] shrink-0 items-center gap-1 rounded-full bg-[#e7e5e2] px-2 text-[#42403d]"
                             aria-label={`${previewBooks.length} books`}
                           >
-                            <BookOpenIcon
+                            <LibraryIcon
                               aria-hidden="true"
-                              className="size-3.5"
+                              className="size-4"
                             />
-                            {previewBooks.length}{" "}
-                            {previewBooks.length === 1 ? "book" : "books"}
+                            {previewBooks.length}
                           </span>
                           <span
-                            className="collection-card-updated inline-flex min-w-0 items-center gap-1.5 whitespace-nowrap"
+                            aria-hidden="true"
+                            className="collection-meta-dot inline-flex size-6 shrink-0 items-center justify-center"
+                          >
+                            <DotIcon className="size-6" />
+                          </span>
+                          <span
+                            className="collection-card-updated inline-flex min-w-0 items-center gap-1 whitespace-nowrap"
                             aria-label={`Last book added: ${lastAddedLabel(collection.lastBookAddedAt, now)}`}
                           >
-                            <Clock3Icon
+                            <RotateCwFadingClockIcon
                               aria-hidden="true"
-                              className="size-3.5"
+                              className="size-4"
                             />
                             {collection.lastBookAddedAt ? (
                               <time dateTime={collection.lastBookAddedAt}>
-                                Added{" "}
                                 {lastAddedLabel(
                                   collection.lastBookAddedAt,
                                   now,
