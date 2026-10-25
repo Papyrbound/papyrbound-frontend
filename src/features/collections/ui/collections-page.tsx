@@ -352,7 +352,7 @@ export function CollectionsPage() {
                   <Card
                     index={index}
                     key={collection.id}
-                    className="collection-card group/collection relative min-h-[312px] cursor-pointer gap-0 overflow-hidden rounded-[30px] border border-transparent bg-transparent px-5 pb-6 pt-7 shadow-none ring-0 transition-[background-color,transform] duration-200 hover:-translate-y-1 hover:bg-[color-mix(in_srgb,var(--collection-color)_7%,var(--card))] hover:text-foreground [&:has(.collection-card-title:focus-visible)]:outline-2 [&:has(.collection-card-title:focus-visible)]:outline-ring [&:has(.collection-card-title:focus-visible)]:outline-offset-2"
+                    className="collection-card group/collection relative min-h-[312px] cursor-pointer gap-0 overflow-hidden rounded-[30px] border border-transparent bg-transparent px-5 pb-6 pt-7 shadow-none ring-0 transition-colors duration-200 hover:bg-[color-mix(in_srgb,var(--collection-color)_7%,var(--card))] hover:text-foreground [&:has(.collection-card-title:focus-visible)]:outline-2 [&:has(.collection-card-title:focus-visible)]:outline-ring [&:has(.collection-card-title:focus-visible)]:outline-offset-2"
                     style={
                       {
                         "--collection-color": collection.color,
