@@ -337,7 +337,7 @@ export function CollectionsPage() {
               </Button>
             )}
           </div>
-          <div className="collection-cards grid justify-start gap-5 [grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),340px))] max-[767px]:gap-4">
+          <div className="collection-cards -ml-14 grid justify-start gap-5 [grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),340px))] max-[767px]:-ml-9 max-[767px]:gap-4">
             {[...collections]
               .sort(
                 (first, second) => Number(second.pinned) - Number(first.pinned),
@@ -348,7 +348,7 @@ export function CollectionsPage() {
                   <Card
                     index={index}
                     key={collection.id}
-                    className="collection-card group/collection relative min-h-[326px] cursor-pointer gap-0 overflow-hidden rounded-[30px] border border-transparent bg-transparent px-5 pb-6 pt-7 shadow-none ring-0 hover:text-foreground before:pointer-events-none before:absolute before:inset-x-5 before:inset-y-3 before:rounded-[24px] before:bg-transparent before:transition-colors before:duration-200 before:content-[''] hover:before:bg-[color-mix(in_srgb,var(--collection-color)_7%,var(--card))] [&:has(.collection-card-title:focus-visible)]:outline-2 [&:has(.collection-card-title:focus-visible)]:outline-ring [&:has(.collection-card-title:focus-visible)]:outline-offset-2"
+                    className="collection-card group/collection relative min-h-[326px] cursor-pointer gap-0 overflow-hidden rounded-[30px] border border-transparent bg-transparent px-5 pb-6 pt-7 shadow-none ring-0 max-[767px]:px-1 hover:text-foreground before:pointer-events-none before:absolute before:inset-x-5 before:inset-y-3 before:rounded-[24px] before:bg-transparent before:transition-colors before:duration-200 before:content-[''] hover:before:bg-[color-mix(in_srgb,var(--collection-color)_7%,var(--card))] [&:has(.collection-card-title:focus-visible)]:outline-2 [&:has(.collection-card-title:focus-visible)]:outline-ring [&:has(.collection-card-title:focus-visible)]:outline-offset-2"
                     style={
                       {
                         "--collection-color": collection.color,
