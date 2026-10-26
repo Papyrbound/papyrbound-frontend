@@ -1,5 +1,5 @@
-import { EditorialOverview } from "@/features/home/ui/editorial-overview";
+import { LibraryOverview } from "@/features/home/ui/library-overview";
 
 export default function HomePage() {
-  return <EditorialOverview />;
+  return <LibraryOverview />;
 }
