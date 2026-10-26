@@ -446,16 +446,6 @@ html[data-reduce-motion="true"] *::after {
   isolation: isolate;
   background: transparent;
 }
-@keyframes reading-copy-in {
-  from {
-    opacity: 0;
-    translate: 0 6px;
-  }
-  to {
-    opacity: 1;
-    translate: 0 0;
-  }
-}
 @keyframes reading-book-swap {
   from {
     opacity: 0;
@@ -499,12 +489,10 @@ html[data-reduce-motion="true"] *::after {
     scale: 1.1;
   }
 }
-html[data-reduce-motion="true"] .reading-word-mask > span,
 html[data-reduce-motion="true"] [data-reading-reveal] {
   transform: none !important;
   opacity: 1 !important;
 }
-html[data-reduce-motion="true"] .home-intro,
 html[data-reduce-motion="true"] .home-featured-read {
   animation: none !important;
 }
@@ -523,12 +511,10 @@ html[data-reduce-motion="true"] .home-snapshot-queue > svg {
   translate: none !important;
 }
 @media (prefers-reduced-motion: reduce) {
-  .reading-word-mask > span,
   [data-reading-reveal] {
     transform: none !important;
     opacity: 1 !important;
   }
-  .home-intro,
   .home-featured-read {
     animation: none !important;
   }

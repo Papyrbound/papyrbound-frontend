@@ -64,31 +64,3 @@ export function RevealCard({
     />
   );
 }
-
-export function RevealText({ children }: { children: string }) {
-  const reduced = useReadingMotion();
-  const words = children.split(" ");
-  return (
-    <span className="reading-reveal-text">
-      {words.map((word, index) => (
-        <span
-          key={`${index}-${word}`}
-          className="reading-word-mask inline-block overflow-hidden [vertical-align:bottom] [white-space:pre] [&>span]:[display:inline-block]"
-        >
-          <m.span
-            initial={reduced ? false : { y: "105%", opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{
-              duration: reduced ? 0 : 0.5,
-              delay: reduced ? 0 : Math.min(index, 10) * 0.04,
-              ease: readingEase,
-            }}
-          >
-            {word}
-          </m.span>
-          {index < words.length - 1 ? " " : ""}
-        </span>
-      ))}
-    </span>
-  );
-}

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
-import { RevealCard, RevealText } from "@/shared/ui/reading-motion";
+import { RevealCard } from "@/shared/ui/reading-motion";
 import {
   Sheet,
   SheetContent,
@@ -62,10 +62,8 @@ export function LibraryOverview() {
           <p className="home-eyebrow max-[600px]:block text-muted-foreground text-[11px] mb-[6px]">
             Your reading space
           </p>
-          <h1>
-            <RevealText>Welcome back.</RevealText>
-          </h1>
-          <p className="home-intro mt-2 text-[13px] text-muted-foreground [animation:reading-copy-in_480ms_var(--motion-reading-ease)_100ms_backwards]">
+          <h1>Welcome back.</h1>
+          <p className="home-intro mt-2 text-[13px] text-muted-foreground">
             A book to return to. A new one to discover.
           </p>
         </div>

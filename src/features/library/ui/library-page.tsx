@@ -24,7 +24,6 @@ import {
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
 import { BookGallery } from "./book-gallery";
 import { NextReadDialog } from "./next-read-dialog";
-import { RevealText } from "@/shared/ui/reading-motion";
 
 const coverSizes = [128, 160, 192, 224, 256];
 const readingFilters = [
@@ -67,9 +66,7 @@ export function LibraryPage() {
     >
       <div className="gallery-heading library-toolbar max-[767px]:mb-5 max-[767px]:flex-wrap max-[767px]:gap-3 flex items-baseline gap-[12px] mb-[32px] items-center justify-between gap-[16px] [&_h1]:text-[20px] [&_h1]:font-medium [&>span]:text-[12px] [&>span]:text-muted-foreground">
         <div className="library-title flex items-center gap-3 [&>span]:text-[12px] [&>span]:text-muted-foreground [&>span]:[white-space:nowrap]">
-          <h1>
-            <RevealText>Your library</RevealText>
-          </h1>
+          <h1>Your library</h1>
           <span aria-live="polite">
             {visibleBooks.length} {visibleBooks.length === 1 ? "book" : "books"}
           </span>

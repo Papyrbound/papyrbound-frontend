@@ -32,7 +32,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/shared/ui/accordion";
-import { RevealText, useReadingMotion } from "@/shared/ui/reading-motion";
+import { useReadingMotion } from "@/shared/ui/reading-motion";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -170,9 +170,7 @@ export function AnnotationsPage() {
     >
       <header className="annotations-heading max-[700px]:mb-6 max-[700px]:flex-wrap max-[700px]:items-start max-[700px]:gap-4 max-[700px]:[&_h1]:text-2xl flex items-center justify-between gap-[20px] mb-[32px] [&_h1]:text-[28px] [&_h1]:[line-height:1.2] [&_h1]:font-medium [&_h1]:tracking-[-1px] [&_p]:text-muted-foreground [&_p]:text-[13px] [&_p]:mt-[8px]">
         <div>
-          <h1>
-            <RevealText>Your annotations</RevealText>
-          </h1>
+          <h1>Your annotations</h1>
           <p>Highlights and thoughts worth coming back to.</p>
         </div>
         {available.length > 0 && (
