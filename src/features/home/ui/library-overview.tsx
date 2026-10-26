@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
-import { RevealCard } from "@/shared/ui/reading-motion";
 import {
   Sheet,
   SheetContent,
@@ -89,8 +88,7 @@ export function LibraryOverview() {
       </header>
 
       <div className="home-bento max-[600px]:gap-[14px] grid [grid-template-columns:repeat(12,_minmax(0,_1fr))] gap-[16px] [align-items:stretch]">
-        <RevealCard
-          index={0}
+        <Card
           className="home-bento-tile min-w-0 gap-0 rounded-3xl border border-[color-mix(in_srgb,var(--foreground)_5%,transparent)] bg-card p-[22px] shadow-none ring-0 max-[600px]:rounded-[20px] max-[600px]:p-[18px] home-bento-reading max-[1150px]:[&_.home-section-heading>div]:gap-0 [grid-area:reading] [&_.home-section-heading]:mb-[18px] [&_.home-section-heading]:[flex-wrap:wrap] [&_.home-featured-art]:w-[44%] [&_.home-featured-art]:[right:-10%] [&_.home-featured-art]:[top:-50%] [&_.home-featured-art]:opacity-[.19] max-[600px]:[&_.home-featured-art]:w-[70%] max-[600px]:[&_.home-featured-art]:top-0 max-[600px]:[&_.home-featured-art]:opacity-[.07] [&_.home-featured-progress]:max-w-[300px] [&_.home-featured-progress]:mt-[14px] [&_.home-featured-actions]:mt-[14px]"
           aria-labelledby="home-reading-title"
         >
@@ -157,7 +155,7 @@ export function LibraryOverview() {
           {currentBook && (
             <Card
               key={currentBook.id}
-              className="home-featured-read relative isolate flex min-h-0 flex-1 flex-row items-center gap-6 overflow-visible rounded-none border-0 bg-transparent p-0 shadow-none ring-0 max-[600px]:gap-4 [animation:reading-book-swap_340ms_var(--motion-reading-ease)_both]"
+              className="home-featured-read relative isolate flex min-h-0 flex-1 flex-row items-center gap-6 overflow-visible rounded-none border-0 bg-transparent p-0 shadow-none ring-0 max-[600px]:gap-4"
               style={{ "--book-color": currentBook.paper } as CSSProperties}
             >
               <div
@@ -231,9 +229,8 @@ export function LibraryOverview() {
               </Button>
             </Card>
           )}
-        </RevealCard>
-        <RevealCard
-          index={1}
+        </Card>
+        <Card
           className="home-bento-tile home-bento-next min-w-0 gap-0 rounded-3xl border border-[color-mix(in_srgb,var(--foreground)_5%,transparent)] bg-[color-mix(in_srgb,var(--next-color)_10%,var(--card))] p-[22px] shadow-none ring-0 [grid-area:notebook] max-[600px]:rounded-[20px] max-[600px]:p-[18px]"
           aria-labelledby="home-next-title"
           style={
@@ -303,9 +300,8 @@ export function LibraryOverview() {
               </div>
             </>
           )}
-        </RevealCard>
-        <RevealCard
-          index={2}
+        </Card>
+        <Card
           className="home-bento-tile min-w-0 gap-0 rounded-3xl border border-[color-mix(in_srgb,var(--foreground)_5%,transparent)] bg-card p-[22px] shadow-none ring-0 max-[600px]:rounded-[20px] max-[600px]:p-[18px] home-bento-recent [grid-area:recent] [&_.home-recent-grid]:[grid-template-columns:repeat(4,_minmax(0,_1fr))] [&_.home-recent-grid]:gap-[16px] [&_.home-recent-grid]:[justify-content:start] [&_.home-recent-book]:max-w-[120px] [&_.cover-type]:text-[clamp(9px,_.9vw,_14px)]"
           aria-labelledby="home-recent-title"
         >
@@ -354,9 +350,8 @@ export function LibraryOverview() {
               Books you add will appear here.
             </p>
           )}
-        </RevealCard>
-        <RevealCard
-          index={3}
+        </Card>
+        <Card
           className="home-bento-tile min-w-0 gap-0 rounded-3xl border border-[color-mix(in_srgb,var(--foreground)_5%,transparent)] bg-card p-[22px] shadow-none ring-0 max-[600px]:rounded-[20px] max-[600px]:p-[18px] home-bento-collections [grid-area:collections] [&_.home-collection-list]:gap-[18px] [&_.home-collection-art]:w-[76px] [&_.home-collection-art]:h-[68px] [&_.home-collection-art>span]:w-[24px] [&_.home-collection]:gap-[12px] [&_.home-collection-name]:text-[12px]"
           aria-labelledby="home-collections-title"
         >
@@ -436,7 +431,7 @@ export function LibraryOverview() {
               <ChevronRightIcon />
             </Button>
           )}
-        </RevealCard>
+        </Card>
         <ReadingGoalsCard books={books} onSelect={setSelected} />
       </div>
 

@@ -446,16 +446,6 @@ html[data-reduce-motion="true"] *::after {
   isolation: isolate;
   background: transparent;
 }
-@keyframes reading-book-swap {
-  from {
-    opacity: 0;
-    translate: 8px 0;
-  }
-  to {
-    opacity: 1;
-    translate: 0 0;
-  }
-}
 @media (hover: hover) and (pointer: fine) {
   .home-recent-book .book-cover,
   .home-featured-cover .book-cover,
@@ -489,13 +479,6 @@ html[data-reduce-motion="true"] *::after {
     scale: 1.1;
   }
 }
-html[data-reduce-motion="true"] [data-reading-reveal] {
-  transform: none !important;
-  opacity: 1 !important;
-}
-html[data-reduce-motion="true"] .home-featured-read {
-  animation: none !important;
-}
 html[data-reduce-motion="true"] .book-cover,
 html[data-reduce-motion="true"] .gallery-cover-button,
 html[data-reduce-motion="true"] [data-slot="button"],
@@ -511,13 +494,6 @@ html[data-reduce-motion="true"] .home-snapshot-queue > svg {
   translate: none !important;
 }
 @media (prefers-reduced-motion: reduce) {
-  [data-reading-reveal] {
-    transform: none !important;
-    opacity: 1 !important;
-  }
-  .home-featured-read {
-    animation: none !important;
-  }
   .book-cover,
   .gallery-cover-button,
   [data-slot="button"],

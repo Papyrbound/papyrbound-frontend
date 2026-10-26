@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { PolarAngleAxis, RadialBar, RadialBarChart } from "recharts";
 import { Button } from "@/shared/ui/button";
+import { Card } from "@/shared/ui/card";
 import { ChartContainer, type ChartConfig } from "@/shared/ui/chart";
 import { Input } from "@/shared/ui/input";
 import {
@@ -18,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { RevealCard, useReadingMotion } from "@/shared/ui/reading-motion";
+import { useReadingMotion } from "@/shared/ui/reading-motion";
 import {
   dayKey,
   saveReadingGoal,
@@ -107,8 +108,7 @@ export function ReadingGoalsCard({
 
   return (
     <>
-      <RevealCard
-        index={4}
+      <Card
         className="home-bento-tile min-w-0 gap-0 rounded-3xl border border-[color-mix(in_srgb,var(--foreground)_5%,transparent)] bg-card p-[22px] shadow-none ring-0 max-[600px]:rounded-[20px] max-[600px]:p-[18px] home-reading-goals [grid-area:wishlist]"
         aria-labelledby="home-goals-title"
       >
@@ -277,7 +277,7 @@ export function ReadingGoalsCard({
         <p className="sr-only" role="status">
           {notice}
         </p>
-      </RevealCard>
+      </Card>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>

@@ -19,7 +19,7 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { Button } from "@/shared/ui/button";
-import { RevealCard as Card } from "@/shared/ui/reading-motion";
+import { Card } from "@/shared/ui/card";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Input } from "@/shared/ui/input";
 import {
@@ -338,11 +338,10 @@ export function CollectionsPage() {
               .sort(
                 (first, second) => Number(second.pinned) - Number(first.pinned),
               )
-              .map((collection, index) => {
+              .map((collection) => {
                 const previewBooks = collectionBooks(collection);
                 return (
                   <Card
-                    index={index}
                     key={collection.id}
                     className="collection-card group/collection relative min-h-[326px] cursor-pointer gap-0 overflow-hidden rounded-[30px] border border-transparent bg-transparent px-0 pb-6 pt-7 shadow-none ring-0 max-[767px]:px-1 hover:text-foreground before:pointer-events-none before:absolute before:inset-x-0 before:inset-y-3 before:rounded-[24px] before:bg-transparent before:transition-colors before:duration-200 before:content-[''] hover:before:bg-[color-mix(in_srgb,var(--collection-color)_7%,var(--card))] max-[767px]:before:inset-x-5 [&:has(.collection-card-title:focus-visible)]:outline-2 [&:has(.collection-card-title:focus-visible)]:outline-ring [&:has(.collection-card-title:focus-visible)]:outline-offset-2"
                     style={
