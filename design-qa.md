@@ -1,31 +1,30 @@
-# Homepage design QA
+# Panels-inspired desktop UI verification
 
-final result: passed
+Branch: codex/panels-inspired-reader
+
+## Scope
+Frontend implementation of Reading now, reusable reading tiles, book information sheet, and a reading preview. Existing shadcn controls, Tailwind, Barusans, and local book fixtures are reused. Original sample prose and chapters live in src/features/home/model/reader-preview.ts. No parsing, backend commands, APIs, dependencies, or new persistence were added.
+
+## Visual direction
+Panels references informed the cover-first reading tiles, lower-edge title and progress overlay, quiet navigation, and compact supporting rows. This is an original adaptation to the existing Papyrbound visual system rather than a pixel copy. The new Home uses a calm solid surface; supporting routes retain their existing styling.
 
 ## Evidence
-- Source: C:/Users/joshd/.codex/generated_images/01a115e1-2207-7ef0-a431-1b02270d494a/exec-44d82666-ce32-4466-9277-808654251050.png
-- Desktop: C:/Users/joshd/.codex/visualizations/2026/10/07/01a115e1-2207-7ef0-a431-1b02270d494a/home-option-three.png
-- Mobile: C:/Users/joshd/.codex/visualizations/2026/10/07/01a115e1-2207-7ef0-a431-1b02270d494a/home-option-three-mobile.png
-- Desktop comparison viewport: 1488 x 1056 CSS pixels. Source and captured desktop displayed together at comparable density; mobile: 390 x 844.
-- State: Home, dark mode, three reading books, empty favourites. Light mode inspected too.
+- Wide desktop: 1440 x 960, dark mode.
+- Small desktop: 960 x 720, light and dark modes.
+- Homepage screenshot: C:/Users/joshd/.codex/visualizations/2026/10/07/01a115e1-2207-7ef0-a431-1b02270d494a/panels-home-desktop.png
+- Small desktop screenshot: C:/Users/joshd/.codex/visualizations/2026/10/07/01a115e1-2207-7ef0-a431-1b02270d494a/panels-home-small-desktop.png
+- Reading preview screenshot: C:/Users/joshd/.codex/visualizations/2026/10/07/01a115e1-2207-7ef0-a431-1b02270d494a/panels-reader-desktop.png
 
-## Comparison and fixes
-- First comparison found a P1 width constraint accidentally applied to the featured panels. Removed that constraint from featured cards while retaining the 150px maximum for shelf covers.
-- Recaptured and compared with source: three equally sized panels now fill the content region, with readable titles and progress.
-- Typography: existing Barusans retained, clear title/author hierarchy, long shelf titles truncate with full accessible button names.
-- Layout: square artwork regions, tinted footers, six-book shelf followed by a compact favourites section. Existing sidebar width retained; favourites can require scrolling at this viewport.
-- Colors: pastel lavender, sage, and peach derived from actual book data; theme-aware footers and progress indicators.
-- Assets: existing product book covers retained intentionally rather than replacing library artwork or author names with the generated mock's invented variants. Soft shadows and subtle tilt follow selected composition.
-- Content: actual titles/authors/progress, current favourites state, existing routes and book detail action retained.
-- Full-view comparison is sufficient for this simple layout; text and controls were readable at native desktop size and separately inspected on mobile.
+## Refinements
+Initial full-width covers were too tall in shorter windows. Capped desktop tiles at 260px, removed repetitive tile captions, and reduced Next up to one book. Smaller windows use horizontal shelves and stack supporting sections. Reading content has its own scroll area with persistent toolbar and chapter controls.
 
-## Interaction and verification
-- Featured book opens the correct book details sheet; closing returns to Home.
-- Mobile shelves scroll horizontally without expanding the overall page.
-- Light and dark themes inspected.
-- TypeScript and ESLint passed; source formatted with Prettier.
-- No new entrance or text animations.
+## Checks
+- Book tile opens the labelled sample reading preview.
+- Information button opens the book sheet; its reading action opens the preview.
+- Contents toggle, chapter selection, next/previous navigation, selected chapter, and text-size control work using local state.
+- Return action restores the homepage.
+- Browser console showed no warnings or errors during verification.
+- TypeScript and ESLint pass. Files formatted with Prettier.
+- Existing library data and cover artwork are reused. Preview prose is original fixture content, explicitly labelled in the interface.
 
-## Follow-up polish
-- P3: original book artwork and existing sidebar typography differ from generated concept by design; homepage layout is implemented using current product assets and design system.
-- Favourite population and mark-as-read mutation were not exercised to avoid changing user library data.
+final result: passed
