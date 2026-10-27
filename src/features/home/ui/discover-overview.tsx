@@ -6,6 +6,7 @@ import { ArrowRightIcon, BookOpenIcon, HeartIcon } from "lucide-react";
 
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
 import { Button } from "@/shared/ui/button";
+import { Progress } from "@/shared/ui/progress";
 import {
   Sheet,
   SheetContent,
@@ -47,50 +48,47 @@ export function DiscoverOverview() {
       <section aria-labelledby="home-continue-title">
         <h2
           id="home-continue-title"
-          className="mb-4 text-lg font-medium tracking-tight"
+          className="mb-4 text-xl font-medium tracking-tight"
         >
           Continue reading
         </h2>
         {recentReads.length ? (
-          <div className="grid auto-cols-[minmax(300px,calc(50%-10px))] grid-flow-col gap-5 overflow-x-auto pb-3 snap-x snap-proximity [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-[700px]:auto-cols-[minmax(260px,88%)] max-[700px]:gap-3">
+          <div className="grid grid-cols-3 gap-4 max-[900px]:auto-cols-[minmax(250px,72%)] max-[900px]:grid-flow-col max-[900px]:grid-cols-none max-[900px]:overflow-x-auto max-[900px]:snap-x max-[900px]:snap-mandatory pb-2">
             {recentReads.slice(0, 3).map((book) => (
               <Button
                 key={book.id}
                 variant="ghost"
-                className="group relative isolate flex h-[228px] w-full min-w-0 snap-start items-center justify-between gap-4 overflow-hidden rounded-2xl p-6 text-left whitespace-normal [background:linear-gradient(110deg,var(--card)_8%,color-mix(in_srgb,var(--feature-paper)_9%,var(--card))_48%,color-mix(in_srgb,var(--feature-paper)_26%,var(--card))_100%)] hover:brightness-[1.04] max-[700px]:h-[204px] max-[700px]:p-5"
-                style={
-                  {
-                    "--feature-paper": book.paper,
-                  } as CSSProperties
-                }
+                className="group flex h-auto w-full min-w-0 snap-start flex-col items-stretch justify-start gap-0 overflow-hidden rounded-2xl p-0 text-left whitespace-normal [background:color-mix(in_srgb,var(--feature-paper)_15%,var(--card))] hover:brightness-105 focus-visible:ring-2 focus-visible:ring-ring"
+                style={{ "--feature-paper": book.paper } as CSSProperties}
                 onClick={() => setSelected(book)}
                 aria-label={`Open ${book.title} by ${book.author}`}
               >
-                <span
-                  className="pointer-events-none absolute -right-[12%] -top-[40%] -z-10 w-[65%] -rotate-12 opacity-[.19] grayscale [mask-image:linear-gradient(to_right,transparent,black_70%)] [&_.cover-type]:hidden [&_.cover-credit]:hidden"
-                  aria-hidden="true"
-                >
-                  <BookCover book={book} />
-                </span>
-                <span className="flex min-w-0 flex-1 flex-col self-stretch gap-2">
-                  <span className="text-[11px] text-muted-foreground">
-                    {book.genre}
+                <span className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-2xl [background:linear-gradient(135deg,color-mix(in_srgb,var(--feature-paper)_65%,#36313d),var(--feature-paper))]">
+                  <span className="block w-[57%] rotate-3 drop-shadow-[-12px_16px_14px_rgb(0_0_0_/_24%)] [&_.book-cover]:rounded-[3px_6px_6px_3px] [&_.cover-type]:text-[clamp(17px,1.5vw,23px)] [&_.cover-credit]:text-[6px]">
+                    <BookCover book={book} />
                   </span>
-                  <strong className="line-clamp-3 text-[clamp(18px,1.7vw,25px)] leading-[1.12] font-semibold tracking-[-.03em]">
+                </span>
+                <span className="flex w-full min-w-0 flex-1 flex-col px-5 pb-5 pt-4">
+                  <strong className="line-clamp-2 text-lg leading-snug font-medium tracking-tight">
                     {book.title}
                   </strong>
-                  <span className="mt-auto flex items-center gap-2.5 text-xs">
-                    {book.progress > 0
-                      ? `${book.progress}% read`
-                      : "Start a new chapter"}
+                  <span className="mt-1 text-sm text-muted-foreground">
+                    {book.author}
+                  </span>
+                  <span className="mt-auto flex items-center gap-3 pt-5">
+                    <Progress
+                      value={book.progress}
+                      aria-label={`${book.title} reading progress`}
+                      className="min-w-0 flex-1 [&_[data-slot=progress-track]]:h-1.5 [&_[data-slot=progress-track]]:bg-foreground/15 [&_[data-slot=progress-indicator]]:rounded-full [&_[data-slot=progress-indicator]]:bg-foreground dark:[&_[data-slot=progress-indicator]]:bg-[var(--feature-paper)]"
+                    />
+                    <span className="text-xs tabular-nums text-muted-foreground">
+                      {book.progress}%
+                    </span>
                     <ArrowRightIcon
-                      className="size-4 transition-transform group-hover:translate-x-1"
+                      className="ml-2 size-4 shrink-0"
                       aria-hidden="true"
                     />
                   </span>
-                </span>
-                <span className="w-[106px] shrink-0 rotate-5 drop-shadow-[0_12px_18px_rgb(0_0_0_/_20%)] max-[700px]:w-[86px] [&_.book-cover]:rounded-[3px_6px_6px_3px] [&_.cover-type]:text-xs [&_.cover-credit]:text-[4px]">
-                  <BookCover book={book} />
                 </span>
               </Button>
             ))}
@@ -116,7 +114,60 @@ export function DiscoverOverview() {
         )}
       </section>
 
-      <section className="mt-9" aria-labelledby="home-favourites-title">
+      <section className="mt-9" aria-labelledby="home-added-title">
+        <div className="mb-3 flex items-center justify-between gap-4">
+          <h2
+            id="home-added-title"
+            className="text-base font-medium tracking-tight"
+          >
+            Recently added
+          </h2>
+          <Button
+            nativeButton={false}
+            role="link"
+            variant="ghost"
+            size="sm"
+            render={<Link href="/library" />}
+          >
+            See all <ArrowRightIcon aria-hidden="true" />
+          </Button>
+        </div>
+        {books.length ? (
+          <div className="grid auto-cols-[calc((100%_-_100px)/6)] grid-flow-col gap-5 overflow-x-auto pb-3 snap-x snap-proximity max-[900px]:auto-cols-[125px] max-[700px]:gap-4">
+            {[...books]
+              .reverse()
+              .slice(0, 6)
+              .map((book) => (
+                <Button
+                  key={book.id}
+                  variant="ghost"
+                  className="group flex h-auto min-w-0 max-w-[150px] snap-start flex-col items-stretch justify-start gap-1 rounded-md bg-transparent p-0 text-left whitespace-normal hover:bg-transparent"
+                  onClick={() => setSelected(book)}
+                  aria-label={`Open ${book.title} by ${book.author}`}
+                >
+                  <span className="mb-1 block overflow-hidden rounded-[4px_7px_7px_4px] [&_.book-cover]:transition-[filter] [&_.book-cover]:duration-200 group-hover:[&_.book-cover]:brightness-105 [&_.cover-type]:text-[15px] [&_.cover-credit]:text-[5px]">
+                    <BookCover book={book} />
+                  </span>
+                  <strong className="truncate text-sm font-medium">
+                    {book.title}
+                  </strong>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {book.author}
+                  </span>
+                </Button>
+              ))}
+          </div>
+        ) : (
+          <p className="py-5 text-sm text-muted-foreground">
+            Your new books will appear here.
+          </p>
+        )}
+      </section>
+
+      <section
+        className="mt-7 border-t border-border pt-3"
+        aria-labelledby="home-favourites-title"
+      >
         <div className="mb-3 flex items-center justify-between gap-4">
           <h2
             id="home-favourites-title"
@@ -164,7 +215,7 @@ export function DiscoverOverview() {
             ))}
           </div>
         ) : (
-          <div className="flex min-h-24 items-center justify-between gap-4 rounded-xl border border-dashed border-border px-5 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
             <p className="text-sm text-muted-foreground">
               Your favourite books will appear here.
             </p>
@@ -179,56 +230,6 @@ export function DiscoverOverview() {
               Browse books <ArrowRightIcon aria-hidden="true" />
             </Button>
           </div>
-        )}
-      </section>
-
-      <section className="mt-9" aria-labelledby="home-added-title">
-        <div className="mb-3 flex items-center justify-between gap-4">
-          <h2
-            id="home-added-title"
-            className="text-base font-medium tracking-tight"
-          >
-            Recently added
-          </h2>
-          <Button
-            nativeButton={false}
-            role="link"
-            variant="ghost"
-            size="sm"
-            render={<Link href="/library" />}
-          >
-            See all <ArrowRightIcon aria-hidden="true" />
-          </Button>
-        </div>
-        {books.length ? (
-          <div className="grid auto-cols-[130px] grid-flow-col gap-5 overflow-x-auto pb-3 snap-x snap-proximity [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-[700px]:auto-cols-[110px] max-[700px]:gap-4">
-            {[...books]
-              .reverse()
-              .slice(0, 8)
-              .map((book) => (
-                <Button
-                  key={book.id}
-                  variant="ghost"
-                  className="group flex h-auto min-w-0 snap-start flex-col items-stretch justify-start gap-1 rounded-md bg-transparent p-0 text-left whitespace-normal hover:bg-transparent"
-                  onClick={() => setSelected(book)}
-                  aria-label={`Open ${book.title} by ${book.author}`}
-                >
-                  <span className="mb-1 block overflow-hidden rounded-[4px_7px_7px_4px] [&_.book-cover]:transition-[filter,transform] [&_.book-cover]:duration-200 group-hover:[&_.book-cover]:-translate-y-1 group-hover:[&_.book-cover]:brightness-105 [&_.cover-type]:text-[15px] [&_.cover-credit]:text-[5px]">
-                    <BookCover book={book} />
-                  </span>
-                  <strong className="truncate text-xs font-medium">
-                    {book.title}
-                  </strong>
-                  <span className="truncate text-[11px] text-muted-foreground">
-                    {book.author}
-                  </span>
-                </Button>
-              ))}
-          </div>
-        ) : (
-          <p className="py-5 text-sm text-muted-foreground">
-            Your new books will appear here.
-          </p>
         )}
       </section>
 

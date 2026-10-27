@@ -1,36 +1,31 @@
-# Collection cover design QA
-
-**Visual truth and capture**
-
-- Selected option 3: `docs/design-preview/collections-featured-reference.png` (1152 × 1365 px).
-- Rendered desktop: `docs/design-preview/collections-featured-desktop.png` (1440 × 900 px at a 1440 × 900 CSS viewport).
-- Rendered narrow: `docs/design-preview/collections-featured-narrow.png` (390 × 844 px at a 390 × 844 CSS viewport).
-- Latest compact desktop: `docs/design-preview/collections-featured-compact-desktop.png` (1440 × 900 px).
-- Latest compact narrow: `docs/design-preview/collections-featured-compact-narrow.png` (390 × 844 px).
-- Normalized side-by-side crop: `docs/design-preview/collections-featured-comparison.png`. The source crop is 750 × 1000 px and the implementation crop is 300 × 400 px; both are scaled to 600 × 800 px for comparison. Browser density is 1×.
-- State: dark theme, collections overview, three books in the first collection. The desktop screenshot was captured after the card reveal animation settled.
-
-**Findings**
-
-No actionable P0–P2 mismatch remains. The first book leads, with two narrower books peeking from behind its right edge. The latest user-directed revision scales the books down slightly and left-aligns the title and metadata with the featured cover. The menu sits opposite the title. The narrow layout keeps the full composition and metadata within the viewport.
-
-The source mock uses textured raster cover illustrations, while the implementation preserves Papyrbound's actual dynamic `BookCover` artwork and the books in each collection. This is an intentional product-content difference. The source has slightly more detailed secondary spines and looser vertical spacing (P3).
-
-**Comparison history**
-
-- Initial render: the rear books exposed portions of their front-cover artwork and extended below the featured cover (P2). Their titles appeared as fragments.
-- Fix: reduced the rear books, aligned their lower edges with the featured book, and placed their titles vertically in the visible edges.
-- Post-fix evidence: `docs/design-preview/collections-featured-comparison.png` and `docs/design-preview/collections-featured-narrow.png`.
-- Latest refinement: reduced the book group and preview height, aligned the details under the featured cover, and moved the menu beside the title. Evidence: `docs/design-preview/collections-featured-compact-desktop.png` and `docs/design-preview/collections-featured-compact-narrow.png`.
-
-**Fidelity and interaction checks**
-
-- Typography: existing Papyrbound font, title hierarchy, muted metadata and compact book lettering remain legible.
-- Layout: the cover group is centered, with no clipped books or horizontal overflow at desktop and narrow widths.
-- Color: existing per-book paper and ink colors preserve the selected image's lilac, sage and peach balance without introducing a new card background.
-- Image quality: dynamic cover artwork remains sharp in the browser; no folder asset remains in the collection preview.
-- Copy: collection names, book counts and last-book-added dates come from app data.
-- Clicking the cover and metadata opened `/collections?collection=quiet-afternoons`. The options menu opened and dismissed cleanly. Browser console reported no errors.
-- Prettier, TypeScript, ESLint and `next build --webpack` passed. The default Turbopack build hit a local worker-process startup error while processing the existing global CSS.
+# Homepage design QA
 
 final result: passed
+
+## Evidence
+- Source: C:/Users/joshd/.codex/generated_images/01a115e1-2207-7ef0-a431-1b02270d494a/exec-44d82666-ce32-4466-9277-808654251050.png
+- Desktop: C:/Users/joshd/.codex/visualizations/2026/10/07/01a115e1-2207-7ef0-a431-1b02270d494a/home-option-three.png
+- Mobile: C:/Users/joshd/.codex/visualizations/2026/10/07/01a115e1-2207-7ef0-a431-1b02270d494a/home-option-three-mobile.png
+- Desktop comparison viewport: 1488 x 1056 CSS pixels. Source and captured desktop displayed together at comparable density; mobile: 390 x 844.
+- State: Home, dark mode, three reading books, empty favourites. Light mode inspected too.
+
+## Comparison and fixes
+- First comparison found a P1 width constraint accidentally applied to the featured panels. Removed that constraint from featured cards while retaining the 150px maximum for shelf covers.
+- Recaptured and compared with source: three equally sized panels now fill the content region, with readable titles and progress.
+- Typography: existing Barusans retained, clear title/author hierarchy, long shelf titles truncate with full accessible button names.
+- Layout: square artwork regions, tinted footers, six-book shelf followed by a compact favourites section. Existing sidebar width retained; favourites can require scrolling at this viewport.
+- Colors: pastel lavender, sage, and peach derived from actual book data; theme-aware footers and progress indicators.
+- Assets: existing product book covers retained intentionally rather than replacing library artwork or author names with the generated mock's invented variants. Soft shadows and subtle tilt follow selected composition.
+- Content: actual titles/authors/progress, current favourites state, existing routes and book detail action retained.
+- Full-view comparison is sufficient for this simple layout; text and controls were readable at native desktop size and separately inspected on mobile.
+
+## Interaction and verification
+- Featured book opens the correct book details sheet; closing returns to Home.
+- Mobile shelves scroll horizontally without expanding the overall page.
+- Light and dark themes inspected.
+- TypeScript and ESLint passed; source formatted with Prettier.
+- No new entrance or text animations.
+
+## Follow-up polish
+- P3: original book artwork and existing sidebar typography differ from generated concept by design; homepage layout is implemented using current product assets and design system.
+- Favourite population and mark-as-read mutation were not exercised to avoid changing user library data.
