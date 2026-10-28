@@ -123,7 +123,7 @@ export function DiscoverOverview() {
           </div>
         )}
       </section>
-      <div className="mt-8 space-y-7 border-t border-border/70 pt-6">
+      <div className="mt-8 grid grid-cols-[1fr_1fr] gap-10 border-t border-border/70 pt-6 max-[1050px]:grid-cols-1 max-[1050px]:gap-7">
         <section aria-labelledby="next-up-title">
           <div className="mb-3 flex items-center justify-between">
             <h2
@@ -151,13 +151,13 @@ export function DiscoverOverview() {
             )}
           </div>
         </section>
-        <section aria-labelledby="new-books-title">
+        <section aria-labelledby="recent-added-title">
           <div className="mb-3 flex items-center justify-between">
             <h2
-              id="new-books-title"
+              id="recent-added-title"
               className="text-base font-medium tracking-tight"
             >
-              New
+              Recently added
             </h2>
             <Button
               nativeButton={false}
@@ -170,10 +170,10 @@ export function DiscoverOverview() {
               <ArrowRightIcon />
             </Button>
           </div>
-          <div className="grid grid-flow-col grid-cols-2 grid-rows-3 gap-x-8 gap-y-1 max-[600px]:grid-flow-row max-[600px]:grid-cols-1 max-[600px]:grid-rows-none">
+          <div className="grid gap-1">
             {[...books]
               .reverse()
-              .slice(0, 6)
+              .slice(0, 3)
               .map((book) => (
                 <BookRow
                   key={book.id}
