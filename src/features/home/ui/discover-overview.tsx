@@ -170,7 +170,7 @@ export function DiscoverOverview() {
               <ArrowRightIcon />
             </Button>
           </div>
-          <div className="grid grid-cols-2 gap-x-8 gap-y-1 max-[600px]:grid-cols-1">
+          <div className="grid grid-flow-col grid-cols-2 grid-rows-3 gap-x-8 gap-y-1 max-[600px]:grid-flow-row max-[600px]:grid-cols-1 max-[600px]:grid-rows-none">
             {[...books]
               .reverse()
               .slice(0, 6)
