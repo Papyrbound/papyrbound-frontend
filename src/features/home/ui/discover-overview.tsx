@@ -63,7 +63,7 @@ export function DiscoverOverview() {
   const nextBooks = books.filter((book) => book.progress === 0).slice(0, 1);
   const finishedBooks = books.filter((book) => book.progress >= 100);
   return (
-    <main className="mx-auto w-full max-w-[1536px] min-w-0 bg-background min-h-[calc(100vh-64px)] px-10 pb-12 pt-7 max-[1000px]:px-6 max-[600px]:px-5">
+    <main className="mx-auto w-full max-w-[1536px] min-w-0 min-h-[calc(100vh-64px)] px-10 pb-12 pt-7 max-[1000px]:px-6 max-[600px]:px-5">
       <header className="mb-7 flex items-end justify-between gap-4">
         <div>
           <p className="mb-2 text-[10px] font-medium tracking-[.16em] text-muted-foreground uppercase">
