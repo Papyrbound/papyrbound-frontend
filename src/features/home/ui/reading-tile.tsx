@@ -25,20 +25,16 @@ export function ReadingTile({
         <span className="block [&_.book-cover]:rounded-none [&_.cover-type]:text-[clamp(22px,2.2vw,34px)] [&_.cover-credit]:text-[8px]">
           <BookCover book={book} />
         </span>
-        <span className="absolute inset-x-0 bottom-0 flex flex-col gap-1 bg-gradient-to-t from-black/90 via-black/65 to-transparent px-5 pb-5 pt-20 text-white">
+        <span className="absolute inset-x-0 bottom-0 flex flex-col bg-gradient-to-t from-black/90 via-black/65 to-transparent px-5 pb-4 pt-10 text-white">
           <strong className="line-clamp-2 text-lg leading-tight font-medium tracking-tight">
             {book.title}
           </strong>
-          <span className="text-xs text-white/65">{book.author}</span>
-          <span className="mt-3 flex items-center gap-3">
+          <span className="mt-3 flex items-center">
             <Progress
               value={book.progress}
               aria-label={`${book.title} reading progress`}
               className="min-w-0 flex-1 [&_[data-slot=progress-track]]:h-[3px] [&_[data-slot=progress-track]]:bg-white/25 [&_[data-slot=progress-indicator]]:bg-white"
             />
-            <span className="text-[11px] text-white/80 tabular-nums">
-              {book.progress}%
-            </span>
           </span>
         </span>
       </Button>
