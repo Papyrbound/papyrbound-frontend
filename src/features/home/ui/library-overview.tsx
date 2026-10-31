@@ -62,11 +62,11 @@ export function LibraryOverview() {
           <h1 className="mb-4 text-[28px] font-semibold leading-[38px]">
             Recent reads
           </h1>
-          <div className="grid grid-cols-2 gap-7 @min-[750px]:grid-cols-3 @min-[1100px]:grid-cols-4">
+          <div className="grid max-w-[952px] grid-cols-[repeat(2,minmax(0,220px))] gap-6 @min-[750px]:grid-cols-[repeat(4,minmax(0,220px))]">
             {recent.map((book) => (
               <button
                 key={book.id}
-                className={`relative aspect-[2/3] w-full max-w-72 overflow-hidden rounded-[20px] text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedId === book.id ? "ring-1 ring-muted-foreground ring-offset-2 ring-offset-background" : ""}`}
+                className={`relative aspect-[2/3] w-full max-w-[220px] overflow-hidden rounded-2xl text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedId === book.id ? "ring-1 ring-muted-foreground ring-offset-2 ring-offset-background" : ""}`}
                 onClick={() => selectBook(book.id)}
                 onDoubleClick={() => {
                   selectBook(book.id);
