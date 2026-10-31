@@ -9,11 +9,12 @@ import { ReadingMotionProvider } from "@/shared/ui/reading-motion";
 import { TooltipProvider } from "@/shared/ui/tooltip";
 import { SidebarInset, SidebarProvider } from "@/shared/ui/sidebar";
 import { cn } from "@/shared/lib/utils";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin"],
+const inter = localFont({
+  src: "./font/InterVariable.woff2",
+  display: "swap",
   variable: "--font-inter",
 });
 
@@ -31,21 +32,21 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <AppearanceProvider>
           <ReadingMotionProvider>
-          <ReadingListsProvider>
-            <CollectionsProvider>
-              <AnnotationsProvider>
-                <TooltipProvider>
-                  <SidebarProvider className="min-h-screen w-full">
-                    <AppSidebar />
-                    <SidebarInset className="min-w-0">
-                      <AppHeader />
-                      {children}
-                    </SidebarInset>
-                  </SidebarProvider>
-                </TooltipProvider>
-              </AnnotationsProvider>
-            </CollectionsProvider>
-          </ReadingListsProvider>
+            <ReadingListsProvider>
+              <CollectionsProvider>
+                <AnnotationsProvider>
+                  <TooltipProvider>
+                    <SidebarProvider className="min-h-screen w-full">
+                      <AppSidebar />
+                      <SidebarInset className="min-w-0">
+                        <AppHeader />
+                        {children}
+                      </SidebarInset>
+                    </SidebarProvider>
+                  </TooltipProvider>
+                </AnnotationsProvider>
+              </CollectionsProvider>
+            </ReadingListsProvider>
           </ReadingMotionProvider>
         </AppearanceProvider>
       </body>

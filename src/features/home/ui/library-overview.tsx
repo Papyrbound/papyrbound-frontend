@@ -4,7 +4,115 @@ import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-s
 import { BookDetailsPanel } from "@/features/library/ui/book-details-panel";
 import { BookCover } from "./book-cover";
 import type { SampleBook } from "../model/sample-books";
-export function LibraryOverview(){const {books,lists}=useReadingLists();const {selectBook,selectedId,setDialog}=useWorkspace();const recent=books.filter(b=>b.progress>0&&b.progress<100).slice(0,4);const finished=books.filter(b=>b.progress>=100);const next=books.filter(b=>lists.find(l=>l.id==="want-to-read")?.bookIds?.includes(b.id)||b.progress===0).slice(0,1);function row(book:SampleBook){return <button key={book.id} onClick={()=>selectBook(book.id)} className="flex w-full items-center gap-4 rounded-xl py-2 text-left outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"><span className="w-12 shrink-0 [&_.cover-type]:text-[6px] [&_.cover-credit]:hidden"><BookCover book={book}/></span><span className="min-w-0"><span className="block truncate text-sm font-medium">{book.title}</span><span className="mt-1 block text-xs text-muted-foreground">{book.author}</span></span></button>}
- return <div className="flex min-h-[calc(100dvh-4rem)]"><main className="min-w-0 flex-1 p-5 lg:p-10"><h1 className="mb-5 text-2xl font-semibold tracking-tight">Recent reads</h1><div className="grid grid-cols-2 gap-4 xl:grid-cols-4">{recent.map(book=><button key={book.id} className={`relative overflow-hidden rounded-2xl text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedId===book.id?"ring-2 ring-muted-foreground ring-offset-4 ring-offset-background":""}`} onClick={()=>selectBook(book.id)} onDoubleClick={()=>{selectBook(book.id);setDialog("reader")}} aria-label={`Continue reading ${book.title}`}><BookCover book={book}/><span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent px-4 pb-4 pt-14"><span className="block truncate text-sm font-medium text-white">{book.title}</span><span className="mt-3 block h-0.5 overflow-hidden rounded-full bg-white/35"><span className="block h-full bg-white" style={{width:`${book.progress}%`}}/></span></span></button>)}</div>{!recent.length&&<p className="py-12 text-muted-foreground">Start a book from your library to see it here.</p>}
- <div className="mt-9 grid gap-9 xl:grid-cols-2"><div><section><h2 className="mb-4 text-xl font-semibold tracking-tight">Next Up</h2>{next.map(row)}{!next.length&&<p className="text-sm text-muted-foreground">Your next book is waiting in the library.</p>}</section><section className="mt-8"><h2 className="mb-4 text-xl font-semibold tracking-tight">Finished</h2>{finished.slice(0,2).map(row)}{!finished.length&&<p className="text-sm text-muted-foreground">Books you finish will appear here.</p>}</section></div><section><h2 className="mb-4 text-xl font-semibold tracking-tight">Recently added</h2><div className="space-y-3">{books.slice(-3).reverse().map(row)}</div></section></div></main><BookDetailsPanel reading fallback={recent[0]}/></div>;
+export function LibraryOverview() {
+  const { books, lists } = useReadingLists();
+  const { selectBook, selectedId, setDialog } = useWorkspace();
+  const recent = books
+    .filter((b) => b.progress > 0 && b.progress < 100)
+    .slice(0, 4);
+  const finished = books.filter((b) => b.progress >= 100);
+  const next = books
+    .filter(
+      (b) =>
+        lists.find((l) => l.id === "want-to-read")?.bookIds?.includes(b.id) ||
+        b.progress === 0,
+    )
+    .slice(0, 1);
+  function row(book: SampleBook) {
+    return (
+      <button
+        key={book.id}
+        onClick={() => selectBook(book.id)}
+        className="flex w-full items-center gap-4 rounded-xl py-2 text-left outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <span className="w-12 shrink-0 [&_.cover-type]:hidden [&_.cover-credit]:hidden">
+          <BookCover book={book} />
+        </span>
+        <span className="min-w-0">
+          <span className="block truncate text-sm font-medium">
+            {book.title}
+          </span>
+          <span className="mt-1 block text-xs text-muted-foreground">
+            {book.author}
+          </span>
+        </span>
+      </button>
+    );
+  }
+  return (
+    <div className="flex min-h-[calc(100dvh-4rem)]">
+      <main className="min-w-0 flex-1 p-5 lg:p-10">
+        <h1 className="mb-5 text-2xl font-semibold tracking-tight">
+          Recent reads
+        </h1>
+        <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+          {recent.map((book) => (
+            <button
+              key={book.id}
+              className={`relative overflow-hidden rounded-2xl text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedId === book.id ? "ring-2 ring-muted-foreground ring-offset-4 ring-offset-background" : ""}`}
+              onClick={() => selectBook(book.id)}
+              onDoubleClick={() => {
+                selectBook(book.id);
+                setDialog("reader");
+              }}
+              aria-label={`Continue reading ${book.title}`}
+            >
+              <BookCover book={book} />
+              <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent px-4 pb-4 pt-14">
+                <span className="block truncate text-sm font-medium text-white">
+                  {book.title}
+                </span>
+                <span className="mt-3 block h-0.5 overflow-hidden rounded-full bg-white/35">
+                  <span
+                    className="block h-full bg-white"
+                    style={{ width: `${book.progress}%` }}
+                  />
+                </span>
+              </span>
+            </button>
+          ))}
+        </div>
+        {!recent.length && (
+          <p className="py-12 text-muted-foreground">
+            Start a book from your library to see it here.
+          </p>
+        )}
+        <div className="mt-9 grid gap-9 xl:grid-cols-2">
+          <div>
+            <section>
+              <h2 className="mb-4 text-xl font-semibold tracking-tight">
+                Next Up
+              </h2>
+              {next.map(row)}
+              {!next.length && (
+                <p className="text-sm text-muted-foreground">
+                  Your next book is waiting in the library.
+                </p>
+              )}
+            </section>
+            <section className="mt-8">
+              <h2 className="mb-4 text-xl font-semibold tracking-tight">
+                Finished
+              </h2>
+              {finished.slice(0, 2).map(row)}
+              {!finished.length && (
+                <p className="text-sm text-muted-foreground">
+                  Books you finish will appear here.
+                </p>
+              )}
+            </section>
+          </div>
+          <section>
+            <h2 className="mb-4 text-xl font-semibold tracking-tight">
+              Recently added
+            </h2>
+            <div className="space-y-3">
+              {books.slice(-3).reverse().map(row)}
+            </div>
+          </section>
+        </div>
+      </main>
+      <BookDetailsPanel reading fallback={recent[0]} />
+    </div>
+  );
 }

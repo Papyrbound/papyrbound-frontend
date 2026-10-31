@@ -21,7 +21,13 @@ type WorkspaceState = {
 };
 
 export const useWorkspace = create<WorkspaceState>((set) => ({
-  selectedId: null, panelOpen: true, view: "grid", query: "", filter: "all", sort: "recent", dialog: null,
+  selectedId: null,
+  panelOpen: true,
+  view: "grid",
+  query: "",
+  filter: "all",
+  sort: "recent",
+  dialog: null,
   selectBook: (selectedId) => set({ selectedId, panelOpen: true }),
   setPanelOpen: (panelOpen) => set({ panelOpen }),
   setView: (view) => set({ view }),

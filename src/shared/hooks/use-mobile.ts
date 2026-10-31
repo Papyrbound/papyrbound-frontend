@@ -1,14 +1,29 @@
-import * as React from "react"
+import * as React from "react";
 
-const query = "(max-width: 767px)"
+const query = "(max-width: 767px)";
 function subscribe(callback: () => void) {
-  const media = window.matchMedia(query)
-  media.addEventListener("change", callback)
-  return () => media.removeEventListener("change", callback)
+  const media = window.matchMedia(query);
+  media.addEventListener("change", callback);
+  return () => media.removeEventListener("change", callback);
 }
-const getSnapshot = () => window.matchMedia(query).matches
-const getServerSnapshot = () => false
+const getSnapshot = () => window.matchMedia(query).matches;
+const getServerSnapshot = () => false;
 
 export function useIsMobile() {
-  return React.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+  return React.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
+
+const panelQuery = "(max-width: 1023px)";
+function subscribePanel(callback: () => void) {
+  const media = window.matchMedia(panelQuery);
+  media.addEventListener("change", callback);
+  return () => media.removeEventListener("change", callback);
+}
+const getPanelSnapshot = () => window.matchMedia(panelQuery).matches;
+export function useIsCompactWindow() {
+  return React.useSyncExternalStore(
+    subscribePanel,
+    getPanelSnapshot,
+    getServerSnapshot,
+  );
 }
