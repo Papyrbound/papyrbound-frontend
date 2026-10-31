@@ -8,7 +8,7 @@ import type { SampleBook } from "../model/sample-books";
 
 export function LibraryOverview() {
   const { books, lists } = useReadingLists();
-  const { selectBook, selectedId, setDialog } = useWorkspace();
+  const { selectBook, selectedId, setDialog, panelOpen } = useWorkspace();
   const recent = books.filter((book) => book.progress > 0).slice(0, 4);
   const finished = books.filter((book) => book.progress >= 100);
   const next = books
@@ -132,6 +132,9 @@ export function LibraryOverview() {
           </div>
         </div>
       </main>
+      {!panelOpen && (
+        <div aria-hidden="true" className="hidden w-[360px] shrink-0 lg:block" />
+      )}
       <BookDetailsPanel reading fallback={recent[0]} />
     </div>
   );
