@@ -1,6 +1,7 @@
 // Original fixtures for the visual preview, separate from future imported books.
 export type SampleBook = {
   synopsis?: string;
+  cover?: string;
   id: string;
   title: string;
   author: string;
@@ -16,10 +17,11 @@ export type SampleBook = {
 export const sampleBooks: SampleBook[] = [
   {
     id: "quiet",
+    cover: "/covers/crimson-vow.png",
     synopsis:
       "In a seaside town where every day seems the same, a young woman discovers a collection of letters tucked inside a borrowed book. Following their trail becomes an invitation to notice the small things she has spent a lifetime overlooking.",
-    title: "The Quiet Between",
-    author: "Mira Ellis",
+    title: "Crimson Vow",
+    author: "Elena Vale",
     genre: "Fiction",
     progress: 42,
     pages: 280,
@@ -30,9 +32,10 @@ export const sampleBooks: SampleBook[] = [
   },
   {
     id: "wild",
-    title: "A Field of Small Wonders",
-    author: "Leo Arden",
-    genre: "Nature",
+    cover: "/covers/one-night-only.png",
+    title: "One Night Only",
+    author: "Jenna Jinks",
+    genre: "Romance",
     progress: 18,
     pages: 192,
     paper: "#d6dfbd",
@@ -42,11 +45,12 @@ export const sampleBooks: SampleBook[] = [
   },
   {
     id: "sun",
+    cover: "/covers/the-midnight-labyrinth.png",
     synopsis:
-      "A collection of poems about the places we leave, the people we carry, and the unexpected ways we find our way home.",
-    title: "Somewhere, the Sun",
-    author: "Nora Vale",
-    genre: "Poetry",
+      "A mysterious key leads a young archivist into a labyrinth of hidden rooms, where every door reveals a secret someone has tried to forget.",
+    title: "The Midnight Labyrinth",
+    author: "Taylor Wilson",
+    genre: "Fantasy",
     progress: 67,
     pages: 144,
     paper: "#f0c6ac",
@@ -56,9 +60,10 @@ export const sampleBooks: SampleBook[] = [
   },
   {
     id: "atlas",
-    title: "An Atlas of Elsewhere",
-    author: "June Hart",
-    genre: "Travel",
+    cover: "/covers/where-shadows-bloom.png",
+    title: "Where Shadows Bloom",
+    author: "Morgan Reed",
+    genre: "Fantasy",
     progress: 0,
     pages: 224,
     paper: "#aac7d0",
@@ -68,9 +73,10 @@ export const sampleBooks: SampleBook[] = [
   },
   {
     id: "night",
-    title: "Notes After Midnight",
-    author: "Eli Rowan",
-    genre: "Essays",
+    cover: "/covers/light-door.png",
+    title: "Light Door",
+    author: "Avery Lane",
+    genre: "Fantasy",
     progress: 0,
     pages: 208,
     paper: "#383d52",
@@ -80,7 +86,8 @@ export const sampleBooks: SampleBook[] = [
   },
   {
     id: "tidal",
-    title: "The Tidal Garden",
+    cover: "/covers/whale-paper-boat.png",
+    title: "The Paper Boat",
     author: "Ada Wren",
     genre: "Fiction",
     progress: 0,
