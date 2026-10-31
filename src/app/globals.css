@@ -613,11 +613,6 @@
     color: inherit;
     opacity: 0.75;
   }
-  .list-editor-fields {
-    scrollbar-width: thin;
-    scrollbar-color: color-mix(in srgb, var(--foreground) 25%, transparent)
-      transparent;
-  }
   .list-color-picker {
     display: flex;
     gap: 12px;
@@ -822,5 +817,15 @@ html[data-reduce-motion="true"] *::after {
     animation-duration: 0ms !important;
     transition-duration: 0ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Keep wheel, touch, and keyboard scrolling without visible scrollbar tracks. */
+@layer utilities {
+  * {
+    scrollbar-width: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
   }
 }
