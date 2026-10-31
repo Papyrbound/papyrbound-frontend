@@ -187,7 +187,7 @@ export function BookDetailsPanel({
       >
         {reading ? "Reading actions" : "Actions"}
       </h3>
-      <div className="rounded-menu border border-soft-border bg-popover p-1.5 text-popover-foreground shadow-menu">
+      <div className="p-1.5 text-foreground">
         <Button
           variant="ghost"
           className={menuActionClass}
