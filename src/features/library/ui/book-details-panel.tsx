@@ -14,6 +14,7 @@ import {
   Highlighter,
   FileText,
   Check,
+  ChevronRight,
 } from "lucide-react";
 
 import { useWorkspace } from "@/app-shell/workspace-store";
@@ -103,6 +104,9 @@ export function BookDetailsPanel({
 
   const actionClass = `${reading ? "h-9" : "h-8"} w-full justify-start rounded-[10px] px-3 text-sm`;
 
+  const menuActionClass =
+    "min-h-8 h-auto w-full justify-start gap-2 rounded-lg px-2 py-1.5 text-sm font-normal hover:bg-foreground/10 focus-visible:bg-foreground/10";
+
   const body = (
     <>
       <div className="mx-auto w-48 shrink-0">
@@ -183,32 +187,36 @@ export function BookDetailsPanel({
       >
         {reading ? "Reading actions" : "Actions"}
       </h3>
-      <div className={reading ? "space-y-2" : "space-y-1"}>
-        <Button className={actionClass} onClick={() => setDialog("reader")}>
+      <div className="rounded-menu border border-soft-border bg-popover p-1.5 text-popover-foreground shadow-menu">
+        <Button
+          variant="ghost"
+          className={menuActionClass}
+          onClick={() => setDialog("reader")}
+        >
           <BookOpen />
           {book.progress ? "Continue reading" : "Start reading"}
         </Button>
         {reading ? (
           <>
             <Button
-              variant="outline"
-              className={actionClass}
+              variant="ghost"
+              className={menuActionClass}
               onClick={() => setDialog("reader")}
             >
               <List />
               View chapters
             </Button>
             <Button
-              variant="outline"
-              className={actionClass}
+              variant="ghost"
+              className={menuActionClass}
               onClick={() => setDialog("reader")}
             >
               <Bookmark />
               Bookmarks
             </Button>
             <Button
-              variant="outline"
-              className={actionClass}
+              variant="ghost"
+              className={menuActionClass}
               nativeButton={false}
               render={<Link href="/annotations" />}
             >
@@ -219,16 +227,16 @@ export function BookDetailsPanel({
         ) : (
           <>
             <Button
-              variant="outline"
-              className={actionClass}
+              variant="ghost"
+              className={menuActionClass}
               onClick={() => toggleBook("favourites", book.id)}
             >
               <Heart className={favourite ? "fill-current" : ""} />
               {favourite ? "Remove from favourites" : "Add to favourites"}
             </Button>
             <Button
-              variant="outline"
-              className={actionClass}
+              variant="ghost"
+              className={menuActionClass}
               onClick={() => setDialog("collections")}
             >
               <FolderPlus />
@@ -236,10 +244,11 @@ export function BookDetailsPanel({
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger
-                render={<Button variant="outline" className={actionClass} />}
+                render={<Button variant="ghost" className={menuActionClass} />}
               >
                 <Library />
                 Move to shelf…
+                <ChevronRight className="ml-auto" />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem
@@ -261,16 +270,20 @@ export function BookDetailsPanel({
               </DropdownMenuContent>
             </DropdownMenu>
             <Button
-              variant="outline"
-              className={actionClass}
+              variant="ghost"
+              className={menuActionClass}
               onClick={() => setDialog("edit")}
             >
               <Pencil />
               Edit book details…
             </Button>
+            <div
+              role="separator"
+              className="-mx-1.5 my-1.5 h-px bg-foreground/5"
+            />
             <Button
-              variant="outline"
-              className={`${actionClass} text-destructive`}
+              variant="ghost"
+              className={`${menuActionClass} text-destructive hover:text-destructive`}
               onClick={() => setDialog("delete")}
             >
               <Trash2 />
