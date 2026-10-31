@@ -187,7 +187,7 @@ export function BookDetailsPanel({
       >
         {reading ? "Reading actions" : "Actions"}
       </h3>
-      <div className="p-1.5 text-foreground">
+      <div className="text-foreground">
         <Button
           variant="ghost"
           className={menuActionClass}
@@ -279,7 +279,7 @@ export function BookDetailsPanel({
             </Button>
             <div
               role="separator"
-              className="-mx-1.5 my-1.5 h-px bg-foreground/5"
+              className="my-1.5 h-px bg-foreground/5"
             />
             <Button
               variant="ghost"
