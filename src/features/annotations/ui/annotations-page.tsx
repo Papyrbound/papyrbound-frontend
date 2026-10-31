@@ -1,112 +1,377 @@
-"use client"
+"use client";
 
-import { useId, useRef, useState, type CSSProperties } from "react"
-import { LayoutGroup, m } from "motion/react"
-import { BookOpenIcon, ChevronDownIcon, HighlighterIcon, MoreHorizontalIcon, NotebookPenIcon, PencilIcon, PlusIcon, SearchIcon, StarIcon, Trash2Icon, XIcon } from "lucide-react"
-import { useAnnotations } from "@/features/annotations/stores/annotations-store"
-import { annotationColors, type Annotation, type AnnotationDetails } from "@/features/annotations/model/annotation"
-import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store"
-import { BookCover } from "@/features/home/ui/book-cover"
-import { AnnotationEditor } from "./annotation-editor"
-import { Button } from "@/shared/ui/button"
-import { Input } from "@/shared/ui/input"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/shared/ui/accordion"
-import { RevealText, useReadingMotion } from "@/shared/ui/reading-motion"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/shared/ui/alert-dialog"
+import { create } from "zustand";
 
-const filters = [
-  { id: "all", label: "All annotations" },
-  { id: "highlight", label: "Highlights" },
-  { id: "note", label: "Notes" },
-  { id: "starred", label: "Starred" },
-] as const
-type Filter = typeof filters[number]["id"]
-const dateFormat = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" })
+import { useRouter } from "next/navigation";
+
+import {
+  Search,
+  ListFilter,
+  MoreHorizontal,
+  BookOpen,
+  Copy,
+  Highlighter,
+  Trash2,
+  StickyNote,
+  Check,
+} from "lucide-react";
+
+import { useAnnotations } from "../stores/annotations-store";
+
+import { annotationColors } from "../model/annotation";
+
+import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
+
+import { useWorkspace } from "@/app-shell/workspace-store";
+
+import { BookCover } from "@/features/home/ui/book-cover";
+
+import { Button } from "@/shared/ui/button";
+
+import { Input } from "@/shared/ui/input";
+
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/shared/ui/accordion";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuLabel,
+  DropdownMenuGroup,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+} from "@/shared/ui/dropdown-menu";
+
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/shared/ui/alert-dialog";
+
+const useAnnotationUI = create<{
+  query: string;
+  book: string;
+  sort: string;
+  expanded: string[];
+  deleting: string | null;
+  message: string;
+  patch: (
+    v: Partial<{
+      query: string;
+      book: string;
+      sort: string;
+      expanded: string[];
+      deleting: string | null;
+      message: string;
+    }>,
+  ) => void;
+}>((set) => ({
+  query: "",
+  book: "all",
+  sort: "newest",
+  expanded: ["quiet"],
+  deleting: null,
+  message: "",
+  patch: (v) => set(v),
+}));
 
 export function AnnotationsPage() {
-  const filterGroupId = useId()
-  const reduced = useReadingMotion()
-  const { books } = useReadingLists()
-  const { annotations, setAnnotations } = useAnnotations()
-  const [query, setQuery] = useState("")
-  const [filter, setFilter] = useState<Filter>("all")
-  const [bookFilter, setBookFilter] = useState("all")
-  const [sort, setSort] = useState("newest")
-  const [editor, setEditor] = useState<{ annotation?: Annotation } | null>(null)
-  const [deleting, setDeleting] = useState<Annotation | null>(null)
-  const [deleteOpen, setDeleteOpen] = useState(false)
-  const cancelDeleteRef = useRef<HTMLButtonElement>(null)
-  const booksById = new Map(books.map((book) => [book.id, book]))
-  // Entries from deleted books are excluded, like the library's other book views.
-  const available = annotations.filter((annotation) => booksById.has(annotation.bookId))
-  const annotatedBookIds = new Set(available.map((annotation) => annotation.bookId))
-  const [expandedBooks, setExpandedBooks] = useState<string[]>(() => available.length ? [available[0].bookId] : [])
-  const normalizedQuery = query.trim().toLowerCase()
-  const visible = available.filter((annotation) => {
-    const book = booksById.get(annotation.bookId)!
-    return (filter === "all" || (filter === "starred" ? annotation.starred : annotation.kind === filter))
-      && (bookFilter === "all" || annotation.bookId === bookFilter)
-      && `${annotation.content} ${annotation.note} ${book.title} ${book.author}`.toLowerCase().includes(normalizedQuery)
-  }).sort((a, b) => sort === "oldest" ? a.createdAt.localeCompare(b.createdAt) : b.createdAt.localeCompare(a.createdAt))
-  const selectedBook = booksById.get(bookFilter)
-  const visibleBookCount = new Set(visible.map((item) => item.bookId)).size
-  const hasFilters = query !== "" || filter !== "all" || bookFilter !== "all"
-  const grouped = new Map<string, Annotation[]>()
-  for (const annotation of visible) {
-    const group = grouped.get(annotation.bookId)
-    if (group) group.push(annotation)
-    else grouped.set(annotation.bookId, [annotation])
-  }
+  const { annotations, setAnnotations } = useAnnotations();
+  const { books } = useReadingLists();
+  const { selectBook } = useWorkspace();
+  const ui = useAnnotationUI();
+  const router = useRouter();
+  const visible = annotations
+    .filter(
+      (a) =>
+        (ui.book === "all" || a.bookId === ui.book) &&
+        `${a.content} ${a.note}`.toLowerCase().includes(ui.query.toLowerCase()),
+    )
+    .toSorted(
+      (a, b) =>
+        (new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) *
+        (ui.sort === "newest" ? 1 : -1),
+    );
+  const groups = books.filter((b) => visible.some((a) => a.bookId === b.id));
+  const expanded = ui.query ? groups.map((b) => b.id) : ui.expanded;
 
-  function saveAnnotation(details: AnnotationDetails) {
-    const editingId = editor?.annotation?.id
-    setAnnotations((current) => editingId ? current.map((item) => item.id === editingId ? { ...item, ...details, ...(item.kind === "highlight" ? { content: item.content, kind: item.kind, bookId: item.bookId, page: item.page } : {}) } : item) : [{ ...details, id: crypto.randomUUID(), starred: false, createdAt: new Date().toISOString() }, ...current])
-    setEditor(null)
-    setExpandedBooks((current) => current.includes(details.bookId) ? current : [...current, details.bookId])
-    if (!editingId) { setQuery(""); setFilter("all"); setBookFilter("all"); setSort("newest") }
-  }
-
-  return <section className="annotations-page" aria-label="Annotations">
-    <header className="annotations-heading"><div><h1><RevealText>Your annotations</RevealText></h1><p>Highlights and thoughts worth coming back to.</p></div>{available.length > 0 && <Button disabled={books.length === 0} onClick={() => setEditor({})}><PlusIcon />New annotation</Button>}</header>
-    <div className="annotations-toolbar">
-      <LayoutGroup id={filterGroupId}><div className="annotation-filters" role="group" aria-label="Filter annotations">{filters.map((item) => <Button key={item.id} size="sm" variant="ghost" className="annotation-filter-tab" aria-pressed={filter === item.id} onClick={() => setFilter(item.id)}>{filter === item.id && <m.span layoutId="active-filter" className="annotation-filter-indicator" transition={{ type: "spring", stiffness: 450, damping: 36, duration: reduced ? 0 : undefined }} />}{item.id === "starred" && <StarIcon />}{item.label}<span className="annotation-filter-count">{available.filter((annotation) => item.id === "all" || (item.id === "starred" ? annotation.starred : annotation.kind === item.id)).length}</span></Button>)}</div></LayoutGroup>
-      <div className="annotation-tools">
-        <div className="annotation-search"><SearchIcon aria-hidden="true" /><Input type="search" aria-label="Search annotations" placeholder="Search your annotations…" value={query} onChange={(event) => setQuery(event.target.value)} /></div>
-        <DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="sm" className="annotation-book-filter" />} aria-label={`Filter by book: ${selectedBook?.title ?? "All books"}`}><BookOpenIcon /><span className="truncate">{selectedBook?.title ?? "All books"}</span><ChevronDownIcon /></DropdownMenuTrigger><DropdownMenuContent className="w-64"><DropdownMenuRadioGroup value={bookFilter} onValueChange={setBookFilter}><DropdownMenuRadioItem value="all">All books</DropdownMenuRadioItem>{books.filter((book) => annotatedBookIds.has(book.id)).map((book) => <DropdownMenuRadioItem key={book.id} value={book.id}>{book.title}</DropdownMenuRadioItem>)}</DropdownMenuRadioGroup></DropdownMenuContent></DropdownMenu>
-      </div>
-    </div>
-    <div className="annotations-results">
-      <p aria-live="polite">{visible.length} {visible.length === 1 ? "annotation" : "annotations"}{bookFilter === "all" && ` across ${visibleBookCount} ${visibleBookCount === 1 ? "book" : "books"}`}</p>
-      <div className="annotation-layout-controls">
-      <DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="sm" />} aria-label="Sort annotations">{sort === "newest" ? "Newest first" : "Oldest first"}<ChevronDownIcon /></DropdownMenuTrigger><DropdownMenuContent><DropdownMenuRadioGroup value={sort} onValueChange={setSort}><DropdownMenuRadioItem value="newest">Newest first</DropdownMenuRadioItem><DropdownMenuRadioItem value="oldest">Oldest first</DropdownMenuRadioItem></DropdownMenuRadioGroup></DropdownMenuContent></DropdownMenu>
-
-      </div>
-    </div>
-    <Accordion multiple value={expandedBooks} onValueChange={setExpandedBooks} className="annotation-book-groups">{[...grouped].map(([bookId, entries]) => {
-      const book = booksById.get(bookId)!
-      return <AccordionItem key={bookId} value={bookId} className="annotation-book-group">
-        <AccordionTrigger className="annotation-book-trigger">
-          <span className="annotation-group-cover" aria-hidden="true"><BookCover book={book} /></span>
-          <span className="annotation-group-info"><span className="annotation-group-title">{book.title}</span><span className="annotation-group-author">{book.author}</span></span>
-          <span className="annotation-group-rule" aria-hidden="true" /><span className="annotation-group-count">{entries.length}<span> {entries.length === 1 ? "annotation" : "annotations"}</span></span>
-        </AccordionTrigger>
-        <AccordionContent className="annotation-group-content">
-        <div className="annotation-entries">{entries.map((annotation) => {
-      return <article key={annotation.id} className="annotation-entry" style={{ "--annotation-color": annotationColors[annotation.color] } as CSSProperties}>
-        <div className="annotation-source"><span className="annotation-location">{annotation.page ? `Page ${annotation.page}` : annotation.kind === "highlight" ? "Saved passage" : "Reading note"}</span><Button variant="ghost" size="icon-sm" className="annotation-star" aria-label={`${annotation.starred ? "Unstar" : "Star"} annotation from ${book.title}${annotation.page ? `, page ${annotation.page}` : ""}`} aria-pressed={annotation.starred} onClick={() => setAnnotations((current) => current.map((item) => item.id === annotation.id ? { ...item, starred: !item.starred } : item))}><StarIcon fill={annotation.starred ? "currentColor" : "none"} /></Button></div>
-        <div className="annotation-body">
-        {annotation.kind === "highlight" ? <blockquote className="annotation-passage"><p>{annotation.content}</p></blockquote> : <p className="annotation-note-content">{annotation.content}</p>}
-        {annotation.note && <p className="annotation-thought">{annotation.note}</p>}
+  return (
+    <main className="p-5 lg:p-10">
+      <h1 className="text-3xl font-semibold tracking-tight">Annotations</h1>
+      <p className="mt-3 text-xs text-muted-foreground">
+        {annotations.length} annotations across{" "}
+        {new Set(annotations.map((a) => a.bookId)).size} books
+      </p>
+      <div className="my-7 flex flex-wrap items-center gap-3">
+        <div className="relative w-full sm:max-w-md">
+          <Search className="absolute left-3 top-3 size-4 text-muted-foreground" />
+          <Input
+            className="h-10 rounded-xl border-0 bg-secondary pl-10"
+            placeholder="Search quotes and notes"
+            aria-label="Search annotations"
+            value={ui.query}
+            onChange={(e) => ui.patch({ query: e.target.value })}
+          />
         </div>
-        <div className="annotation-footer"><span className="annotation-kind">{annotation.kind === "highlight" ? <HighlighterIcon /> : <NotebookPenIcon />}{annotation.kind === "highlight" ? "Highlight" : "Note"}</span><time dateTime={annotation.createdAt}>{dateFormat.format(new Date(annotation.createdAt))}</time><DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" />} aria-label={`Options for ${book.title}${annotation.page ? `, page ${annotation.page}` : ""}`}><MoreHorizontalIcon /></DropdownMenuTrigger><DropdownMenuContent align="end" className="w-48"><DropdownMenuItem onClick={() => setEditor({ annotation })}><PencilIcon />{annotation.kind === "highlight" ? "Highlight options" : "Edit note"}</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onClick={() => { setDeleting(annotation); setDeleteOpen(true) }}><Trash2Icon />Delete annotation</DropdownMenuItem></DropdownMenuContent></DropdownMenu></div>
-      </article>
-    })}</div>
-        </AccordionContent>
-      </AccordionItem>
-    })}</Accordion>
-    {visible.length === 0 && <div className="annotations-empty"><NotebookPenIcon /><h2>{hasFilters ? "No matching annotations" : "A place for what stays with you"}</h2><p>{hasFilters ? "Try another book or a different search." : "Save a passage or write your first note about a book."}</p>{hasFilters ? <Button variant="secondary" onClick={() => { setQuery(""); setFilter("all"); setBookFilter("all") }}><XIcon />Clear filters</Button> : <Button disabled={books.length === 0} onClick={() => setEditor({})}><PlusIcon />New annotation</Button>}</div>}
-    {editor && <AnnotationEditor annotation={editor.annotation} books={books} defaultBookId={selectedBook?.id ?? books[0]?.id ?? ""} onSave={saveAnnotation} onClose={() => setEditor(null)} />}
-    <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen} onOpenChangeComplete={(open) => { if (!open) setDeleting(null) }}><AlertDialogContent initialFocus={cancelDeleteRef}><AlertDialogHeader><AlertDialogTitle>Delete annotation?</AlertDialogTitle><AlertDialogDescription>This annotation and its attached thoughts will be removed. Your book will stay in your library.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel ref={cancelDeleteRef}>Cancel</AlertDialogCancel><AlertDialogAction variant="destructive" onClick={() => { setAnnotations((current) => current.filter((item) => item.id !== deleting?.id)); setDeleteOpen(false) }}>Delete annotation</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
-  </section>
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button variant="secondary" />}>
+            {books.find((b) => b.id === ui.book)?.title ?? "All books"}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-64">
+            <DropdownMenuRadioGroup
+              value={ui.book}
+              onValueChange={(book) => ui.patch({ book })}
+            >
+              <DropdownMenuRadioItem value="all">
+                All books
+              </DropdownMenuRadioItem>
+              {books
+                .filter((b) => annotations.some((a) => a.bookId === b.id))
+                .map((b) => (
+                  <DropdownMenuRadioItem key={b.id} value={b.id}>
+                    {b.title}
+                  </DropdownMenuRadioItem>
+                ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button variant="secondary" />}>
+            <ListFilter />
+            Filter
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+              <DropdownMenuRadioGroup
+                value={ui.sort}
+                onValueChange={(sort) => ui.patch({ sort })}
+              >
+                <DropdownMenuRadioItem value="newest">
+                  Newest first
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="oldest">
+                  Oldest first
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="ml-auto text-xs text-muted-foreground"
+          onClick={() =>
+            ui.patch({
+              expanded: ui.expanded.length ? [] : groups.map((b) => b.id),
+            })
+          }
+        >
+          {ui.expanded.length ? "Collapse all" : "Expand all"}
+        </Button>
+      </div>
+
+      <Accordion
+        multiple
+        value={expanded}
+        onValueChange={(expanded) => ui.patch({ expanded })}
+        className="space-y-6"
+      >
+        {groups.map((book) => (
+          <AccordionItem key={book.id} value={book.id}>
+            <AccordionTrigger className="gap-5 rounded-xl bg-muted/60 px-4 py-3 hover:bg-muted">
+              <span className="w-10 shrink-0 [&_.cover-type]:hidden [&_.cover-credit]:hidden">
+                <BookCover book={book} />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-base font-semibold">
+                  {book.title}
+                </span>
+                <span className="mt-1 block text-xs text-muted-foreground">
+                  {book.author} ·{" "}
+                  {visible.filter((a) => a.bookId === book.id).length}{" "}
+                  annotations
+                </span>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="divide-y divide-border pl-3 sm:pl-[76px]">
+                {visible
+                  .filter((a) => a.bookId === book.id)
+                  .map((a) => (
+                    <article key={a.id} className="relative py-7 pr-10">
+                      <header className="mb-4 flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
+                        <span>
+                          Page {a.page ?? "—"} ·{" "}
+                          {a.kind === "highlight" ? "Highlight" : "Note"}
+                        </span>
+                        <time dateTime={a.createdAt}>
+                          {new Date(a.createdAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </time>
+                      </header>
+                      <p
+                        className="border-l-[3px] pl-5 text-[18px] leading-8"
+                        style={{ borderColor: annotationColors[a.color] }}
+                      >
+                        {a.kind === "highlight" ? `“${a.content}”` : a.content}
+                      </p>
+                      {a.note && (
+                        <div className="mt-5 rounded-lg bg-muted/40 p-3">
+                          <p className="mb-1 flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                            <StickyNote className="size-3.5" />
+                            Your note
+                          </p>
+                          <p className="text-sm leading-6">{a.note}</p>
+                        </div>
+                      )}
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          render={
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              className="absolute right-0 top-7"
+                            />
+                          }
+                          aria-label="Annotation options"
+                        >
+                          <MoreHorizontal />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-64">
+                          <DropdownMenuItem
+                            onClick={() => {
+                              selectBook(book.id);
+                              router.push("/library");
+                            }}
+                          >
+                            <BookOpen />
+                            Open book details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={async () => {
+                              try {
+                                await navigator.clipboard.writeText(a.content);
+                                ui.patch({ message: "Quote copied." });
+                              } catch {
+                                ui.patch({
+                                  message:
+                                    "Clipboard is unavailable in this window.",
+                                });
+                              }
+                            }}
+                          >
+                            <Copy />
+                            Copy quote
+                          </DropdownMenuItem>
+                          <DropdownMenuSub>
+                            <DropdownMenuSubTrigger>
+                              <Highlighter />
+                              Change highlight colour
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuSubContent>
+                              {Object.entries(annotationColors).map(
+                                ([name, color]) => (
+                                  <DropdownMenuItem
+                                    key={name}
+                                    onClick={() =>
+                                      setAnnotations((items) =>
+                                        items.map((item) =>
+                                          item.id === a.id
+                                            ? {
+                                                ...item,
+                                                color:
+                                                  name as keyof typeof annotationColors,
+                                              }
+                                            : item,
+                                        ),
+                                      )
+                                    }
+                                  >
+                                    <span
+                                      className="size-3 rounded-full"
+                                      style={{ background: color }}
+                                    />
+                                    {name}
+                                    {a.color === name && (
+                                      <Check className="ml-auto" />
+                                    )}
+                                  </DropdownMenuItem>
+                                ),
+                              )}
+                            </DropdownMenuSubContent>
+                          </DropdownMenuSub>
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={() => ui.patch({ deleting: a.id })}
+                          >
+                            <Trash2 />
+                            Delete annotation…
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </article>
+                  ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+      {!groups.length && (
+        <p className="py-16 text-center text-muted-foreground">
+          No annotations match your search.
+        </p>
+      )}
+      <p className="sr-only" role="status">
+        {ui.message}
+      </p>
+
+      <AlertDialog
+        open={!!ui.deleting}
+        onOpenChange={(o) => {
+          if (!o) ui.patch({ deleting: null });
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete annotation?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes the saved quote and its note.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                setAnnotations((items) =>
+                  items.filter((a) => a.id !== ui.deleting),
+                );
+                ui.patch({ deleting: null });
+              }}
+            >
+              Delete annotation
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </main>
+  );
 }
