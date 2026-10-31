@@ -5,7 +5,10 @@ import type { SampleBook } from "../model/sample-books";
 export function BookCover({ book }: { book: SampleBook }) {
   if (book.cover) {
     return (
-      <div aria-hidden="true" className="book-cover">
+      <div
+        aria-hidden="true"
+        className="book-cover relative aspect-[2/3] w-full overflow-hidden rounded-xl shadow-[0_8px_16px_-4px_rgb(32_32_32_/_20%)] after:hidden"
+      >
         <Image
           src={book.cover}
           alt=""

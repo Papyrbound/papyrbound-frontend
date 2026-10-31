@@ -1,68 +1,8 @@
 "use client";
-
-import { ListFilter } from "lucide-react";
-
 import { useWorkspace } from "@/app-shell/workspace-store";
-
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
-
 import { BookGallery } from "./book-gallery";
-
 import { BookDetailsPanel } from "./book-details-panel";
-
-import { Button } from "@/shared/ui/button";
-
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-} from "@/shared/ui/dropdown-menu";
-
-export function LibraryFilter() {
-  const { filter, setFilter, sort, setSort } = useWorkspace();
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="secondary" />}>
-        <ListFilter />
-        Filter
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-60">
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>Show</DropdownMenuLabel>
-          <DropdownMenuRadioGroup value={filter} onValueChange={setFilter}>
-            {[
-              ["all", "All books"],
-              ["reading", "In progress"],
-              ["new", "Not started"],
-              ["finished", "Finished"],
-            ].map(([v, l]) => (
-              <DropdownMenuRadioItem key={v} value={v}>
-                {l}
-              </DropdownMenuRadioItem>
-            ))}
-          </DropdownMenuRadioGroup>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-          <DropdownMenuRadioGroup value={sort} onValueChange={setSort}>
-            <DropdownMenuRadioItem value="recent">
-              Recently added
-            </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="az">Title: A–Z</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="za">Title: Z–A</DropdownMenuRadioItem>
-          </DropdownMenuRadioGroup>
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
 export function LibraryPage() {
   const { books } = useReadingLists();
   const { filter, sort } = useWorkspace();
@@ -78,25 +18,22 @@ export function LibraryPage() {
     )
     .toSorted((a, b) =>
       sort === "recent"
-        ? books.indexOf(b) - books.indexOf(a)
+        ? books.indexOf(a) - books.indexOf(b)
         : a.title.localeCompare(b.title) * (sort === "za" ? -1 : 1),
     );
   return (
-    <div className="flex min-h-[calc(100dvh-4rem)]">
-      <main className="min-w-0 flex-1 p-5 lg:p-10">
-        <header className="mb-7 flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">Library</h1>
-            <p className="mt-2 text-xs text-muted-foreground">
-              {books.length} books
-            </p>
-          </div>
-          <LibraryFilter />
-        </header>
-        <BookGallery
-          books={visible}
-          emptyMessage="No books match these filters."
-        />
+    <div className="flex h-[calc(100dvh-4rem)] min-h-0">
+      <main className="flex min-w-0 flex-1 flex-col" aria-label="Library">
+        <div className="@container min-h-0 flex-1 overflow-y-auto px-5 pt-[34px] pb-8 md:pl-9 md:pr-7">
+          <BookGallery
+            books={visible}
+            emptyMessage="No books match these filters."
+          />
+        </div>
+        <footer className="flex h-9 shrink-0 items-center justify-between gap-4 bg-background px-[30px] text-xs text-muted-foreground">
+          <span>Library / All books</span>
+          <span>{visible.length} books</span>
+        </footer>
       </main>
       <BookDetailsPanel />
     </div>

@@ -66,17 +66,18 @@ export function BookSearchDialog() {
           <Button
             ref={triggerRef}
             variant="secondary"
-            className="h-9 w-full justify-start rounded-lg border-0 bg-background px-3 text-xs text-muted-foreground shadow-none"
+            className="h-9 w-full justify-start rounded-lg border-0 bg-white dark:bg-background px-3 text-xs text-muted-foreground shadow-none"
           />
         }
         aria-label="Search books"
         aria-keyshortcuts="Control+k Meta+k"
       >
         <SearchIcon aria-hidden="true" />
-        <span className="hidden sm:inline">Find a book…</span>
-        <KbdGroup className="ml-auto hidden sm:flex" aria-hidden="true">
-          <Kbd>Ctrl</Kbd>
-          <Kbd>K</Kbd>
+        <span>Search library</span>
+        <KbdGroup className="ml-auto" aria-hidden="true">
+          <Kbd className="h-5 w-12 rounded-sm bg-secondary text-[10px] font-medium shadow-none">
+            Ctrl K
+          </Kbd>
         </KbdGroup>
       </Dialog.Trigger>
       <Dialog.Portal>

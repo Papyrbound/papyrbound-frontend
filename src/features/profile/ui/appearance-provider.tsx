@@ -1,5 +1,6 @@
 "use client";
 
+import { useSettingsUI } from "../stores/settings-ui-store";
 import { useEffect, type PropsWithChildren } from "react";
 import {
   useAccount,
@@ -8,6 +9,15 @@ import {
 
 export function AppearanceProvider({ children }: PropsWithChildren) {
   const { preferences } = useAccount();
+  const interfaceSize = useSettingsUI((s) => s.interfaceSize);
+  useEffect(() => {
+    document.documentElement.style.fontSize =
+      interfaceSize === "Large"
+        ? "18px"
+        : interfaceSize === "Small"
+          ? "15px"
+          : "16px";
+  }, [interfaceSize]);
   useEffect(() => {
     hydrateAccount();
     window.addEventListener("storage", hydrateAccount);

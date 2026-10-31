@@ -22,15 +22,15 @@ export function ReadingListsPage() {
   );
 
   return (
-    <div className="flex min-h-[calc(100dvh-4rem)]">
+    <div className="flex h-[calc(100dvh-4rem)] min-h-0">
       <section
-        className="min-w-0 flex-1 p-5 lg:p-10"
+        className="@container min-w-0 flex-1 overflow-y-auto px-5 py-8 lg:px-9"
         aria-label={selectedList?.name ?? "Reading lists"}
       >
-        <div className="mb-7 flex items-center gap-4 text-3xl font-semibold tracking-tight">
+        <div className="mb-[38px] flex flex-wrap items-center gap-4 px-3 text-3xl font-semibold leading-[42px]">
           <h1>{selectedList?.name ?? "Reading lists"}</h1>
           {selectedList && (
-            <span>
+            <span className="text-xs font-normal text-muted-foreground">
               {listBooks.length} {listBooks.length === 1 ? "book" : "books"}
             </span>
           )}

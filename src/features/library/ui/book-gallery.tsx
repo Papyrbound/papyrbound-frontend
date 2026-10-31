@@ -67,14 +67,14 @@ export function BookGallery({
     <div
       className={
         view === "grid"
-          ? "grid grid-cols-2 items-start gap-x-6 gap-y-9 sm:grid-cols-3 xl:grid-cols-4"
+          ? "grid grid-cols-2 items-start gap-y-[36.8px] @min-[840px]:grid-cols-3 @min-[1120px]:grid-cols-4"
           : "space-y-1"
       }
     >
       {books.map((book) => (
         <article
           key={book.id}
-          className={`group relative min-w-0 rounded-xl ${activeId === book.id ? "bg-muted" : "hover:bg-muted/50"} ${view === "list" ? "flex items-center pr-3" : "max-w-[196px] p-3"}`}
+          className={`group relative min-w-0 rounded-selection ${activeId === book.id ? "bg-selected shadow-selection" : "hover:bg-hover"} ${view === "list" ? "flex items-center pr-3" : "w-full max-w-[196.8px] px-3 pt-3 pb-2.5"}`}
         >
           <button
             className={`min-w-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${view === "list" ? "flex flex-1 items-center gap-4 rounded-xl px-3 py-2" : "block w-full"}`}
@@ -92,10 +92,10 @@ export function BookGallery({
               <BookCover book={book} />
             </span>
             <span className={view === "list" ? "min-w-0 flex-1" : "mt-3 block"}>
-              <span className="block truncate text-[13px] font-medium">
+              <span className="block h-6 truncate text-sm font-semibold leading-6">
                 {book.title}
               </span>
-              <span className="mt-1 block truncate text-xs text-muted-foreground">
+              <span className="mt-1 block h-[18px] truncate text-xs leading-[18px] text-muted-foreground">
                 {book.author}
               </span>
             </span>
@@ -129,7 +129,7 @@ export function BookGallery({
             >
               <MoreHorizontal />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-60">
+            <DropdownMenuContent align="end" className="w-[300px]">
               <DropdownMenuItem
                 onClick={() => {
                   selectBook(book.id);

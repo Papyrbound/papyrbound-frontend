@@ -110,14 +110,14 @@ export function AnnotationsPage() {
   const expanded = ui.query ? groups.map((b) => b.id) : ui.expanded;
 
   return (
-    <main className="p-5 lg:p-10">
-      <h1 className="text-3xl font-semibold tracking-tight">Annotations</h1>
-      <p className="mt-3 text-xs text-muted-foreground">
+    <main className="p-5 lg:px-12 lg:py-8">
+      <h1 className="text-3xl font-semibold leading-[42px]">Annotations</h1>
+      <p className="mt-3 text-[13px] leading-6 text-muted-foreground">
         {annotations.length} annotations across{" "}
         {new Set(annotations.map((a) => a.bookId)).size} books
       </p>
-      <div className="my-7 flex flex-wrap items-center gap-3">
-        <div className="relative w-full sm:max-w-md">
+      <div className="mb-8 mt-[26px] flex flex-wrap items-center gap-4">
+        <div className="relative w-full sm:mr-2 sm:w-[540px]">
           <Search className="absolute left-3 top-3 size-4 text-muted-foreground" />
           <Input
             className="h-10 rounded-xl border-0 bg-secondary pl-10"
@@ -128,10 +128,12 @@ export function AnnotationsPage() {
           />
         </div>
         <DropdownMenu>
-          <DropdownMenuTrigger render={<Button variant="secondary" />}>
+          <DropdownMenuTrigger
+            render={<Button variant="secondary" className="w-44" />}
+          >
             {books.find((b) => b.id === ui.book)?.title ?? "All books"}
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-64">
+          <DropdownMenuContent className="w-[300px]">
             <DropdownMenuRadioGroup
               value={ui.book}
               onValueChange={(book) => ui.patch({ book })}
@@ -150,7 +152,9 @@ export function AnnotationsPage() {
           </DropdownMenuContent>
         </DropdownMenu>
         <DropdownMenu>
-          <DropdownMenuTrigger render={<Button variant="secondary" />}>
+          <DropdownMenuTrigger
+            render={<Button variant="secondary" className="w-[104px]" />}
+          >
             <ListFilter />
             Filter
           </DropdownMenuTrigger>
@@ -193,12 +197,12 @@ export function AnnotationsPage() {
       >
         {groups.map((book) => (
           <AccordionItem key={book.id} value={book.id}>
-            <AccordionTrigger className="gap-5 rounded-xl bg-muted/60 px-4 py-3 hover:bg-muted">
+            <AccordionTrigger className="h-[88px] gap-5 rounded-[14px] bg-secondary px-4 py-3 hover:bg-muted">
               <span className="w-10 shrink-0 [&_.cover-type]:hidden [&_.cover-credit]:hidden">
                 <BookCover book={book} />
               </span>
               <span className="min-w-0">
-                <span className="block text-base font-semibold">
+                <span className="block text-lg font-semibold">
                   {book.title}
                 </span>
                 <span className="mt-1 block text-xs text-muted-foreground">
@@ -212,33 +216,37 @@ export function AnnotationsPage() {
               <div className="divide-y divide-border pl-3 sm:pl-[76px]">
                 {visible
                   .filter((a) => a.bookId === book.id)
-                  .map((a) => (
-                    <article key={a.id} className="relative py-7 pr-10">
+                  .map((a, index) => (
+                    <article
+                      key={a.id}
+                      className={`relative pr-10 ${index ? "py-6" : "py-7"}`}
+                    >
                       <header className="mb-4 flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
                         <span>
-                          Page {a.page ?? "—"} ·{" "}
-                          {a.kind === "highlight" ? "Highlight" : "Note"}
+                          {a.chapter ? `${a.chapter} · ` : ""}Page{" "}
+                          {a.page ?? "—"}
                         </span>
                         <time dateTime={a.createdAt}>
-                          {new Date(a.createdAt).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                          })}
+                          {a.createdLabel ??
+                            new Date(a.createdAt).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                            })}
                         </time>
                       </header>
                       <p
-                        className="border-l-[3px] pl-5 text-[18px] leading-8"
+                        className="-ml-6 border-l-[3px] py-[9px] pl-[21px] text-xl leading-7"
                         style={{ borderColor: annotationColors[a.color] }}
                       >
                         {a.kind === "highlight" ? `“${a.content}”` : a.content}
                       </p>
                       {a.note && (
-                        <div className="mt-5 rounded-lg bg-muted/40 p-3">
-                          <p className="mb-1 flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                            <StickyNote className="size-3.5" />
-                            Your note
+                        <div className="mt-4 flex items-center gap-3 text-sm leading-[22px] text-muted-foreground">
+                          <StickyNote className="size-3.5 shrink-0" />
+                          <p>
+                            <span className="sr-only">Your note: </span>
+                            {a.note}
                           </p>
-                          <p className="text-sm leading-6">{a.note}</p>
                         </div>
                       )}
 
@@ -255,7 +263,7 @@ export function AnnotationsPage() {
                         >
                           <MoreHorizontal />
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-64">
+                        <DropdownMenuContent align="end" className="w-[300px]">
                           <DropdownMenuItem
                             onClick={() => {
                               selectBook(book.id);

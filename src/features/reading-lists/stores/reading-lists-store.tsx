@@ -220,7 +220,17 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
         books: s.books.map((b) => (b.id === id ? { ...b, ...details } : b)),
       })),
     books: sampleBooks,
-    lists: defaultReadingLists,
+    lists: defaultReadingLists.map((list) => ({
+      ...list,
+      bookIds:
+        list.id === "completed"
+          ? sampleBooks
+              .filter((book) => book.progress >= 100)
+              .map((book) => book.id)
+          : list.id === "want-to-read"
+            ? ["night"]
+            : ["quiet", "sun", "night"],
+    })),
     activity: [],
     addBook,
     markAsRead,

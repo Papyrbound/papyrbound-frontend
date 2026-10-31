@@ -13,6 +13,7 @@ import {
   Plus,
   Tag,
 } from "lucide-react";
+import { useSettingsUI } from "@/features/profile/stores/settings-ui-store";
 import { NavProfile } from "@/features/profile/ui/nav-profile";
 import { BookSearchDialog } from "@/features/home/ui/book-search-dialog";
 import {
@@ -50,6 +51,7 @@ const shelves = [
   },
 ];
 function Navigation() {
+  const labels = useSettingsUI((s) => s.labels);
   const { lists, createList } = useReadingLists();
   const [creating, setCreating] = useLocalUIState(false);
   const path = usePathname();
@@ -61,7 +63,7 @@ function Navigation() {
         {items.map(({ label, href, icon: Icon }) => (
           <SidebarMenuItem key={href}>
             <SidebarMenuButton
-              className="h-9 rounded-lg px-3 text-[13px]"
+              className={`h-8 rounded-lg px-3 text-[13px] leading-4 ${labels ? "" : "[&>span]:sr-only"}`}
               isActive={
                 href.includes("?")
                   ? path + "?" + search.toString() === href
@@ -84,10 +86,10 @@ function Navigation() {
     <>
       <div className="px-3">{links(navigation)}</div>
       <div className="mt-6 px-3">
-        <div className="mb-3 flex items-center justify-between px-3">
+        <div className="mb-3 flex h-5 items-center justify-between px-2">
           <Link
             href="/reading-lists"
-            className="text-xs text-muted-foreground hover:text-foreground"
+            className="text-[11px] leading-5 text-muted-foreground hover:text-foreground"
           >
             Shelves
           </Link>
@@ -122,18 +124,18 @@ function Navigation() {
 export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="offcanvas" {...props}>
-      <SidebarHeader className="gap-5 px-3 pb-4 pt-5">
-        <Link href="/" className="px-3 text-lg font-semibold tracking-tight">
+      <SidebarHeader className="gap-4 px-3 pb-0 pt-4">
+        <Link href="/" className="h-8 px-2 text-lg font-semibold leading-8">
           Papyrbound
         </Link>
         <BookSearchDialog />
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="gap-0 pt-4">
         <Suspense>
           <Navigation />
         </Suspense>
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="px-5 pb-5 pt-3">
         <NavProfile />
       </SidebarFooter>
     </Sidebar>

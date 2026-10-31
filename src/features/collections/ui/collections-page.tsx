@@ -98,9 +98,11 @@ function date(value?: string) {
 export function CollectionStack({
   collection,
   small = false,
+  panel = false,
 }: {
   collection: Collection;
   small?: boolean;
+  panel?: boolean;
 }) {
   const { books } = useReadingLists();
   const covers = collection.bookIds
@@ -109,7 +111,7 @@ export function CollectionStack({
     .slice(0, 3);
   return (
     <span
-      className={`relative block ${small ? "h-12 w-8 [&_.cover-type]:hidden [&_.cover-credit]:hidden" : "h-[268px] w-[172px]"}`}
+      className={`relative block ${small ? "h-12 w-8 [&_.cover-type]:hidden [&_.cover-credit]:hidden" : panel ? "h-[304px] w-[200px]" : "h-[280px] w-[180px]"}`}
     >
       {covers
         .slice()
@@ -117,7 +119,7 @@ export function CollectionStack({
         .map((book, i) => (
           <span
             key={book.id}
-            className="absolute inset-0 block"
+            className={`absolute left-0 top-0 block [&_.book-cover]:rounded-[7px] ${small ? "w-8" : panel ? "w-48" : "w-[172.8px]"}`}
             style={{
               transform: `translate(${i === 0 ? 6 : i === 1 ? 0 : 0}px,${i === 1 ? -7 : 0}px) rotate(${i === 0 ? 3 : -3}deg)`,
             }}
@@ -170,7 +172,7 @@ export function CollectionsPage() {
   const actions = selected && (
     <div className="space-y-1">
       <Button
-        className="h-8 w-full justify-start text-[13px]"
+        className="h-8 w-full justify-start text-sm"
         onClick={() => router.push(`/collections?collection=${selected.id}`)}
       >
         <FolderOpen />
@@ -196,7 +198,7 @@ export function CollectionsPage() {
           <Button
             key={String(label)}
             variant="outline"
-            className={`h-8 w-full justify-start text-[13px] ${label === "Delete collection…" ? "text-destructive" : ""}`}
+            className={`h-8 w-full justify-start text-sm ${label === "Delete collection…" ? "text-destructive" : ""}`}
             onClick={action as () => void}
           >
             <I />
@@ -209,8 +211,8 @@ export function CollectionsPage() {
 
   return (
     <>
-      <div className="flex min-h-[calc(100dvh-4rem)]">
-        <main className="min-w-0 flex-1 p-5 lg:p-10">
+      <div className="flex h-[calc(100dvh-4rem)] min-h-0">
+        <main className="@container min-w-0 flex-1 overflow-y-auto px-5 py-8 lg:px-8">
           {opened ? (
             <>
               <Button
@@ -221,7 +223,7 @@ export function CollectionsPage() {
                 Collections
               </Button>
               <header className="my-6 flex items-center justify-between">
-                <h1 className="text-3xl font-semibold tracking-tight">
+                <h1 className="text-3xl font-semibold leading-[42px]">
                   {opened.name}
                 </h1>
                 <Button variant="secondary" onClick={() => edit(opened)}>
@@ -236,11 +238,11 @@ export function CollectionsPage() {
             </>
           ) : (
             <>
-              <header className="mb-10 flex flex-wrap items-center justify-between gap-4">
-                <h1 className="text-3xl font-semibold tracking-tight">
+              <header className="mb-[38px] flex min-h-[42px] flex-wrap items-center justify-between gap-4 lg:px-4">
+                <h1 className="text-3xl font-semibold leading-[42px]">
                   Collections
                 </h1>
-                <div className="flex gap-3">
+                <div className="flex gap-4">
                   <DropdownMenu>
                     <DropdownMenuTrigger
                       render={<Button variant="secondary" />}
@@ -248,7 +250,7 @@ export function CollectionsPage() {
                       <ListFilter />
                       Filter
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-60">
+                    <DropdownMenuContent align="end" className="w-[248px]">
                       <DropdownMenuCheckboxItem
                         checked={ui.pinned}
                         onCheckedChange={(pinned) => ui.patch({ pinned })}
@@ -290,7 +292,10 @@ export function CollectionsPage() {
                       </DropdownMenuGroup>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <Button onClick={() => ui.patch({ editor: "new" })}>
+                  <Button
+                    className="w-[180px]"
+                    onClick={() => ui.patch({ editor: "new" })}
+                  >
                     <Plus />
                     New collection
                   </Button>
@@ -299,14 +304,14 @@ export function CollectionsPage() {
               <div
                 className={
                   view === "grid"
-                    ? "grid grid-cols-[repeat(auto-fill,minmax(204px,1fr))] gap-x-4 gap-y-8"
+                    ? "grid grid-cols-1 gap-y-8 @min-[500px]:grid-cols-2 @min-[840px]:grid-cols-3 @min-[1120px]:grid-cols-4"
                     : "space-y-1"
                 }
               >
                 {visible.map((c) => (
                   <button
                     key={c.id}
-                    className={`min-w-0 rounded-2xl text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${selected?.id === c.id ? "bg-muted/70" : "hover:bg-muted/40"} ${view === "grid" ? "w-fit p-4" : "flex h-[68px] w-full items-center gap-5 px-4"}`}
+                    className={`min-w-0 rounded-2xl text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${selected?.id === c.id ? "bg-selected shadow-selection" : "hover:bg-hover"} ${view === "grid" ? "w-[212px] p-4 pb-2" : "flex h-[68px] w-full items-center gap-5 px-4"}`}
                     onClick={() => {
                       ui.patch({ selected: c.id });
                       if (compact)
@@ -322,18 +327,18 @@ export function CollectionsPage() {
                     <span
                       className={
                         view === "grid"
-                          ? "mt-5 block max-w-48"
+                          ? "mt-4 block max-w-48"
                           : "min-w-0 flex-1"
                       }
                     >
-                      <span className="flex items-center gap-2 text-sm font-medium">
+                      <span className="flex items-center gap-2 text-lg font-medium leading-7">
                         <span className="truncate">{c.name}</span>
                         {c.pinned && (
                           <Pin className="size-3 text-muted-foreground" />
                         )}
                       </span>
                       {view === "grid" && (
-                        <span className="mt-1 block text-xs text-muted-foreground">
+                        <span className="mt-1 block text-xs leading-5 text-muted-foreground">
                           {c.bookIds.length} books
                         </span>
                       )}
@@ -362,29 +367,38 @@ export function CollectionsPage() {
         ) : (
           panelOpen &&
           selected && (
-            <aside className="hidden w-72 shrink-0 bg-card px-6 py-10 lg:block xl:w-80">
+            <aside className="hidden w-[360px] shrink-0 overflow-y-auto bg-card px-6 pb-10 pt-20 lg:block">
               <div className="mx-auto w-fit">
-                <CollectionStack collection={selected} />
+                <CollectionStack collection={selected} panel />
               </div>
-              <p className="mt-8 text-xs text-muted-foreground">Collection</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+              <p className="mt-3 text-xs leading-5 text-muted-foreground">
+                Collection
+              </p>
+              <h2 className="mt-3 text-2xl font-semibold leading-10">
                 {selected.name}
               </h2>
-              <h3 className="mb-4 mt-8 text-sm font-semibold">Information</h3>
-              <dl className="space-y-4 text-xs">
+              <h3 className="mb-2 mt-8 text-base font-semibold leading-8">
+                Information
+              </h3>
+              <dl className="space-y-1 text-xs">
                 {[
                   ["Created", date(selected.createdAt)],
                   ["Last book added", date(selected.lastBookAddedAt)],
                   ["Location", "My library"],
                   ["Contents", `${selected.bookIds.length} books`],
                 ].map(([k, v]) => (
-                  <div key={k} className="flex justify-between gap-3">
+                  <div
+                    key={k}
+                    className="flex h-8 items-center justify-between gap-3"
+                  >
                     <dt className="text-muted-foreground">{k}</dt>
                     <dd>{v}</dd>
                   </div>
                 ))}
               </dl>
-              <h3 className="mb-3 mt-8 text-sm font-semibold">Actions</h3>
+              <h3 className="mb-2 mt-4 text-base font-semibold leading-6">
+                Actions
+              </h3>
               {actions}
             </aside>
           )

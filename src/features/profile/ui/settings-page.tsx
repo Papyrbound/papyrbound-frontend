@@ -10,7 +10,7 @@ import { Button } from "@/shared/ui/button";
 
 import { Switch } from "@/shared/ui/switch";
 
-import { useSidebar } from "@/shared/ui/sidebar";
+import type { ReactNode } from "react";
 
 import {
   DropdownMenu,
@@ -39,7 +39,7 @@ function Choice({
         render={
           <Button
             variant="outline"
-            className="min-w-40 justify-between text-xs sm:min-w-48"
+            className="h-9 w-40 justify-between text-[13px] sm:w-60"
           />
         }
         aria-label={label}
@@ -60,16 +60,43 @@ function Choice({
   );
 }
 
+function SettingsRow({
+  label,
+  description,
+  children,
+  className = "",
+}: {
+  label: string;
+  description?: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`flex min-h-[74px] items-center justify-between gap-5 border-b border-border ${className}`}
+    >
+      <div>
+        <h3 className="text-sm font-medium leading-6">{label}</h3>
+        {description && (
+          <p className="mt-1 text-xs leading-[18px] text-muted-foreground">
+            {description}
+          </p>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+}
+
 export function SettingsPage() {
   const { preferences, profile } = useAccount();
   const ui = useSettingsUI();
-  const { open, setOpen } = useSidebar();
   return (
-    <main className="p-5 lg:p-10">
-      <header className="mb-8 flex items-center justify-between">
+    <main className="p-5 lg:px-12 lg:py-8">
+      <header className="mb-[30px] flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
-          <p className="mt-3 text-xs text-muted-foreground">
+          <h1 className="text-3xl font-semibold leading-[42px]">Settings</h1>
+          <p className="mt-3 text-[13px] leading-6 text-muted-foreground">
             Make Papyrbound feel like your own.
           </p>
         </div>
@@ -77,69 +104,62 @@ export function SettingsPage() {
           Edit profile
         </Button>
       </header>
-      <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,1.5fr)_minmax(300px,1fr)]">
-        <div className="space-y-6">
-          <section className="rounded-2xl bg-card p-6">
-            <h2 className="mb-5 text-base font-semibold">Appearance</h2>
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
-              <div>
-                <h3 className="text-sm font-medium">Theme</h3>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Choose how Papyrbound looks.
-                </p>
-              </div>
+      <div className="grid items-start gap-12 xl:grid-cols-[minmax(0,1.554fr)_minmax(300px,1fr)]">
+        <div className="space-y-7">
+          <section className="rounded-section bg-card px-6 pt-5">
+            <h2 className="mb-2 text-base font-semibold leading-[26px]">
+              Appearance
+            </h2>
+            <SettingsRow
+              label="Theme"
+              description="Choose how Papyrbound looks."
+            >
               <div
-                className="flex rounded-xl bg-muted p-1"
+                className="flex h-9 w-[280px] shrink-0 rounded-xl bg-muted p-1"
                 role="group"
                 aria-label="Theme"
               >
-                {(["system", "light", "dark"] as const).map((t) => (
+                {(["system", "light", "dark"] as const).map((theme) => (
                   <Button
-                    key={t}
+                    key={theme}
                     variant="ghost"
                     size="sm"
-                    aria-pressed={preferences.theme === t}
-                    className={`rounded-lg capitalize ${preferences.theme === t ? "bg-background shadow-sm" : "text-muted-foreground"}`}
-                    onClick={() => updatePreferences({ theme: t })}
+                    aria-pressed={preferences.theme === theme}
+                    className={`h-7 flex-1 rounded-lg px-2 text-[13px] capitalize ${preferences.theme === theme ? "bg-selected shadow-soft" : "text-muted-foreground"}`}
+                    onClick={() => updatePreferences({ theme })}
                   >
-                    {t}
+                    {theme}
                   </Button>
                 ))}
               </div>
-            </div>
-            <div className="flex items-center justify-between gap-5 border-b border-border py-5">
-              <label htmlFor="settings-sidebar" className="text-sm font-medium">
-                Show sidebar
-              </label>
-              <Switch
-                id="settings-sidebar"
-                checked={open}
-                onCheckedChange={setOpen}
+            </SettingsRow>
+            <SettingsRow
+              label="Interface text size"
+              description="Adjust labels and navigation."
+              className="min-h-[78px]"
+            >
+              <Choice
+                label="Interface text size"
+                value={ui.interfaceSize}
+                options={["Small", "Default", "Large"]}
+                onChange={(interfaceSize) => ui.patch({ interfaceSize })}
               />
-            </div>
-            <div className="flex items-center justify-between gap-5 pt-5">
-              <div>
-                <label
-                  htmlFor="settings-motion"
-                  className="text-sm font-medium"
-                >
-                  Reduce animations
-                </label>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Keep transitions still.
-                </p>
-              </div>
+            </SettingsRow>
+            <SettingsRow
+              label="Show sidebar labels"
+              className="min-h-[72px] border-0 pt-2.5"
+            >
               <Switch
-                id="settings-motion"
-                checked={preferences.reduceMotion}
-                onCheckedChange={(reduceMotion) =>
-                  updatePreferences({ reduceMotion })
-                }
+                aria-label="Show sidebar labels"
+                checked={ui.labels}
+                onCheckedChange={(labels) => ui.patch({ labels })}
               />
-            </div>
+            </SettingsRow>
           </section>
-          <section className="rounded-2xl bg-card p-6">
-            <h2 className="mb-5 text-base font-semibold">Reading preview</h2>
+          <section className="rounded-section bg-card px-6 pt-5">
+            <h2 className="mb-2 text-base font-semibold leading-[26px]">
+              Reading
+            </h2>
             {[
               [
                 "Page colour",
@@ -162,52 +182,70 @@ export function SettingsPage() {
                 ["Compact", "Comfortable", "Spacious"],
                 (spacing: string) => ui.patch({ spacing }),
               ],
-            ].map(([title, desc, value, options, change]) => (
-              <div
-                key={String(title)}
-                className="flex flex-wrap items-center justify-between gap-4 border-b border-border py-5 first:pt-0"
+            ].map(([label, desc, value, options, change], index) => (
+              <SettingsRow
+                key={String(label)}
+                label={String(label)}
+                description={String(desc)}
+                className={index ? "min-h-[78px]" : ""}
               >
-                <div>
-                  <h3 className="text-sm font-medium">{String(title)}</h3>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    {String(desc)}
-                  </p>
-                </div>
                 <Choice
-                  label={String(title)}
+                  label={String(label)}
                   value={String(value)}
                   options={options as string[]}
                   onChange={change as (v: string) => void}
                 />
-              </div>
+              </SettingsRow>
             ))}
-            <p className="mt-5 text-xs leading-6 text-muted-foreground">
-              Reading options update the preview. They will apply to EPUB books
-              when the reader is connected.
+            <SettingsRow
+              label="Resume where you left off"
+              description="Open books at your last reading position."
+              className="min-h-[68px] border-0"
+            >
+              <Switch
+                aria-label="Resume where you left off"
+                checked={ui.resume}
+                onCheckedChange={(resume) => ui.patch({ resume })}
+              />
+            </SettingsRow>
+            <p className="h-[52px] pt-3.5 text-xs leading-[18px] text-muted-foreground">
+              Changes apply to this preview. EPUB reading is not connected yet.
             </p>
           </section>
-          <p className="text-xs text-muted-foreground">
-            {profile.name} · Profile and appearance saved on this device.
-          </p>
+          <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
+            <span>
+              {profile.name} · Profile and appearance saved on this device.
+            </span>
+            <label className="flex items-center gap-3">
+              Reduce animations
+              <Switch
+                aria-label="Reduce animations"
+                checked={preferences.reduceMotion}
+                onCheckedChange={(reduceMotion) =>
+                  updatePreferences({ reduceMotion })
+                }
+              />
+            </label>
+          </div>
         </div>
-        <section className="xl:sticky xl:top-6">
-          <h2 className="text-base font-semibold">Reading preview</h2>
-          <p className="mb-5 mt-2 text-xs text-muted-foreground">
+        <section className="pt-1 xl:sticky xl:top-6">
+          <h2 className="text-base font-semibold leading-7">Reading preview</h2>
+          <p className="mb-[18px] mt-3 text-[13px] leading-[22px] text-muted-foreground">
             Your default reading appearance.
           </p>
           <div
-            className={`rounded-2xl border border-white/70 px-8 py-10 shadow-sm ${ui.page === "Dark" ? "bg-[#282828] text-[#e5e5e5]" : ui.page === "Paper" ? "bg-[#f3f0e7] text-[#44423d]" : "bg-white text-[#343434]"}`}
+            className={`relative min-h-[526px] rounded-section border border-soft-border px-8 pb-24 pt-12 sm:px-[52px] ${ui.page === "Dark" ? "bg-[#292929] text-[#e5e5e5]" : ui.page === "Paper" ? "bg-[#f3f0e7] text-[#44423d]" : "bg-white text-[#343434]"}`}
           >
-            <p className="text-center text-[10px] tracking-widest opacity-60">
+            <p className="text-center text-[11px] leading-[18px] text-muted-foreground">
               CHAPTER ONE
             </p>
             <h3
-              className={`mb-8 mt-9 text-2xl ${ui.font === "Literata" ? "font-serif" : "font-sans"}`}
+              className={`mb-10 mt-9 text-[30px] font-normal leading-[41px] ${ui.font === "Literata" ? "font-serif" : "font-sans"}`}
             >
               A place between pages
             </h3>
             <div
-              className={`space-y-6 text-lg ${ui.font === "Literata" ? "font-serif" : "font-sans"} ${ui.spacing === "Compact" ? "leading-7" : ui.spacing === "Spacious" ? "leading-10" : "leading-8"}`}
+              className={`space-y-8 text-[21px] ${ui.font === "Literata" ? "font-serif" : "font-sans"} ${ui.spacing === "Compact" ? "leading-7" : ui.spacing === "Spacious" ? "leading-10" : "leading-[31.5px]"}`}
             >
               <p>
                 The room grew quiet as the afternoon light moved across the
@@ -220,8 +258,13 @@ export function SettingsPage() {
                 might come next.
               </p>
             </div>
-            <p className="mt-14 text-center text-xs opacity-60">1</p>
+            <p className="absolute inset-x-0 bottom-10 text-center text-xs text-muted-foreground">
+              1
+            </p>
           </div>
+          <p className="mt-6 text-xs leading-5 text-muted-foreground">
+            You can change these options while reading, too.
+          </p>
         </section>
       </div>
       {ui.editing && (

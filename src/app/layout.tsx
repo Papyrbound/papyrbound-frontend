@@ -13,8 +13,9 @@ import localFont from "next/font/local";
 import "./globals.css";
 
 const inter = localFont({
-  src: "./font/InterVariable.woff2",
+  src: "./font/InterTight-Variable.ttf",
   display: "swap",
+  weight: "100 900",
   variable: "--font-inter",
 });
 

@@ -101,25 +101,29 @@ export function BookDetailsPanel({
     .find((l) => l.id === "favourites")
     ?.bookIds?.includes(book.id);
 
-  const actionClass = "h-8 w-full justify-start rounded-[10px] text-[13px]";
+  const actionClass = `${reading ? "h-9" : "h-8"} w-full justify-start rounded-[10px] px-3 text-sm`;
 
   const body = (
     <>
-      <div className="mx-auto w-40 xl:w-44">
+      <div className="mx-auto w-48 shrink-0">
         <BookCover book={book} />
       </div>
-      <div className="mt-7">
-        <p className="text-xs text-muted-foreground">
+      <div className={reading ? "mt-[26px]" : "mt-6"}>
+        <p className="h-5 text-xs leading-5 text-muted-foreground">
           {reading ? "Currently reading" : "Book"}
         </p>
-        <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+        <h2
+          className={`${reading ? "mt-2.5" : "mt-2"} text-2xl font-semibold leading-[34px]`}
+        >
           {book.title}
         </h2>
-        <p className="mt-2 text-[13px] text-muted-foreground">{book.author}</p>
+        <p className="mt-1.5 text-sm leading-5 text-muted-foreground">
+          {book.author}
+        </p>
         {!reading && (
           <Button
             variant="outline"
-            className={`${actionClass} mt-4`}
+            className={`${actionClass} mt-2`}
             onClick={() => setDialog("synopsis")}
           >
             <FileText />
@@ -128,15 +132,17 @@ export function BookDetailsPanel({
         )}
       </div>
 
-      <h3 className="mb-3 mt-6 text-sm font-semibold">
+      <h3
+        className={`${reading ? "mb-[22px] mt-9" : "mb-[15px] mt-4"} text-[15px] font-semibold leading-[21px]`}
+      >
         {reading ? "Your progress" : "Information"}
       </h3>
-      <dl className="space-y-3 text-xs">
+      <dl className="space-y-1 text-[13px] leading-[18px]">
         {(reading
           ? [
               [
                 "Current chapter",
-                `Chapter ${Math.max(1, Math.ceil((book.progress / 100) * 18))} of 18`,
+                `Chapter ${Math.max(1, Math.floor((book.progress / 100) * 18))} of 18`,
               ],
               [
                 "Pages read",
@@ -148,33 +154,36 @@ export function BookDetailsPanel({
               ["File format", "EPUB"],
               ["Length", `${book.pages} pages`],
               ["Progress", `${book.progress}%`],
-              ["Genre", book.genre],
+              ["Last opened", book.progress ? "Today" : "Not opened"],
+              ["Location", "On this device"],
             ]
         ).map(([k, v]) => (
-          <div key={k} className="flex justify-between gap-4">
+          <div key={k} className="flex h-8 items-center justify-between gap-4">
             <dt className="text-muted-foreground">{k}</dt>
             <dd className="text-right">{v}</dd>
           </div>
         ))}
       </dl>
       {reading && (
-        <div className="mt-5">
+        <div className="mt-[13px]">
           <div className="h-1 overflow-hidden rounded-full bg-border">
             <div
               className="h-full bg-muted-foreground"
               style={{ width: `${book.progress}%` }}
             />
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p className="mt-3 text-xs leading-[18px] text-muted-foreground">
             {book.progress}% complete
           </p>
         </div>
       )}
 
-      <h3 className="mb-3 mt-7 text-sm font-semibold">
+      <h3
+        className={`${reading ? "mt-10" : "mt-5"} mb-2 text-base font-semibold leading-6`}
+      >
         {reading ? "Reading actions" : "Actions"}
       </h3>
-      <div className="space-y-1">
+      <div className={reading ? "space-y-2" : "space-y-1"}>
         <Button className={actionClass} onClick={() => setDialog("reader")}>
           <BookOpen />
           {book.progress ? "Continue reading" : "Start reading"}
@@ -278,9 +287,9 @@ export function BookDetailsPanel({
       {panelOpen && (
         <aside
           aria-label={reading ? "Reading panel" : "Book details"}
-          className="hidden w-72 shrink-0 self-stretch bg-card px-6 py-8 lg:block xl:w-80"
+          className={`hidden w-[360px] shrink-0 self-stretch overflow-y-auto bg-card px-6 pb-10 lg:block ${reading ? "pt-16" : "pt-[42px]"}`}
         >
-          <div className="sticky top-6">{body}</div>
+          <div>{body}</div>
         </aside>
       )}
 
@@ -306,7 +315,7 @@ export function BookDetailsPanel({
       >
         <DialogContent
           showCloseButton={false}
-          className="max-h-[85dvh] overflow-y-auto rounded-3xl bg-card sm:max-w-lg"
+          className="max-h-[85dvh] overflow-y-auto rounded-3xl bg-card sm:max-w-[560px]"
         >
           <DialogHeader>
             <DialogTitle>

@@ -51,22 +51,22 @@ export function NavProfile() {
               render={
                 <SidebarMenuButton
                   size="lg"
-                  className="aria-expanded:bg-muted"
+                  className="h-10 gap-3 p-0 aria-expanded:bg-muted [&_[data-slot=avatar]]:size-7"
                   tooltip={`${profile.name} · ${activeTitle}`}
                 />
               }
             >
               <ReaderAvatar seed={profile.avatarSeed} />
-              <div className="grid min-w-0 flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+              <div className="grid min-w-0 flex-1 text-left text-[13px] leading-[22px] group-data-[collapsible=icon]:hidden">
                 <span className="truncate font-medium">{profile.name}</span>
-                <span className="truncate text-xs text-muted-foreground">
+                <span className="truncate text-[11px] leading-[18px] text-muted-foreground">
                   {activeTitle}
                 </span>
               </div>
               <ChevronsUpDownIcon className="ml-auto size-4 group-data-[collapsible=icon]:hidden" />
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-60"
+              className="w-[300px]"
               side={isMobile ? "top" : "right"}
               align="end"
               sideOffset={8}
@@ -79,7 +79,7 @@ export function NavProfile() {
                       <p className="truncate text-sm font-medium">
                         {profile.name}
                       </p>
-                      <p className="truncate text-xs text-muted-foreground">
+                      <p className="truncate text-[11px] leading-[18px] text-muted-foreground">
                         {activeTitle}
                       </p>
                     </div>

@@ -1,12 +1,19 @@
 "use client";
 
 import { Fragment, Suspense } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { LayoutGridIcon, ListIcon, PanelRightIcon } from "lucide-react";
+import {
+  LayoutGridIcon,
+  ListIcon,
+  PanelRightIcon,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { useWorkspace } from "./workspace-store";
 import { SidebarTrigger } from "@/shared/ui/sidebar";
 import { Button } from "@/shared/ui/button";
+import { LibraryFilter } from "@/features/library/ui/library-filter";
 import { AddBookDialog } from "@/features/library/ui/add-book-dialog";
 import {
   Breadcrumb,
@@ -97,6 +104,7 @@ function RouteBreadcrumbs({ pathname }: { pathname: string }) {
 
 export function AppHeader() {
   const pathname = usePathname();
+  const router = useRouter();
   const { view, setView, panelOpen, setPanelOpen } = useWorkspace();
   const gallery =
     pathname === "/library" ||
@@ -104,16 +112,35 @@ export function AppHeader() {
     pathname === "/collections";
   const hasPanel = gallery || pathname === "/";
   return (
-    <header className="flex h-16 shrink-0 items-center gap-3 border-b border-border/60 px-5 lg:px-8">
-      <SidebarTrigger className="text-muted-foreground" />
+    <header className="flex h-16 shrink-0 items-center border-b border-border/55 bg-background px-4">
+      <SidebarTrigger className="mr-3 text-muted-foreground md:hidden" />
+      <div className="mr-[19px] hidden items-center gap-1 md:flex">
+        <Button
+          size="icon-sm"
+          variant="ghost"
+          aria-label="Go back"
+          onClick={() => router.back()}
+        >
+          <ChevronLeft className="size-[17px] text-muted-foreground" />
+        </Button>
+        <Button
+          size="icon-sm"
+          variant="ghost"
+          aria-label="Go forward"
+          onClick={() => router.forward()}
+        >
+          <ChevronRight className="size-[17px] text-muted-foreground" />
+        </Button>
+      </div>
       <Suspense fallback={<span className="flex-1 text-sm">Papyrbound</span>}>
         <RouteBreadcrumbs pathname={pathname} />
       </Suspense>
-      <div className="ml-auto flex items-center gap-3">
+      <div className="ml-auto flex items-center gap-4">
+        {pathname === "/library" && <LibraryFilter iconOnly />}
         <AddBookDialog />
         {gallery && (
           <div
-            className="flex rounded-xl border border-white/80 bg-secondary p-1 shadow-sm"
+            className="flex h-10 w-[88px] items-center justify-center gap-1 rounded-xl border border-soft-border bg-secondary p-1 shadow-soft"
             role="group"
             aria-label="Library view"
           >
@@ -124,8 +151,8 @@ export function AppHeader() {
                 size="icon-sm"
                 className={
                   view === v
-                    ? "rounded-lg bg-background shadow-sm"
-                    : "rounded-lg text-muted-foreground"
+                    ? "h-8 w-[36px] rounded-lg bg-selected shadow-soft"
+                    : "h-8 w-[36px] rounded-lg text-muted-foreground"
                 }
                 aria-label={`${v} view`}
                 aria-pressed={view === v}
@@ -140,6 +167,7 @@ export function AppHeader() {
           <Button
             variant="outline"
             size="icon"
+            className="rounded-lg"
             aria-label={panelOpen ? "Hide details panel" : "Show details panel"}
             aria-pressed={panelOpen}
             onClick={() => setPanelOpen(!panelOpen)}

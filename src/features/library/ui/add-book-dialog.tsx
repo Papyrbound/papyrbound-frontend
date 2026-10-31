@@ -37,7 +37,10 @@ export function AddBookDialog() {
     <Dialog open={open} onOpenChange={changeOpen}>
       <DialogTrigger
         render={
-          <Button className="h-10 rounded-xl px-4" title="Import books" />
+          <Button
+            className="h-10 rounded-xl px-4 sm:w-[152px]"
+            title="Import books"
+          />
         }
         aria-label="Import books"
       >
