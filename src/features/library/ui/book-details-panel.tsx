@@ -105,7 +105,7 @@ export function BookDetailsPanel({
   const actionClass = `${reading ? "h-9" : "h-8"} w-full justify-start rounded-[10px] px-3 text-sm`;
 
   const menuActionClass =
-    "min-h-8 h-auto w-full justify-start gap-2 rounded-lg px-2 py-1.5 text-sm font-normal hover:bg-foreground/10 focus-visible:bg-foreground/10";
+    "min-h-8 h-auto w-full justify-start gap-2 rounded-lg px-0 py-1.5 text-sm font-normal hover:bg-foreground/10 focus-visible:bg-foreground/10";
 
   const body = (
     <>
