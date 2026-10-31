@@ -1,20 +1,19 @@
 "use client"
 
-import { Fragment, Suspense, useSyncExternalStore } from "react"
+import { Fragment, Suspense } from "react"
 import { usePathname, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { MoonIcon, SunIcon } from "lucide-react"
+import { LayoutGridIcon, ListIcon, PanelRightIcon } from "lucide-react"
+import { useWorkspace } from "./workspace-store"
 import { SidebarTrigger } from "@/shared/ui/sidebar"
 import { Button } from "@/shared/ui/button"
-import { BookSearchDialog } from "@/features/home/ui/book-search-dialog"
 import { AddBookDialog } from "@/features/library/ui/add-book-dialog"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/shared/ui/breadcrumb"
 import { useCollections } from "@/features/collections/stores/collections-store"
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store"
-import { updatePreferences } from "@/features/profile/stores/account-store"
 
 const routeLabels: Record<string, string> = {
-  "/": "Home",
+  "/": "Reading Now",
   "/library": "Library",
   "/collections": "Collections",
   "/annotations": "Annotations",
@@ -24,20 +23,12 @@ const routeLabels: Record<string, string> = {
   "/settings": "Settings",
 }
 
-function subscribe(callback: () => void) {
-  const observer = new MutationObserver(callback)
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] })
-  return () => observer.disconnect()
-}
-const getSnapshot = () => document.documentElement.classList.contains("dark")
-const getServerSnapshot = () => false
-
 function RouteBreadcrumbs({ pathname }: { pathname: string }) {
   const searchParams = useSearchParams()
   const { collections } = useCollections()
   const { books, lists } = useReadingLists()
   const segments = pathname.split("/").filter(Boolean)
-  const items = segments.length === 0 ? [{ label: "Home", href: "/" }] : segments.map((segment, index) => {
+  const items = segments.length === 0 ? [{ label: "Reading Now", href: "/" }] : segments.map((segment, index) => {
     const href = `/${segments.slice(0, index + 1).join("/")}`
     const label = routeLabels[href]
       ?? collections.find((collection) => collection.id === segment)?.name
@@ -64,26 +55,8 @@ function RouteBreadcrumbs({ pathname }: { pathname: string }) {
 }
 
 export function AppHeader() {
-  const pathname = usePathname()
-  const dark = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
-  return (
-    <header className="app-header flex shrink-0 items-center gap-3">
-      <SidebarTrigger className="text-muted-foreground" />
-      <span className="h-4 w-px bg-border" aria-hidden="true" />
-      <Suspense fallback={<span className="min-w-0 flex-1 truncate text-sm">{routeLabels[pathname] ?? "Papyrbound"}</span>}><RouteBreadcrumbs pathname={pathname} /></Suspense>
-      <div className="ml-auto flex shrink-0 items-center gap-2">
-      <Button
-        className="text-muted-foreground"
-        variant="ghost"
-        size="icon"
-        aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
-        onClick={() => updatePreferences({ theme: dark ? "light" : "dark" })}
-      >
-        {dark ? <SunIcon /> : <MoonIcon />}
-      </Button>
-      <BookSearchDialog />
-      <AddBookDialog />
-      </div>
-    </header>
-  )
+ const pathname=usePathname(); const {view,setView,panelOpen,setPanelOpen}=useWorkspace();
+ const gallery=pathname==="/library"||pathname==="/reading-lists"||pathname==="/collections";
+ const hasPanel=gallery||pathname==="/";
+ return <header className="flex h-16 shrink-0 items-center gap-3 border-b border-border/60 px-5 lg:px-8"><SidebarTrigger className="text-muted-foreground"/><Suspense fallback={<span className="flex-1 text-sm">Papyrbound</span>}><RouteBreadcrumbs pathname={pathname}/></Suspense><div className="ml-auto flex items-center gap-3"><AddBookDialog/>{gallery&&<div className="flex rounded-xl border border-white/80 bg-secondary p-1 shadow-sm" role="group" aria-label="Library view">{(["grid","list"] as const).map(v=><Button key={v} variant="ghost" size="icon-sm" className={view===v?"rounded-lg bg-background shadow-sm":"rounded-lg text-muted-foreground"} aria-label={`${v} view`} aria-pressed={view===v} onClick={()=>setView(v)}>{v==="grid"?<LayoutGridIcon/>:<ListIcon/>}</Button>)}</div>}{hasPanel&&<Button variant="outline" size="icon" aria-label={panelOpen?"Hide details panel":"Show details panel"} aria-pressed={panelOpen} onClick={()=>setPanelOpen(!panelOpen)}><PanelRightIcon/></Button>}</div></header>
 }

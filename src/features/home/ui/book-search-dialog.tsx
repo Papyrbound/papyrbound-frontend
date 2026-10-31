@@ -44,7 +44,7 @@ export function BookSearchDialog() {
         setSelected(null)
       }
     }}>
-      <Dialog.Trigger render={<Button ref={triggerRef} variant="secondary" className="header-search justify-start text-muted-foreground" />} aria-label="Search books" aria-keyshortcuts="Control+k Meta+k">
+      <Dialog.Trigger render={<Button ref={triggerRef} variant="secondary" className="h-9 w-full justify-start rounded-lg border-0 bg-background px-3 text-xs text-muted-foreground shadow-none" />} aria-label="Search books" aria-keyshortcuts="Control+k Meta+k">
         <SearchIcon aria-hidden="true" />
         <span className="hidden sm:inline">Find a book…</span>
         <KbdGroup className="ml-auto hidden sm:flex" aria-hidden="true"><Kbd>Ctrl</Kbd><Kbd>K</Kbd></KbdGroup>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { BookPlusIcon } from "lucide-react"
+import { UploadIcon } from "lucide-react"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/ui/dialog"
@@ -21,11 +21,11 @@ export function AddBookDialog() {
 
   return (
     <Dialog open={open} onOpenChange={changeOpen}>
-      <DialogTrigger render={<Button variant="ghost" size="icon" className="text-muted-foreground" title="Add book" />} aria-label="Add book"><BookPlusIcon aria-hidden="true" /></DialogTrigger>
+      <DialogTrigger render={<Button className="h-10 rounded-xl px-4" title="Import books" />} aria-label="Import books"><UploadIcon aria-hidden="true" /><span className="hidden sm:inline">Import books</span></DialogTrigger>
       <DialogContent initialFocus={titleRef}>
         <DialogHeader>
-          <DialogTitle>Add book</DialogTitle>
-          <DialogDescription>Add a title to your library.</DialogDescription>
+          <DialogTitle>Import books</DialogTitle>
+          <DialogDescription>Preview your library by adding a title. EPUB file importing is not connected yet.</DialogDescription>
         </DialogHeader>
         <form className="space-y-5" onSubmit={(event) => {
           event.preventDefault()
