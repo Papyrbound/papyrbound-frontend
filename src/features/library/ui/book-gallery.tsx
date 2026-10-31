@@ -1,117 +1,16 @@
-"use client"
-
-import { useRef, useState } from "react"
-import { AnimatePresence, m } from "motion/react"
-import { readingEase, useReadingMotion } from "@/shared/ui/reading-motion"
-import { CheckIcon, HeartIcon, ListPlusIcon, MoreHorizontalIcon, PlusIcon, Trash2Icon } from "lucide-react"
-import { Button } from "@/shared/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuGroup, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/shared/ui/dropdown-menu"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/shared/ui/alert-dialog"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/shared/ui/sheet"
-import { BookCover } from "@/features/home/ui/book-cover"
-import type { SampleBook } from "@/features/home/model/sample-books"
-import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store"
-import { ReadingListEditor } from "@/features/reading-lists/ui/reading-list-editor"
-import { useCollections } from "@/features/collections/stores/collections-store"
-
-export function BookGallery({ books, listId, onAddBooks, emptyMessage = "No books here yet. Add a few to start your list." }: {
-  books: SampleBook[]
-  listId?: string
-  onAddBooks?: () => void
-  emptyMessage?: string
-}) {
-  const [selected, setSelected] = useState<SampleBook | null>(null)
-  const [newListBook, setNewListBook] = useState<SampleBook | null>(null)
-  const [deletingBook, setDeletingBook] = useState<SampleBook | null>(null)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const cancelRef = useRef<HTMLButtonElement>(null)
-  const galleryRef = useRef<HTMLDivElement>(null)
-  const confirmedDeletion = useRef(false)
-  const { setCollections } = useCollections()
-  const { lists, toggleBook, createList, markAsRead, markAsUnread, deleteBook } = useReadingLists()
-  const reduced = useReadingMotion()
-
-  return (
-    <>
-      <div ref={galleryRef} tabIndex={-1} className="library-book-grid outline-none">
-        {onAddBooks && <button type="button" className="gallery-add-book" onClick={onAddBooks}><PlusIcon className="size-7" aria-hidden="true" /><span>Add books</span></button>}
-        <AnimatePresence initial={true} mode="popLayout">
-        {books.map((book, index) => (
-          <m.article key={book.id} className="gallery-book" layout={reduced ? false : "position"} initial={reduced ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ opacity: { duration: reduced ? 0 : 0.2 }, y: { duration: reduced ? 0 : 0.4, delay: reduced ? 0 : Math.min(index, 6) * 0.035, ease: readingEase }, layout: { type: "spring", stiffness: 380, damping: 36 } }}>
-            <div className="gallery-book-stage">
-              <button type="button" className="gallery-cover-button" onClick={() => setSelected(book)} aria-label={`View ${book.title}`}><BookCover book={book} /><span className="gallery-cover-actions" aria-hidden="true">View book</span></button>
-            </div>
-            <div className="gallery-book-caption">
-              <h2 className="sr-only">{book.title}</h2>
-              <span className={book.progress <= 0 || book.progress >= 100 ? "gallery-book-status gallery-status-label" : "gallery-book-status"}>
-                {book.progress >= 100 ? "Completed" : book.progress > 0 ? `${book.progress}%` : "New"}
-              </span>
-              <DropdownMenu>
-                <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" className="gallery-book-menu" />} aria-label={`More options for ${book.title}`}><MoreHorizontalIcon /></DropdownMenuTrigger>
-                <DropdownMenuContent side="bottom" align="end" className="w-64 max-w-[calc(100vw-2rem)]">
-                  <DropdownMenuItem onClick={() => setSelected(book)}>View book details</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuGroup>
-                    {lists.filter((list) => list.isDefault && list.id !== "completed" && list.id !== listId).map((list) => <DropdownMenuItem key={list.id} onClick={() => toggleBook(list.id, book.id)}>
-                      {list.bookIds?.includes(book.id) ? <CheckIcon /> : list.id === "favourites" ? <HeartIcon /> : <PlusIcon />}
-                      {list.bookIds?.includes(book.id) ? `Remove from ${list.name}` : `Add to ${list.name}`}
-                    </DropdownMenuItem>)}
-                    <DropdownMenuItem onClick={() => book.progress >= 100 ? markAsUnread(book.id) : markAsRead(book.id)}><CheckIcon />{book.progress >= 100 ? "Mark as unread" : "Mark as read"}</DropdownMenuItem>
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger><ListPlusIcon />Add to custom list</DropdownMenuSubTrigger>
-                      <DropdownMenuSubContent className="w-64 max-w-[calc(100vw-2rem)]">
-                        <DropdownMenuItem onClick={() => setNewListBook(book)}><PlusIcon />Create new list</DropdownMenuItem>
-                        {lists.some((list) => !list.isDefault) && <DropdownMenuSeparator />}
-                        {lists.filter((list) => !list.isDefault).map((list) => <DropdownMenuItem key={list.id} disabled={list.bookIds?.includes(book.id)} onClick={() => toggleBook(list.id, book.id)}>
-                          {list.bookIds?.includes(book.id) ? <CheckIcon /> : <PlusIcon />}<span className="truncate">{list.name}</span>
-                        </DropdownMenuItem>)}
-                      </DropdownMenuSubContent>
-                    </DropdownMenuSub>
-                  </DropdownMenuGroup>
-                  {listId && listId !== "completed" && <><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onClick={() => toggleBook(listId, book.id)}><Trash2Icon />Remove from this list</DropdownMenuItem></>}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem variant="destructive" onClick={() => {
-                    confirmedDeletion.current = false
-                    setDeletingBook(book)
-                    setDeleteDialogOpen(true)
-                  }}><Trash2Icon />Delete</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </m.article>
-        ))}
-        </AnimatePresence>
-      </div>
-      {books.length === 0 && <p className="gallery-empty" role="status">{emptyMessage}</p>}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} onOpenChangeComplete={(open) => { if (!open) setDeletingBook(null) }}>
-        <AlertDialogContent initialFocus={cancelRef} finalFocus={() => confirmedDeletion.current ? galleryRef.current : true}>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete ‚Äú{deletingBook?.title}‚Äù?</AlertDialogTitle>
-            <AlertDialogDescription>This book will be removed from your library, reading lists, and collections.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel ref={cancelRef}>Cancel</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={() => {
-              if (!deletingBook) return
-              confirmedDeletion.current = true
-              deleteBook(deletingBook.id)
-              setCollections((current) => current.map((collection) => ({ ...collection, bookIds: collection.bookIds.filter((id) => id !== deletingBook.id) })))
-              if (selected?.id === deletingBook.id) setSelected(null)
-              setDeleteDialogOpen(false)
-            }}>Delete book</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      {newListBook && <ReadingListEditor initialBookIds={[newListBook.id]} onClose={() => setNewListBook(null)} onSave={(details) => {
-        createList({ ...details, bookIds: [...new Set([...details.bookIds, newListBook.id])] })
-        setNewListBook(null)
-      }} />}
-      <Sheet open={selected !== null} onOpenChange={(open) => { if (!open) setSelected(null) }}>
-        <SheetContent>
-          <SheetHeader><SheetTitle>Book details</SheetTitle><SheetDescription>Title, author, and reading progress.</SheetDescription></SheetHeader>
-          {selected && <div className="px-6 pb-6"><div className="book-detail-cover"><BookCover book={selected} /></div><h2 className="text-2xl">{selected.title}</h2><p className="mt-2 text-muted-foreground">{selected.author}</p><dl className="mt-6 divide-y divide-border">{[["Genre", selected.genre], ["Length", `${selected.pages} pages`], ["Progress", selected.progress ? `${selected.progress}% read` : "Not started"]].map(([label, value]) => <div key={label} className="flex justify-between py-4"><dt className="text-muted-foreground">{label}</dt><dd>{value}</dd></div>)}</dl></div>}
-        </SheetContent>
-      </Sheet>
-    </>
-  )
+"use client";
+import { BookOpen, MoreHorizontal, Heart, Check, FolderPlus, Pencil, Trash2, Plus } from "lucide-react";
+import { useWorkspace } from "@/app-shell/workspace-store";
+import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
+import { BookCover } from "@/features/home/ui/book-cover";
+import type { SampleBook } from "@/features/home/model/sample-books";
+import { Button } from "@/shared/ui/button";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/shared/ui/dropdown-menu";
+export function BookGallery({books,onAddBooks,emptyMessage="No books here yet.",listId}: {books:SampleBook[];onAddBooks?:()=>void;emptyMessage?:string;listId?:string}) {
+ const {view,selectedId,selectBook,setDialog}=useWorkspace();const {toggleBook,markAsRead,markAsUnread}=useReadingLists();
+ if(!books.length)return <div className="py-20 text-center"><BookOpen className="mx-auto mb-4 size-8 text-muted-foreground"/><p className="text-muted-foreground">{emptyMessage}</p>{onAddBooks&&<Button className="mt-5" onClick={onAddBooks}><Plus/>Add books</Button>}</div>;
+ return <div className={view==="grid"?"grid grid-cols-2 items-start gap-x-6 gap-y-9 sm:grid-cols-3 xl:grid-cols-4":"space-y-1"}>{books.map(book=><article key={book.id} className={`group relative min-w-0 rounded-xl ${selectedId===book.id?"bg-muted":"hover:bg-muted/50"} ${view==="list"?"flex items-center pr-3":"max-w-[196px] p-3"}`}>
+ <button className={`min-w-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${view==="list"?"flex flex-1 items-center gap-4 rounded-xl px-3 py-2":"block w-full"}`} onClick={()=>selectBook(book.id)} onDoubleClick={()=>{selectBook(book.id);setDialog("reader")}} aria-label={`View ${book.title}`} aria-pressed={selectedId===book.id}>
+ <span className={`block shrink-0 ${view==="list"?"w-8 [&_.cover-type]:hidden [&_.cover-credit]:hidden":"w-full"}`}><BookCover book={book}/></span><span className={view==="list"?"min-w-0 flex-1":"mt-3 block"}><span className="block truncate text-[13px] font-medium">{book.title}</span><span className="mt-1 block truncate text-xs text-muted-foreground">{book.author}</span></span>{view==="list"&&<span className="hidden text-xs text-muted-foreground sm:block">{book.progress>=100?"Finished":book.progress?`${book.progress}% read`:"New"} ∑ EPUB</span>}</button>
+ <DropdownMenu><DropdownMenuTrigger render={<Button variant="ghost" size="icon-xs" className={view==="grid"?"absolute right-1 bottom-1 opacity-0 focus:opacity-100 group-hover:opacity-100 aria-expanded:opacity-100":"ml-2"}/>} aria-label={`Options for ${book.title}`} onClick={()=>selectBook(book.id)}><MoreHorizontal/></DropdownMenuTrigger><DropdownMenuContent align="end" className="w-60"><DropdownMenuItem onClick={()=>{selectBook(book.id);setDialog("reader")}}><BookOpen/>{book.progress?"Continue reading":"Start reading"}</DropdownMenuItem><DropdownMenuItem onClick={()=>toggleBook("favourites",book.id)}><Heart/>Toggle favourite</DropdownMenuItem><DropdownMenuItem onClick={()=>{selectBook(book.id);setDialog("collections")}}><FolderPlus/>Add to collectionÖ</DropdownMenuItem><DropdownMenuItem onClick={()=>book.progress>=100?markAsUnread(book.id):markAsRead(book.id)}><Check/>{book.progress>=100?"Mark as unread":"Mark as finished"}</DropdownMenuItem><DropdownMenuItem onClick={()=>{selectBook(book.id);setDialog("edit")}}><Pencil/>Edit book detailsÖ</DropdownMenuItem>{listId&&listId!=="completed"&&<DropdownMenuItem onClick={()=>toggleBook(listId,book.id)}>Remove from shelf</DropdownMenuItem>}<DropdownMenuSeparator/><DropdownMenuItem variant="destructive" onClick={()=>{selectBook(book.id);setDialog("delete")}}><Trash2/>Delete bookÖ</DropdownMenuItem></DropdownMenuContent></DropdownMenu></article>)}</div>;
 }

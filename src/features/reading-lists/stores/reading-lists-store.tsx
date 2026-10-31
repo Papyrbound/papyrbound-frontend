@@ -5,6 +5,7 @@ import { defaultReadingLists, getReadingListUrl, MAX_PINNED_CUSTOM_LISTS, type R
 import { sampleBooks, type SampleBook } from "@/features/home/model/sample-books";
 export type ReadingActivityEvent = { id: string; bookTitle: string; kind: "added" | "completed" | "unread" | "deleted"; at: string };
 type ReadingListsState = {
+  updateBook: (id: string, details: {title: string; author: string}) => void
   books: SampleBook[]
   activity: ReadingActivityEvent[]
   addBook: (details: { title: string; author: string }) => void
@@ -133,6 +134,6 @@ const recordActivity = (bookTitle: string, kind: ReadingActivityEvent["kind"]) =
     }))
   })
 
-return { books: sampleBooks, lists: defaultReadingLists, activity: [], addBook, markAsRead, markAsUnread, deleteBook, createList, updateList, deleteList, togglePinned, toggleBook };
+return { updateBook: (id, details) => set(s => ({books: s.books.map(b => b.id === id ? {...b, ...details} : b)})), books: sampleBooks, lists: defaultReadingLists, activity: [], addBook, markAsRead, markAsUnread, deleteBook, createList, updateList, deleteList, togglePinned, toggleBook };
 });
 export function ReadingListsProvider({children}: PropsWithChildren) { return children; }
