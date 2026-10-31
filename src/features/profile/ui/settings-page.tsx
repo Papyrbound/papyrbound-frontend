@@ -73,7 +73,7 @@ function SettingsRow({
 }) {
   return (
     <div
-      className={`flex min-h-[74px] items-center justify-between gap-5 border-b border-border ${className}`}
+      className={`flex min-h-[74px] flex-wrap items-center justify-between gap-3 py-3 sm:flex-nowrap sm:gap-5 sm:py-0 border-b border-border ${className}`}
     >
       <div>
         <h3 className="text-sm font-medium leading-6">{label}</h3>
@@ -104,7 +104,7 @@ export function SettingsPage() {
           Edit profile
         </Button>
       </header>
-      <div className="grid items-start gap-12 xl:grid-cols-[minmax(0,1.554fr)_minmax(300px,1fr)]">
+      <div className="grid min-w-0 items-start gap-12 xl:grid-cols-[minmax(0,1.554fr)_minmax(300px,1fr)]">
         <div className="space-y-7">
           <section className="rounded-section bg-card px-6 pt-5">
             <h2 className="mb-2 text-base font-semibold leading-[26px]">
@@ -115,7 +115,7 @@ export function SettingsPage() {
               description="Choose how Papyrbound looks."
             >
               <div
-                className="flex h-9 w-[280px] shrink-0 rounded-xl bg-muted p-1"
+                className="flex h-9 w-full shrink-0 sm:w-[280px] rounded-xl bg-muted p-1"
                 role="group"
                 aria-label="Theme"
               >
@@ -240,12 +240,12 @@ export function SettingsPage() {
               CHAPTER ONE
             </p>
             <h3
-              className={`mb-10 mt-9 text-[30px] font-normal leading-[41px] ${ui.font === "Literata" ? "font-serif" : "font-sans"}`}
+              className={`mb-10 mt-9 text-[30px] font-normal leading-[41px] ${ui.font === "Literata" ? "font-[Georgia,serif]" : "font-sans"}`}
             >
               A place between pages
             </h3>
             <div
-              className={`space-y-8 text-[21px] ${ui.font === "Literata" ? "font-serif" : "font-sans"} ${ui.spacing === "Compact" ? "leading-7" : ui.spacing === "Spacious" ? "leading-10" : "leading-[31.5px]"}`}
+              className={`space-y-8 text-[21px] ${ui.font === "Literata" ? "font-[Georgia,serif]" : "font-sans"} ${ui.spacing === "Compact" ? "leading-7" : ui.spacing === "Spacious" ? "leading-10" : "leading-[31.5px]"}`}
             >
               <p>
                 The room grew quiet as the afternoon light moved across the
