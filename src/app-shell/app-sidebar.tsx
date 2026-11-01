@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   BookOpen,
+  PanelsTopLeft,
   Library,
   Highlighter,
   Heart,
@@ -26,6 +27,8 @@ import {
   SidebarMenuButton,
   useSidebar,
 } from "@/shared/ui/sidebar";
+import { useWorkspace } from "@/app-shell/workspace-store";
+import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
 import { Button } from "@/shared/ui/button";
 import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
@@ -122,6 +125,8 @@ function Navigation() {
   );
 }
 export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
+  const libraryKind = useWorkspace((state) => state.libraryKind);
+  const setLibraryKind = useWorkspace((state) => state.setLibraryKind);
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader className="gap-4 px-3 pb-0 pt-4">
@@ -129,6 +134,32 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
           Papyrbound
         </Link>
         <BookSearchDialog />
+        <ToggleGroup
+          aria-label="Library type"
+          value={[libraryKind]}
+          onValueChange={(value) => {
+            const next = value[0];
+            if (next === "books" || next === "comics") setLibraryKind(next);
+          }}
+          spacing={1}
+          className="-mt-1 w-full"
+        >
+          {(
+            [
+              ["books", "Books", BookOpen],
+              ["comics", "Comics", PanelsTopLeft],
+            ] as const
+          ).map(([value, label, Icon]) => (
+            <ToggleGroupItem
+              key={value}
+              value={value}
+              className="h-8 flex-1 justify-start gap-2 rounded-lg px-3 text-[13px] font-medium text-muted-foreground hover:bg-sidebar-accent/60 aria-pressed:bg-sidebar-accent aria-pressed:text-sidebar-foreground"
+            >
+              <Icon aria-hidden="true" className="size-4" strokeWidth={1.5} />
+              {label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
       </SidebarHeader>
       <SidebarContent className="gap-0 pt-4">
         <Suspense>

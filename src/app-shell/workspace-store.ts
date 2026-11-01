@@ -4,6 +4,7 @@ import { create } from "zustand";
 
 type View = "grid" | "list";
 type WorkspaceState = {
+  libraryKind: "books" | "comics";
   selectedId: string | null;
   panelOpen: boolean;
   view: View;
@@ -11,6 +12,7 @@ type WorkspaceState = {
   filter: string;
   sort: string;
   dialog: "synopsis" | "collections" | "delete" | "edit" | "reader" | null;
+  setLibraryKind: (kind: WorkspaceState["libraryKind"]) => void;
   selectBook: (id: string) => void;
   setPanelOpen: (open: boolean) => void;
   setView: (view: View) => void;
@@ -21,6 +23,7 @@ type WorkspaceState = {
 };
 
 export const useWorkspace = create<WorkspaceState>((set) => ({
+  libraryKind: "books",
   selectedId: null,
   panelOpen: true,
   view: "grid",
@@ -28,6 +31,7 @@ export const useWorkspace = create<WorkspaceState>((set) => ({
   filter: "all",
   sort: "recent",
   dialog: null,
+  setLibraryKind: (libraryKind) => set({ libraryKind }),
   selectBook: (selectedId) => set({ selectedId, panelOpen: true }),
   setPanelOpen: (panelOpen) => set({ panelOpen }),
   setView: (view) => set({ view }),
