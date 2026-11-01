@@ -173,7 +173,7 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
                   setLibraryKind(value);
               }}
             >
-              <DropdownMenuRadioItem value="books">
+              <DropdownMenuRadioItem value="books" closeOnClick>
                 <BookOpen
                   aria-hidden="true"
                   className="text-muted-foreground"
@@ -181,7 +181,7 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
                 />
                 Books
               </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="comics">
+              <DropdownMenuRadioItem value="comics" closeOnClick>
                 <PanelsTopLeft
                   aria-hidden="true"
                   className="text-muted-foreground"
