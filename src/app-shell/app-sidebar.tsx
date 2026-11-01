@@ -153,7 +153,7 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
             <ToggleGroupItem
               key={value}
               value={value}
-              className="h-8 flex-1 justify-start gap-2 rounded-lg px-3 text-[13px] font-medium text-muted-foreground hover:bg-sidebar-accent/60 aria-pressed:bg-sidebar-accent aria-pressed:text-sidebar-foreground"
+              className="h-8 flex-1 justify-start gap-2 rounded-full px-3 text-[13px] font-medium text-muted-foreground hover:bg-sidebar-accent/60 aria-pressed:bg-sidebar-accent aria-pressed:text-sidebar-foreground"
             >
               <Icon aria-hidden="true" className="size-4" strokeWidth={1.5} />
               {label}
