@@ -15,6 +15,12 @@ import {
   FolderOpen,
   Check,
   ListFilter,
+  Folder,
+  Clock,
+  Languages,
+  Calendar,
+  ArrowUp,
+  ArrowDown,
   ArrowLeft,
   BookOpen,
 } from "lucide-react";
@@ -55,7 +61,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuCheckboxItem,
   DropdownMenuSeparator,
 } from "@/shared/ui/dropdown-menu";
 
@@ -251,12 +256,30 @@ export function CollectionsPage() {
                       Filter
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-[248px]">
-                      <DropdownMenuCheckboxItem
-                        checked={ui.pinned}
-                        onCheckedChange={(pinned) => ui.patch({ pinned })}
-                      >
-                        Pinned only
-                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuGroup>
+                        <DropdownMenuLabel>Show</DropdownMenuLabel>
+                        <DropdownMenuRadioGroup
+                          value={ui.pinned ? "pinned" : "all"}
+                          onValueChange={(value) =>
+                            ui.patch({ pinned: value === "pinned" })
+                          }
+                        >
+                          <DropdownMenuRadioItem value="all">
+                            <Folder
+                              aria-hidden="true"
+                              className="text-muted-foreground"
+                            />
+                            All collections
+                          </DropdownMenuRadioItem>
+                          <DropdownMenuRadioItem value="pinned">
+                            <Pin
+                              aria-hidden="true"
+                              className="text-muted-foreground"
+                            />
+                            Pinned only
+                          </DropdownMenuRadioItem>
+                        </DropdownMenuRadioGroup>
+                      </DropdownMenuGroup>
                       <DropdownMenuSeparator />
                       <DropdownMenuGroup>
                         <DropdownMenuLabel>Sort by</DropdownMenuLabel>
@@ -264,12 +287,18 @@ export function CollectionsPage() {
                           value={ui.sort}
                           onValueChange={(sort) => ui.patch({ sort })}
                         >
-                          {[
-                            ["added", "Last book added"],
-                            ["name", "Collection name"],
-                            ["created", "Date created"],
-                          ].map(([v, l]) => (
+                          {(
+                            [
+                              ["added", "Last book added", Clock],
+                              ["name", "Collection name", Languages],
+                              ["created", "Date created", Calendar],
+                            ] as const
+                          ).map(([v, l, Icon]) => (
                             <DropdownMenuRadioItem key={v} value={v}>
+                              <Icon
+                                aria-hidden="true"
+                                className="text-muted-foreground"
+                              />
                               {l}
                             </DropdownMenuRadioItem>
                           ))}
@@ -283,9 +312,17 @@ export function CollectionsPage() {
                           onValueChange={(order) => ui.patch({ order })}
                         >
                           <DropdownMenuRadioItem value="asc">
+                            <ArrowUp
+                              aria-hidden="true"
+                              className="text-muted-foreground"
+                            />
                             Ascending
                           </DropdownMenuRadioItem>
                           <DropdownMenuRadioItem value="desc">
+                            <ArrowDown
+                              aria-hidden="true"
+                              className="text-muted-foreground"
+                            />
                             Descending
                           </DropdownMenuRadioItem>
                         </DropdownMenuRadioGroup>

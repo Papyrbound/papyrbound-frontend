@@ -1,6 +1,15 @@
 "use client";
 
-import { ListFilter } from "lucide-react";
+import {
+  ListFilter,
+  Library,
+  BookOpen,
+  Bookmark,
+  CircleCheck,
+  Clock,
+  ArrowDownAZ,
+  ArrowUpAZ,
+} from "lucide-react";
 
 import { useWorkspace } from "@/app-shell/workspace-store";
 
@@ -39,13 +48,16 @@ export function LibraryFilter({ iconOnly = false }: { iconOnly?: boolean }) {
         <DropdownMenuGroup>
           <DropdownMenuLabel>Show</DropdownMenuLabel>
           <DropdownMenuRadioGroup value={filter} onValueChange={setFilter}>
-            {[
-              ["all", "All books"],
-              ["reading", "In progress"],
-              ["new", "Not started"],
-              ["finished", "Finished"],
-            ].map(([v, l]) => (
+            {(
+              [
+                ["all", "All books", Library],
+                ["reading", "In progress", BookOpen],
+                ["new", "Not started", Bookmark],
+                ["finished", "Finished", CircleCheck],
+              ] as const
+            ).map(([v, l, Icon]) => (
               <DropdownMenuRadioItem key={v} value={v}>
+                <Icon aria-hidden="true" className="text-muted-foreground" />
                 {l}
               </DropdownMenuRadioItem>
             ))}
@@ -56,10 +68,20 @@ export function LibraryFilter({ iconOnly = false }: { iconOnly?: boolean }) {
           <DropdownMenuLabel>Sort by</DropdownMenuLabel>
           <DropdownMenuRadioGroup value={sort} onValueChange={setSort}>
             <DropdownMenuRadioItem value="recent">
+              <Clock aria-hidden="true" className="text-muted-foreground" />
               Recently added
             </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="az">Title: A–Z</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="za">Title: Z–A</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="az">
+              <ArrowDownAZ
+                aria-hidden="true"
+                className="text-muted-foreground"
+              />
+              Title: A–Z
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="za">
+              <ArrowUpAZ aria-hidden="true" className="text-muted-foreground" />
+              Title: Z–A
+            </DropdownMenuRadioItem>
           </DropdownMenuRadioGroup>
         </DropdownMenuGroup>
       </DropdownMenuContent>
