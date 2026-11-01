@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import {
   BookOpen,
   PanelsTopLeft,
+  ChevronsUpDown,
   Library,
   Highlighter,
   Heart,
@@ -28,7 +29,13 @@ import {
   useSidebar,
 } from "@/shared/ui/sidebar";
 import { useWorkspace } from "@/app-shell/workspace-store";
-import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+} from "@/shared/ui/dropdown-menu";
 import { Button } from "@/shared/ui/button";
 import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
@@ -134,32 +141,57 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
           Papyrbound
         </Link>
         <BookSearchDialog />
-        <ToggleGroup
-          aria-label="Library type"
-          value={[libraryKind]}
-          onValueChange={(value) => {
-            const next = value[0];
-            if (next === "books" || next === "comics") setLibraryKind(next);
-          }}
-          spacing={1}
-          className="-mt-1 w-full"
-        >
-          {(
-            [
-              ["books", "Books", BookOpen],
-              ["comics", "Comics", PanelsTopLeft],
-            ] as const
-          ).map(([value, label, Icon]) => (
-            <ToggleGroupItem
-              key={value}
-              value={value}
-              className="h-8 flex-1 justify-start gap-2 rounded-full px-3 text-[13px] font-medium text-muted-foreground hover:bg-sidebar-accent/60 aria-pressed:bg-sidebar-accent aria-pressed:text-sidebar-foreground"
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            aria-label={`Library type: ${libraryKind === "books" ? "Books" : "Comics"}`}
+            render={
+              <Button
+                variant="secondary"
+                className="-mt-1 h-10 w-full justify-start gap-2.5 rounded-xl border border-soft-border bg-popover px-3 text-[13px] font-medium shadow-sm hover:bg-popover/80"
+              />
+            }
+          >
+            {libraryKind === "books" ? (
+              <BookOpen aria-hidden="true" strokeWidth={1.5} />
+            ) : (
+              <PanelsTopLeft aria-hidden="true" strokeWidth={1.5} />
+            )}
+            {libraryKind === "books" ? "Books" : "Comics"}
+            <ChevronsUpDown
+              aria-hidden="true"
+              className="ml-auto size-3.5 text-muted-foreground"
+            />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="start"
+            className="w-[var(--anchor-width)]"
+          >
+            <DropdownMenuRadioGroup
+              value={libraryKind}
+              onValueChange={(value) => {
+                if (value === "books" || value === "comics")
+                  setLibraryKind(value);
+              }}
             >
-              <Icon aria-hidden="true" className="size-4" strokeWidth={1.5} />
-              {label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+              <DropdownMenuRadioItem value="books">
+                <BookOpen
+                  aria-hidden="true"
+                  className="text-muted-foreground"
+                  strokeWidth={1.5}
+                />
+                Books
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="comics">
+                <PanelsTopLeft
+                  aria-hidden="true"
+                  className="text-muted-foreground"
+                  strokeWidth={1.5}
+                />
+                Comics
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </SidebarHeader>
       <SidebarContent className="gap-0 pt-4">
         <Suspense>
