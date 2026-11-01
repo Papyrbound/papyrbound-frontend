@@ -328,38 +328,6 @@
     min-height: 64px;
     padding: 12px 24px;
   }
-  .book-search-dialog {
-    position: fixed;
-    z-index: 50;
-    top: 12vh;
-    left: 50%;
-    transform: translateX(-50%);
-    width: min(600px, calc(100vw - 32px));
-    max-height: calc(88dvh - 24px);
-    overflow-y: auto;
-    padding: 24px;
-    border-radius: 24px;
-    background: var(--popover);
-    color: var(--foreground);
-    box-shadow: 0 24px 80px rgb(0 0 0 / 15%);
-    transition:
-      opacity 180ms ease-out,
-      translate 180ms ease-out,
-      scale 180ms ease-out;
-  }
-  .book-search-dialog[data-starting-style],
-  .book-search-dialog[data-ending-style] {
-    opacity: 0;
-    translate: 0 8px;
-    scale: 0.98;
-  }
-  .search-result:hover {
-    background: var(--muted);
-  }
-  .search-result:focus-visible {
-    outline: 2px solid var(--ring);
-    outline-offset: 2px;
-  }
   .overview {
     width: 100%;
     max-width: 1440px;
@@ -492,10 +460,6 @@
   .book-list .book-item:last-child {
     border-bottom: 0;
   }
-  .book-list .book-item.search-result {
-    border-radius: 12px;
-    padding-inline: 10px;
-  }
   .book-list .book-cover {
     width: 42px;
   }
@@ -535,13 +499,6 @@
     }
     .cover-type {
       font-size: 20px;
-    }
-  }
-  @media (max-width: 639px) {
-    .book-search-dialog {
-      top: 24px;
-      max-height: calc(100dvh - 48px);
-      padding: 20px;
     }
   }
   .reading-lists-section {
@@ -790,8 +747,7 @@
   .reading-word-mask > span {
     display: inline-block;
   }
-  [data-slot="sheet-content"],
-  .book-search-dialog {
+  [data-slot="sheet-content"] {
     transition-timing-function: var(--motion-reading-ease);
     transition-duration: 260ms;
   }
