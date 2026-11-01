@@ -82,7 +82,7 @@ function Navigation() {
               render={<Link href={href} onClick={() => setOpenMobile(false)} />}
             >
               <Icon
-                className="size-4 text-muted-foreground"
+                className="size-4 text-current"
                 strokeWidth={1.5}
               />
               <span>{label}</span>
@@ -159,7 +159,7 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
             {libraryKind === "books" ? "Books" : "Comics"}
             <ChevronsUpDown
               aria-hidden="true"
-              className="ml-auto size-3.5 text-muted-foreground"
+              className="ml-auto size-3.5 text-current"
             />
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -176,7 +176,7 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
               <DropdownMenuRadioItem value="books" closeOnClick>
                 <BookOpen
                   aria-hidden="true"
-                  className="text-muted-foreground"
+                  className="text-current"
                   strokeWidth={1.5}
                 />
                 Books
@@ -184,7 +184,7 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
               <DropdownMenuRadioItem value="comics" closeOnClick>
                 <PanelsTopLeft
                   aria-hidden="true"
-                  className="text-muted-foreground"
+                  className="text-current"
                   strokeWidth={1.5}
                 />
                 Comics
