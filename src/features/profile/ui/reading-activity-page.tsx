@@ -1,211 +1,345 @@
 "use client";
 
-import Link from "next/link";
-import {
-  BookOpenIcon,
-  CheckIcon,
-  HighlighterIcon,
-  HistoryIcon,
-  PlusIcon,
-  RotateCcwIcon,
-  Trash2Icon,
-} from "lucide-react";
-import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
-import { useAnnotations } from "@/features/annotations/stores/annotations-store";
-import { BookCover } from "@/features/home/ui/book-cover";
-import { Button } from "@/shared/ui/button";
-import { Card } from "@/shared/ui/card";
-import { Progress } from "@/shared/ui/progress";
+import { create } from "zustand";
 
-const eventDetails = {
-  added: { label: "Added to library", icon: PlusIcon },
-  completed: { label: "Marked as read", icon: CheckIcon },
-  unread: { label: "Marked as unread", icon: RotateCcwIcon },
-  deleted: { label: "Removed from library", icon: Trash2Icon },
-};
-const dateFormat = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-});
-const timeFormat = new Intl.DateTimeFormat("en-US", {
-  hour: "numeric",
-  minute: "2-digit",
-});
+import { CircleCheck, ChevronLeft, ChevronRight } from "lucide-react";
+
+import { activityPreview, heatmapDays } from "../model/activity-preview";
+
+import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
+
+import { BookCover } from "@/features/home/ui/book-cover";
+
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/shared/ui/dialog";
+
+const useActivityUI = create<{
+  day: string;
+  week: number;
+  goal: number;
+  editing: boolean;
+  patch: (
+    value: Partial<{
+      day: string;
+      week: number;
+      goal: number;
+      editing: boolean;
+    }>,
+  ) => void;
+}>((set) => ({
+  day: activityPreview.end,
+  week: 0,
+  goal: activityPreview.goal,
+  editing: false,
+  patch: (value) => set(value),
+}));
 
 export function ReadingActivityPage() {
-  const { books, activity } = useReadingLists();
-  const { annotations } = useAnnotations();
-  const currentBooks = books.filter(
-    (book) => book.progress > 0 && book.progress < 100,
+  const { books } = useReadingLists();
+  const ui = useActivityUI();
+  const { day } = ui;
+  const anchor = new Date(`${activityPreview.end}T12:00:00Z`);
+  const start = new Date(
+    anchor.getTime() -
+      ((anchor.getUTCDay() + 6) % 7) * 86400000 +
+      ui.week * 7 * 86400000,
   );
-  const completed = books.filter((book) => book.progress >= 100).length;
-  const estimatedPages = books.reduce(
-    (total, book) => total + Math.round((book.pages * book.progress) / 100),
-    0,
+  const end = new Date(start.getTime() + 6 * 86400000);
+  const sessions = activityPreview.sessions.filter(
+    (session) =>
+      session.date >= start.toISOString().slice(0, 10) &&
+      session.date <= end.toISOString().slice(0, 10),
   );
-  const bookIds = new Set(books.map((book) => book.id));
-  const notes = annotations.filter((annotation) =>
-    bookIds.has(annotation.bookId),
-  );
-  const recentNotes = [...notes]
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-    .slice(0, 3);
+  const weekLabel = `${start.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })} – ${end.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}`;
+  const selected = heatmapDays.find((d) => d.date === day);
+  const total = sessions.reduce((sum, s) => sum + s.minutes, 0);
+  const finished = books.filter((b) => b.progress >= 100);
   return (
-    <section
-      className="reader-page max-[800px]:p-6 max-[600px]:px-5 max-[600px]:pt-5 max-[600px]:pb-9 p-[28px_40px_48px] w-full min-w-0 max-w-[1280px] m-[0_auto]"
-      aria-labelledby="activity-heading"
-    >
-      <header className="reader-page-heading [&_p:not(.reader-kicker)]:mt-2 [&_p:not(.reader-kicker)]:text-[13px] [&_p:not(.reader-kicker)]:text-muted-foreground max-[600px]:[&_h1]:text-2xl flex flex-wrap items-center justify-between gap-[20px] mb-[28px] [&_h1]:text-[28px] [&_h1]:[line-height:1.2] [&_h1]:font-medium [&_h1]:tracking-[-.8px]">
+    <main className="p-5 lg:px-12 lg:py-8">
+      <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="reader-kicker text-[11px] text-muted-foreground mb-[8px]">
-            One page at a time
+          <h1 className="text-3xl font-semibold leading-[42px]">
+            Reading activity
+          </h1>
+          <p className="mt-3 text-[13px] leading-6 text-muted-foreground">
+            A little reading, a little more often.
           </p>
-          <h1 id="activity-heading">Reading activity</h1>
-          <p>A look at the books and thoughts you’re spending time with.</p>
         </div>
-        <Button
-          nativeButton={false}
-          role="link"
-          variant="outline"
-          render={<Link href="/library" />}
-        >
-          Open library
-        </Button>
-      </header>
-      <div className="reader-stats-grid grid grid-cols-4 gap-[16px] max-[800px]:grid-cols-2">
-        {[
-          {
-            label: "In progress",
-            value: currentBooks.length,
-            icon: BookOpenIcon,
-          },
-          { label: "Completed", value: completed, icon: CheckIcon },
-          {
-            label: "Highlights & notes",
-            value: notes.length,
-            icon: HighlighterIcon,
-          },
-          {
-            label: "Estimated pages read",
-            value: estimatedPages,
-            icon: HistoryIcon,
-          },
-        ].map(({ label, value, icon: Icon }) => (
-          <Card
-            key={label}
-            className="reader-stat gap-2 rounded-[20px] p-[22px] shadow-none ring-0 [&>svg]:w-[18px] [&>svg]:h-[18px] [&>svg]:text-muted-foreground [&>svg]:mb-[12px] [&_strong]:text-[32px] [&_strong]:[line-height:1] [&_strong]:font-normal [&_strong]:tracking-[-1px] [&>span]:text-[11px] [&>span]:text-muted-foreground"
-          >
-            <Icon />
-            <strong>{value}</strong>
-            <span>{label}</span>
-          </Card>
-        ))}
-      </div>
-      <p className="reader-section-caption text-[12px] [line-height:1.8] text-muted-foreground m-[20px_0]">
-        Page totals are estimated from each book’s length and current progress.
-        Reading time and streaks aren’t tracked yet.
-      </p>
-      <div className="reader-activity-grid grid grid-cols-2 items-start gap-5 max-[800px]:grid-cols-1">
-        <Card className="reader-activity-panel min-w-0 gap-0 rounded-[20px] p-6 shadow-none ring-0 [&_h2]:text-base [&_h2]:font-medium max-[600px]:p-5">
-          <h2>On your bookmark</h2>
-          <p className="reader-setting-help text-[12px] text-muted-foreground [line-height:1.8] mt-[6px]">
-            Your books in progress.
-          </p>
-          <div className="reader-progress-books mt-[24px] grid gap-[24px]">
-            {currentBooks.map((book) => (
-              <div
-                className="reader-progress-book [&_[data-slot=progress-track]]:h-1 flex items-center gap-[12px] [&_h3]:text-[13px] [&_h3]:[line-height:1.5] [&_p]:text-[11px] [&_p]:text-muted-foreground [&_p]:mt-[3px] [&_p]:mb-[10px] [&>span]:shrink-0 [&>span]:text-muted-foreground [&>span]:text-[11px]"
-                key={book.id}
-              >
-                <div className="reader-progress-cover w-[38px] shrink-0 [&_.book-cover]:rounded-[2px_4px_4px_2px] [&_.cover-type]:text-[4px] [&_.cover-credit]:text-[2px]">
-                  <BookCover book={book} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3>{book.title}</h3>
-                  <p>{book.author}</p>
-                  <Progress
-                    value={book.progress}
-                    aria-label={`${book.title} progress`}
-                  />
-                </div>
-                <span>{book.progress}%</span>
-              </div>
-            ))}
-          </div>
-          {currentBooks.length === 0 && (
-            <p className="reader-inline-empty p-[28px_0_8px] text-[13px] text-muted-foreground">
-              Your next chapter is waiting in your library.
-            </p>
-          )}
-        </Card>
-        <Card className="reader-activity-panel min-w-0 gap-0 rounded-[20px] p-6 shadow-none ring-0 [&_h2]:text-base [&_h2]:font-medium max-[600px]:p-5">
-          <h2>This session</h2>
-          <p className="reader-setting-help text-[12px] text-muted-foreground [line-height:1.8] mt-[6px]">
-            Book additions and status changes while the app is open.
-          </p>
-          {activity.length ? (
-            <ol className="reader-event-list [&_li_p]:text-xs [&_li_span:not(.reader-event-icon)]:text-[11px] [&_li_span:not(.reader-event-icon)]:text-muted-foreground [&_time]:text-[11px] [&_time]:text-muted-foreground mt-[22px] grid gap-[20px] max-h-[340px] overflow-y-auto [&_li]:flex [&_li]:items-center [&_li]:gap-[12px] [&_li>div]:min-w-[0] [&_li>div]:flex-1 [&_time]:shrink-0">
-              {activity.map((event) => {
-                const { label, icon: Icon } = eventDetails[event.kind];
-                return (
-                  <li key={event.id}>
-                    <span className="reader-event-icon flex items-center justify-center w-[30px] h-[30px] rounded-full bg-muted shrink-0 [&_svg]:w-[14px] [&_svg]:h-[14px]">
-                      <Icon />
-                    </span>
-                    <div>
-                      <p>{label}</p>
-                      <span>{event.bookTitle}</span>
-                    </div>
-                    <time dateTime={event.at}>
-                      {timeFormat.format(new Date(event.at))}
-                    </time>
-                  </li>
-                );
-              })}
-            </ol>
-          ) : (
-            <div className="reader-activity-empty flex flex-col items-center text-center gap-[10px] p-[48px_10px_24px] text-muted-foreground [&>svg]:w-[26px] [&>svg]:h-[26px] [&>svg]:mb-[6px] [&_p]:text-[13px] [&_p]:text-foreground [&_span]:text-[11px]">
-              <HistoryIcon />
-              <p>No changes this session yet.</p>
-              <span>Add a book or mark one as read to see it here.</span>
-            </div>
-          )}
-        </Card>
-      </div>
-      <Card className="reader-activity-panel mt-5 min-w-0 gap-0 rounded-[20px] p-6 shadow-none ring-0 [&_h2]:text-base [&_h2]:font-medium max-[600px]:p-5">
-        <div className="flex items-center justify-between gap-4">
-          <h2>Recent annotations</h2>
+        <div className="flex h-10 w-80 items-center justify-between rounded-xl border border-soft-border bg-secondary px-1 shadow-soft">
           <Button
-            nativeButton={false}
-            role="link"
-            size="sm"
             variant="ghost"
-            render={<Link href="/annotations" />}
+            size="icon-sm"
+            aria-label="Previous preview week"
+            onClick={() => ui.patch({ week: ui.week - 1 })}
           >
-            View all
+            <ChevronLeft />
+          </Button>
+          <span className="text-sm">{weekLabel}</span>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Next preview week"
+            disabled={ui.week === 0}
+            onClick={() => ui.patch({ week: ui.week + 1 })}
+          >
+            <ChevronRight />
           </Button>
         </div>
-        {recentNotes.length ? (
-          <div className="reader-recent-notes max-[800px]:grid-cols-1 max-[800px]:gap-2 [&_a:hover]:bg-muted [&_a:focus-visible]:outline-2 [&_a:focus-visible]:outline-ring [&_a:focus-visible]:outline-offset-2 grid [grid-template-columns:repeat(3,_minmax(0,_1fr))] gap-[20px] mt-[20px] [&_a]:flex [&_a]:[flex-direction:column] [&_a]:[align-items:flex-start] [&_a]:gap-[10px] [&_a]:p-[14px] [&_a]:rounded-[14px] [&_a]:[transition:background-color_150ms] [&_a]:min-w-[0] [&_p]:text-[13px] [&_p]:[line-height:1.8] [&_p]:[display:-webkit-box] [&_p]:[-webkit-line-clamp:3] [&_p]:[-webkit-box-orient:vertical] [&_p]:overflow-hidden [&_p]:[overflow-wrap:anywhere] [&_time]:text-[11px] [&_time]:text-muted-foreground [&_time]:mt-[auto]">
-            {recentNotes.map((annotation) => (
-              <Link key={annotation.id} href="/annotations">
-                <span className="text-xs text-muted-foreground">
-                  {books.find((book) => book.id === annotation.bookId)?.title}
-                  {annotation.page ? ` · Page ${annotation.page}` : ""}
-                </span>
-                <p>{annotation.content}</p>
-                <time dateTime={annotation.createdAt}>
-                  {dateFormat.format(new Date(annotation.createdAt))}
-                </time>
-              </Link>
+      </header>
+      <div className="mb-[33px] mt-11 grid grid-cols-2 gap-8 lg:grid-cols-4">
+        {[
+          [`${Math.floor(total / 60)}h ${total % 60}m`, "Time read this week"],
+          [
+            String(sessions.reduce((n, s) => n + s.pages, 0)),
+            "Pages read this week",
+          ],
+          ["4 days", "Preview reading streak"],
+          [String(finished.length), "Books finished in your library"],
+        ].map(([n, l]) => (
+          <div key={l} className="border-r border-border pr-8 last:border-0">
+            <p className="text-4xl font-medium leading-[49px]">{n}</p>
+            <p className="mt-1 text-[13px] leading-6 text-muted-foreground">
+              {l}
+            </p>
+          </div>
+        ))}
+      </div>
+      <div className="grid gap-7 xl:grid-cols-[minmax(0,1.88fr)_minmax(280px,1fr)]">
+        <section className="min-w-0 rounded-section bg-card p-6">
+          <h2 className="text-base font-semibold leading-[26px]">
+            Reading consistency
+          </h2>
+          <p className="mt-1 text-xs leading-[18px] text-muted-foreground">
+            Last 12 months
+          </p>
+          <div className="mt-[18px] overflow-x-auto">
+            <div className="min-w-[920px] pl-4 pr-9">
+              <div className="mb-2.5 flex h-[18px] justify-between pl-[72px] text-[10px] text-muted-foreground">
+                {[
+                  "Nov",
+                  "Dec",
+                  "Jan",
+                  "Feb",
+                  "Mar",
+                  "Apr",
+                  "May",
+                  "Jun",
+                  "Jul",
+                  "Aug",
+                  "Sep",
+                  "Oct",
+                ].map((m) => (
+                  <span key={m}>{m}</span>
+                ))}
+              </div>
+              <div className="flex gap-8">
+                <div className="flex w-6 shrink-0 flex-col justify-around text-[10px] text-muted-foreground">
+                  <span>Mon</span>
+                  <span>Wed</span>
+                  <span>Fri</span>
+                </div>
+                <div className="grid grid-flow-col grid-rows-[repeat(7,12px)] auto-cols-[12px] gap-1">
+                  {heatmapDays.map((d) => (
+                    <button
+                      key={d.date}
+                      className={`aspect-square rounded-[3px] outline-none focus-visible:ring-2 focus-visible:ring-ring ${day === d.date ? "ring-1 ring-foreground ring-offset-1 ring-offset-card" : ""} ${d.minutes === null ? "invisible" : d.minutes === 0 ? "bg-border" : d.minutes < 20 ? "bg-neutral-300 dark:bg-neutral-600" : d.minutes < 35 ? "bg-neutral-400" : d.minutes < 50 ? "bg-neutral-500" : "bg-neutral-700 dark:bg-neutral-200"}`}
+                      aria-label={`${d.date}: ${d.minutes ?? 0} minutes read`}
+                      aria-pressed={day === d.date}
+                      disabled={d.minutes === null}
+                      title={`${d.date}: ${d.minutes ?? 0} minutes`}
+                      onClick={() => ui.patch({ day: d.date })}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="mt-[26px] flex flex-wrap items-center justify-between gap-3 text-xs leading-[18px]">
+            <span>
+              {heatmapDays.filter((d) => !!d.minutes).length} reading days
+            </span>
+            <span className="flex items-center gap-1 text-muted-foreground">
+              Less
+              {[
+                "bg-border",
+                "bg-neutral-300",
+                "bg-neutral-400",
+                "bg-neutral-500",
+                "bg-neutral-700",
+              ].map((c) => (
+                <span key={c} className={`size-3 rounded-sm ${c}`} />
+              ))}
+              More
+            </span>
+          </div>
+          <p
+            className="mt-[18px] border-t border-border pt-4 text-xs leading-[18px]"
+            aria-live="polite"
+          >
+            {day} · {selected?.minutes ?? 0} minutes read
+          </p>
+        </section>
+        <section className="relative rounded-section bg-card p-6 pb-12">
+          <h2 className="flex items-center justify-between text-base font-semibold leading-[26px]">
+            Daily reading goal
+            <CircleCheck className="size-4 text-muted-foreground" />
+          </h2>
+          <p className="mt-[26px] text-[44px] font-medium leading-[60px]">
+            {selected?.minutes ?? 0}{" "}
+            <span className="ml-14 text-lg font-normal text-muted-foreground">
+              / {ui.goal} min
+            </span>
+          </p>
+          <p className="mt-1 text-xs leading-[18px]">
+            {(selected?.minutes ?? 0) >= ui.goal
+              ? "Goal reached on this preview day"
+              : "Keep reading to reach your goal"}
+          </p>
+          <div className="mt-6 h-1.5 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-primary"
+              style={{
+                width: `${Math.min(100, ((selected?.minutes ?? 0) / ui.goal) * 100)}%`,
+              }}
+            />
+          </div>
+          <div className="mt-7 flex justify-between">
+            {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
+              <span
+                key={i}
+                className={`flex size-10 items-center justify-center rounded-full text-xs ${i >= 2 && i <= 5 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+              >
+                {d}
+              </span>
             ))}
           </div>
-        ) : (
-          <p className="reader-inline-empty p-[28px_0_8px] text-[13px] text-muted-foreground">
-            Your saved passages and notes will appear here.
+          <p className="mt-[26px] text-xs leading-[18px] text-muted-foreground">
+            4-day streak · Personal best: 9 days
           </p>
-        )}
-      </Card>
-    </section>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute bottom-2 right-4 text-xs text-muted-foreground"
+            onClick={() => ui.patch({ editing: true })}
+          >
+            Edit goal
+          </Button>
+        </section>
+      </div>
+      <div className="mt-9 grid gap-7 xl:grid-cols-[minmax(0,1.88fr)_minmax(280px,1fr)]">
+        <section>
+          <h2 className="mb-5 text-xl font-semibold leading-7">
+            Recent sessions
+          </h2>
+          <div className="divide-y divide-border">
+            {sessions.map((s) => {
+              const book = books.find((b) => b.id === s.bookId);
+              if (!book) return null;
+              return (
+                <div key={s.date} className="flex items-center gap-4 py-2">
+                  <span className="w-7 shrink-0 [&_.cover-type]:hidden [&_.cover-credit]:hidden">
+                    <BookCover book={book} />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate text-sm font-medium">
+                      {book.title}
+                    </h3>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {s.date}
+                    </p>
+                  </div>
+                  <span className="text-sm">{s.minutes} min</span>
+                  <span className="text-xs text-muted-foreground">
+                    {s.pages} pages
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+        <section>
+          <h2 className="mb-5 text-xl font-semibold leading-7">
+            Recently finished
+          </h2>
+          {finished.length ? (
+            <div className="grid grid-cols-2 gap-4">
+              {finished.slice(0, 2).map((b) => (
+                <div key={b.id} className="min-w-0">
+                  <div className="w-[72px]">
+                    <BookCover book={b} />
+                  </div>
+                  <h3 className="mt-5 text-sm font-medium leading-[22px]">
+                    {b.title}
+                  </h3>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {b.author}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Completed books will appear here.
+            </p>
+          )}
+        </section>
+      </div>
+      <p className="mt-8 text-xs text-muted-foreground">
+        Sample activity · Reading sessions are not tracked yet.
+      </p>
+      <Dialog
+        open={ui.editing}
+        onOpenChange={(editing) => ui.patch({ editing })}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Daily reading goal</DialogTitle>
+            <DialogDescription>
+              Set a goal for the visual preview.
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            id="goal-form"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const value = Number(
+                new FormData(event.currentTarget).get("goal"),
+              );
+              if (value >= 1 && value <= 300)
+                ui.patch({ goal: value, editing: false });
+            }}
+          >
+            <label className="space-y-2 text-sm">
+              Minutes per day
+              <Input
+                name="goal"
+                type="number"
+                min={1}
+                max={300}
+                defaultValue={ui.goal}
+                required
+              />
+            </label>
+          </form>
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline" />}>
+              Cancel
+            </DialogClose>
+            <Button type="submit" form="goal-form">
+              Save goal
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </main>
   );
 }

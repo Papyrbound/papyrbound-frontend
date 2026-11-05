@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AppHeader } from "@/app-shell/app-header";
 import { AppSidebar } from "@/app-shell/app-sidebar";
+import { NativeContextMenuGuard } from "@/app-shell/native-context-menu-guard";
 import { ReadingListsProvider } from "@/features/reading-lists/stores/reading-lists-store";
 import { CollectionsProvider } from "@/features/collections/stores/collections-store";
 import { AnnotationsProvider } from "@/features/annotations/stores/annotations-store";
@@ -8,7 +9,16 @@ import { AppearanceProvider } from "@/features/profile/ui/appearance-provider";
 import { ReadingMotionProvider } from "@/shared/ui/reading-motion";
 import { TooltipProvider } from "@/shared/ui/tooltip";
 import { SidebarInset, SidebarProvider } from "@/shared/ui/sidebar";
+import { cn } from "@/shared/lib/utils";
+import localFont from "next/font/local";
 import "./globals.css";
+
+const inter = localFont({
+  src: "./font/InterVariable.woff2",
+  display: "swap",
+  weight: "100 900",
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
   title: "Papyrbound",
@@ -17,8 +27,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className="h-full antialiased font-sans">
+    <html
+      lang="en"
+      className={cn("h-full", "antialiased", "font-sans", inter.variable)}
+    >
       <body className="min-h-full flex flex-col">
+        <NativeContextMenuGuard />
         <AppearanceProvider>
           <ReadingMotionProvider>
             <ReadingListsProvider>

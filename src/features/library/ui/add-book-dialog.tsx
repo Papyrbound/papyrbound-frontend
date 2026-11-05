@@ -1,7 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { BookPlusIcon } from "lucide-react";
+import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
+
+import { useRef } from "react";
+import { UploadIcon } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import {
@@ -17,9 +19,9 @@ import {
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
 
 export function AddBookDialog() {
-  const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("");
+  const [open, setOpen] = useLocalUIState(false);
+  const [title, setTitle] = useLocalUIState("");
+  const [author, setAuthor] = useLocalUIState("");
   const titleRef = useRef<HTMLInputElement>(null);
   const { addBook } = useReadingLists();
 
@@ -36,20 +38,23 @@ export function AddBookDialog() {
       <DialogTrigger
         render={
           <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground"
-            title="Add book"
+            size="sm"
+            className="rounded-lg px-3 text-[13px] sm:w-[136px]"
+            title="Import books"
           />
         }
-        aria-label="Add book"
+        aria-label="Import books"
       >
-        <BookPlusIcon aria-hidden="true" />
+        <UploadIcon aria-hidden="true" />
+        <span className="hidden sm:inline">Import books</span>
       </DialogTrigger>
       <DialogContent initialFocus={titleRef}>
         <DialogHeader>
-          <DialogTitle>Add book</DialogTitle>
-          <DialogDescription>Add a title to your library.</DialogDescription>
+          <DialogTitle>Import books</DialogTitle>
+          <DialogDescription>
+            Preview your library by adding a title. EPUB file importing is not
+            connected yet.
+          </DialogDescription>
         </DialogHeader>
         <form
           className="space-y-5"

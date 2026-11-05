@@ -1,6 +1,6 @@
-import { Slider as SliderPrimitive } from "@base-ui/react/slider";
-import { cn } from "cn";
-import type { ComponentProps } from "react";
+import { Slider as SliderPrimitive } from "@base-ui/react/slider"
+import { cn } from "cn"
+import type { ComponentProps } from "react"
 
 function Slider({
   className,
@@ -10,14 +10,12 @@ function Slider({
   max = 100,
   thumbProps,
   ...props
-}: SliderPrimitive.Root.Props & {
-  thumbProps?: ComponentProps<typeof SliderPrimitive.Thumb>;
-}) {
+}: SliderPrimitive.Root.Props & { thumbProps?: ComponentProps<typeof SliderPrimitive.Thumb> }) {
   const _values = Array.isArray(value)
     ? value
     : Array.isArray(defaultValue)
       ? defaultValue
-      : [min, max];
+      : [min, max]
 
   return (
     <SliderPrimitive.Root
@@ -50,7 +48,7 @@ function Slider({
         ))}
       </SliderPrimitive.Control>
     </SliderPrimitive.Root>
-  );
+  )
 }
 
-export { Slider };
+export { Slider }

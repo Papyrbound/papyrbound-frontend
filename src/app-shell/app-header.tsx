@@ -1,13 +1,22 @@
 "use client";
 
-import { Fragment, Suspense, useSyncExternalStore } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { Fragment, Suspense } from "react";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { MoonIcon, SunIcon } from "lucide-react";
+import {
+  LayoutGridIcon,
+  ListIcon,
+  PanelRightIcon,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { useWorkspace } from "./workspace-store";
 import { SidebarTrigger } from "@/shared/ui/sidebar";
 import { Button } from "@/shared/ui/button";
-import { BookSearchDialog } from "@/features/home/ui/book-search-dialog";
+import { LibraryFilter } from "@/features/library/ui/library-filter";
 import { AddBookDialog } from "@/features/library/ui/add-book-dialog";
+import { CollectionToolbar } from "@/features/collections/ui/collections-page";
+import { AnnotationsToolbar } from "@/features/annotations/ui/annotations-page";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -18,10 +27,9 @@ import {
 } from "@/shared/ui/breadcrumb";
 import { useCollections } from "@/features/collections/stores/collections-store";
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
-import { updatePreferences } from "@/features/profile/stores/account-store";
 
 const routeLabels: Record<string, string> = {
-  "/": "Home",
+  "/": "Reading Now",
   "/library": "Library",
   "/collections": "Collections",
   "/annotations": "Annotations",
@@ -31,17 +39,6 @@ const routeLabels: Record<string, string> = {
   "/settings": "Settings",
 };
 
-function subscribe(callback: () => void) {
-  const observer = new MutationObserver(callback);
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ["class"],
-  });
-  return () => observer.disconnect();
-}
-const getSnapshot = () => document.documentElement.classList.contains("dark");
-const getServerSnapshot = () => false;
-
 function RouteBreadcrumbs({ pathname }: { pathname: string }) {
   const searchParams = useSearchParams();
   const { collections } = useCollections();
@@ -49,7 +46,7 @@ function RouteBreadcrumbs({ pathname }: { pathname: string }) {
   const segments = pathname.split("/").filter(Boolean);
   const items =
     segments.length === 0
-      ? [{ label: "Home", href: "/" }]
+      ? [{ label: "Reading Now", href: "/" }]
       : segments.map((segment, index) => {
           const href = `/${segments.slice(0, index + 1).join("/")}`;
           const label =
@@ -109,32 +106,85 @@ function RouteBreadcrumbs({ pathname }: { pathname: string }) {
 
 export function AppHeader() {
   const pathname = usePathname();
-  const dark = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const router = useRouter();
+  const { view, setView, panelOpen, setPanelOpen } = useWorkspace();
+  const gallery =
+    pathname === "/library" ||
+    pathname === "/reading-lists" ||
+    pathname === "/collections";
+  const hasPanel = gallery || pathname === "/";
   return (
-    <header className="app-header flex shrink-0 items-center gap-3">
-      <SidebarTrigger className="text-muted-foreground" />
-      <span className="h-4 w-px bg-border" aria-hidden="true" />
-      <Suspense
-        fallback={
-          <span className="min-w-0 flex-1 truncate text-sm">
-            {routeLabels[pathname] ?? "Papyrbound"}
-          </span>
-        }
-      >
+    <header className="flex h-14 shrink-0 items-center border-b border-border/55 bg-background px-4">
+      <SidebarTrigger className="mr-3 text-muted-foreground md:hidden" />
+      <div className="mr-[19px] hidden items-center gap-1 md:flex">
+        <Button
+          size="icon-sm"
+          variant="ghost"
+          aria-label="Go back"
+          onClick={() => router.back()}
+        >
+          <ChevronLeft className="size-[17px] text-muted-foreground" />
+        </Button>
+        <Button
+          size="icon-sm"
+          variant="ghost"
+          aria-label="Go forward"
+          onClick={() => router.forward()}
+        >
+          <ChevronRight className="size-[17px] text-muted-foreground" />
+        </Button>
+      </div>
+      <Suspense fallback={<span className="flex-1 text-sm">Papyrbound</span>}>
         <RouteBreadcrumbs pathname={pathname} />
       </Suspense>
-      <div className="ml-auto flex shrink-0 items-center gap-2">
-        <Button
-          className="text-muted-foreground"
-          variant="ghost"
-          size="icon"
-          aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
-          onClick={() => updatePreferences({ theme: dark ? "light" : "dark" })}
-        >
-          {dark ? <SunIcon /> : <MoonIcon />}
-        </Button>
-        <BookSearchDialog />
+      <div className="ml-auto flex items-center gap-3">
+        {pathname === "/annotations" && <AnnotationsToolbar />}
+        {(pathname === "/library" || pathname === "/reading-lists") && (
+          <LibraryFilter iconOnly />
+        )}
+        {pathname === "/collections" && (
+          <Suspense>
+            <CollectionToolbar />
+          </Suspense>
+        )}
         <AddBookDialog />
+        {gallery && (
+          <div
+            className="flex h-8 w-[72px] items-center justify-center gap-1 rounded-lg border border-soft-border bg-secondary p-1 shadow-soft"
+            role="group"
+            aria-label="Library view"
+          >
+            {(["grid", "list"] as const).map((v) => (
+              <Button
+                key={v}
+                variant="ghost"
+                size="icon-sm"
+                className={
+                  view === v
+                    ? "h-6 w-7 rounded-md border-foreground/10 bg-selected text-foreground shadow-soft hover:bg-selected dark:bg-foreground/15 dark:hover:bg-foreground/20"
+                    : "h-6 w-7 rounded-md text-muted-foreground"
+                }
+                aria-label={`${v} view`}
+                aria-pressed={view === v}
+                onClick={() => setView(v)}
+              >
+                {v === "grid" ? <LayoutGridIcon /> : <ListIcon />}
+              </Button>
+            ))}
+          </div>
+        )}
+        {hasPanel && (
+          <Button
+            variant="outline"
+            size="icon-sm"
+            className="rounded-lg"
+            aria-label={panelOpen ? "Hide details panel" : "Show details panel"}
+            aria-pressed={panelOpen}
+            onClick={() => setPanelOpen(!panelOpen)}
+          >
+            <PanelRightIcon />
+          </Button>
+        )}
       </div>
     </header>
   );

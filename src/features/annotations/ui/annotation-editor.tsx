@@ -1,6 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
+
+import { useRef } from "react";
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -45,17 +47,19 @@ export function AnnotationEditor({
   onSave: (details: AnnotationDetails) => void;
   onClose: () => void;
 }) {
-  const [bookId, setBookId] = useState(annotation?.bookId ?? defaultBookId);
-  const [kind, setKind] = useState<Annotation["kind"]>(
+  const [bookId, setBookId] = useLocalUIState(
+    annotation?.bookId ?? defaultBookId,
+  );
+  const [kind, setKind] = useLocalUIState<Annotation["kind"]>(
     annotation?.kind ?? "highlight",
   );
-  const [content, setContent] = useState(annotation?.content ?? "");
-  const [note, setNote] = useState(annotation?.note ?? "");
-  const [page, setPage] = useState(annotation?.page?.toString() ?? "");
-  const [color, setColor] = useState<Annotation["color"]>(
+  const [content, setContent] = useLocalUIState(annotation?.content ?? "");
+  const [note, setNote] = useLocalUIState(annotation?.note ?? "");
+  const [page, setPage] = useLocalUIState(annotation?.page?.toString() ?? "");
+  const [color, setColor] = useLocalUIState<Annotation["color"]>(
     annotation?.color ?? "lilac",
   );
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useLocalUIState(true);
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const noteRef = useRef<HTMLTextAreaElement>(null);
   const pendingSave = useRef<AnnotationDetails | null>(null);
@@ -75,7 +79,7 @@ export function AnnotationEditor({
     >
       <DialogContent
         initialFocus={isSavedHighlight ? noteRef : contentRef}
-        className="annotation-editor max-h-[calc(100dvh-32px)] overflow-y-auto"
+        className="annotation-editor"
       >
         <DialogHeader>
           <DialogTitle>
@@ -144,7 +148,7 @@ export function AnnotationEditor({
                   </span>
                   <ChevronDownIcon />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-72">
+                <DropdownMenuContent className="w-[264px]">
                   <DropdownMenuRadioGroup
                     value={bookId}
                     onValueChange={setBookId}

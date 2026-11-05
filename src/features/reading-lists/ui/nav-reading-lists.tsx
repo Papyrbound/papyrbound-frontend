@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
+
 import Link from "next/link";
 import {
   IconBookFilled,
@@ -96,7 +97,7 @@ function ReadingListMenuItem({
         isActive={isActive}
         aria-current={isActive ? "page" : undefined}
         tooltip={item.name}
-        className="reading-list-link hover:text-foreground focus-visible:text-foreground data-active:text-foreground"
+        className="reading-list-link"
       >
         <ListIcon
           className="size-4"
@@ -170,10 +171,12 @@ export function NavReadingLists() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const selectedListId = searchParams.get("list");
-  const [isCreating, setIsCreating] = useState(false);
-  const [editingList, setEditingList] = useState<ReadingList | undefined>();
-  const [sectionOpen, setSectionOpen] = useState(true);
-  const [overflowQuery, setOverflowQuery] = useState("");
+  const [isCreating, setIsCreating] = useLocalUIState(false);
+  const [editingList, setEditingList] = useLocalUIState<
+    ReadingList | undefined
+  >();
+  const [sectionOpen, setSectionOpen] = useLocalUIState(true);
+  const [overflowQuery, setOverflowQuery] = useLocalUIState("");
   const isCollapsed = state === "collapsed" && !isMobile;
 
   const orderedLists = [...lists].sort(
@@ -205,7 +208,7 @@ export function NavReadingLists() {
   }
 
   return (
-    <SidebarGroup className="reading-lists-section [&_.reading-list-link[data-active]]:text-foreground text-muted-foreground [&_.reading-list-link]:text-muted-foreground [&_.list-pin-action]:[right:28px]">
+    <SidebarGroup className="reading-lists-section">
       {isCollapsed ? (
         <div
           className="flex h-9 w-full shrink-0 items-center justify-center"
@@ -214,17 +217,17 @@ export function NavReadingLists() {
           <MinusIcon className="size-4 shrink-0" />
         </div>
       ) : (
-        <div className="list-section-heading group/list hover:text-foreground focus-within:text-foreground flex items-center gap-[2px] p-[0_8px] min-h-[36px]">
+        <div className="list-section-heading">
           <button
             type="button"
-            className="list-section-toggle max-[767px]:min-h-10 flex flex-1 items-center gap-[4px] min-w-0 text-left text-[12px] cursor-pointer"
+            className="list-section-toggle"
             aria-expanded={sectionOpen}
             aria-controls="reading-lists-menu"
             onClick={() => setSectionOpen((open) => !open)}
           >
             Reading lists{" "}
             <ChevronDownIcon
-              className={`list-heading-action size-3 opacity-0 transition-opacity duration-150 group-hover/list:opacity-100 group-focus-within/list:opacity-100 [@media(hover:none)]:opacity-100 max-[767px]:opacity-100 ${sectionOpen ? "" : "-rotate-90"}`}
+              className={`list-heading-action size-3 ${sectionOpen ? "" : "-rotate-90"}`}
               aria-hidden="true"
             />
           </button>
@@ -232,7 +235,7 @@ export function NavReadingLists() {
             nativeButton={false}
             variant="ghost"
             size="icon-xs"
-            className="list-heading-action opacity-0 transition-opacity duration-150 group-hover/list:opacity-100 group-focus-within/list:opacity-100 aria-expanded:opacity-100 [@media(hover:none)]:opacity-100 max-[767px]:opacity-100"
+            className="list-heading-action"
             aria-label="View all reading lists"
             title="View all reading lists"
             render={
@@ -282,7 +285,7 @@ export function NavReadingLists() {
                 <ListFilterIcon />
                 <span>More lists</span>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-64" side="right" align="start">
+              <DropdownMenuContent className="w-[232px]" side="right" align="start">
                 <DropdownMenuGroup>
                   <DropdownMenuLabel>
                     {overflowLists.length} more reading lists
@@ -331,7 +334,7 @@ export function NavReadingLists() {
           <SidebarMenuButton
             tooltip="Custom Reading List"
             onClick={() => openEditor()}
-            className="reading-list-link hover:text-foreground focus-visible:text-foreground data-active:text-foreground"
+            className="reading-list-link"
           >
             <PlusIcon />
             <span>Custom Reading List</span>

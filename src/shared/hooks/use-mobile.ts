@@ -12,3 +12,18 @@ const getServerSnapshot = () => false;
 export function useIsMobile() {
   return React.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
+
+const panelQuery = "(max-width: 1023px)";
+function subscribePanel(callback: () => void) {
+  const media = window.matchMedia(panelQuery);
+  media.addEventListener("change", callback);
+  return () => media.removeEventListener("change", callback);
+}
+const getPanelSnapshot = () => window.matchMedia(panelQuery).matches;
+export function useIsCompactWindow() {
+  return React.useSyncExternalStore(
+    subscribePanel,
+    getPanelSnapshot,
+    getServerSnapshot,
+  );
+}

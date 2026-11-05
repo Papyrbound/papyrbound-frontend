@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { create } from "zustand";
 import {
   localProfile,
   type LocalProfile,
@@ -74,16 +74,9 @@ function getSnapshot(): Account {
   return cachedAccount;
 }
 
-function subscribe(callback: () => void) {
-  function onStorage(event: StorageEvent) {
-    if (event.key === storageKey || event.key === null) callback();
-  }
-  window.addEventListener("storage", onStorage);
-  window.addEventListener(changeEvent, callback);
-  return () => {
-    window.removeEventListener("storage", onStorage);
-    window.removeEventListener(changeEvent, callback);
-  };
+export const useAccount = create<Account>(() => defaults);
+export function hydrateAccount() {
+  useAccount.setState(getSnapshot(), true);
 }
 
 export function updateAccount(update: (current: Account) => Account) {
@@ -98,12 +91,9 @@ export function updateAccount(update: (current: Account) => Account) {
     /* Keep changes usable in memory when storage is blocked. */
   }
   cachedAccount = next;
+  useAccount.setState(next, true);
   window.dispatchEvent(new Event(changeEvent));
   return persisted;
-}
-
-export function useAccount() {
-  return useSyncExternalStore(subscribe, getSnapshot, () => defaults);
 }
 
 export function updatePreferences(details: Partial<Preferences>) {

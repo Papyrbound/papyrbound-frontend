@@ -1,6 +1,8 @@
 "use client";
 
-import { useRef, useState, type CSSProperties } from "react";
+import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
+
+import { useRef, type CSSProperties } from "react";
 import { CheckIcon, PlusIcon, SearchIcon, XIcon } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
@@ -31,12 +33,16 @@ export function ReadingListEditor({
   onSave: (details: ReadingListDetails) => void;
 }) {
   const { books } = useReadingLists();
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useLocalUIState(true);
   const pendingSave = useRef<ReadingListDetails | null>(null);
-  const [name, setName] = useState(list?.name ?? "");
-  const [query, setQuery] = useState("");
-  const [color, setColor] = useState(list?.color ?? readingListColors[2].value);
-  const [bookIds, setBookIds] = useState(list?.bookIds ?? initialBookIds);
+  const [name, setName] = useLocalUIState(list?.name ?? "");
+  const [query, setQuery] = useLocalUIState("");
+  const [color, setColor] = useLocalUIState(
+    list?.color ?? readingListColors[2].value,
+  );
+  const [bookIds, setBookIds] = useLocalUIState(
+    list?.bookIds ?? initialBookIds,
+  );
   const nameRef = useRef<HTMLInputElement>(null);
   const normalizedQuery = query.trim().toLowerCase();
   const matchingBooks = books.filter((book) =>
@@ -65,7 +71,7 @@ export function ReadingListEditor({
     >
       <SheetContent
         initialFocus={nameRef}
-        className="reading-list-sheet inset-[12px_12px_12px_auto]! h-auto! w-[min(480px,calc(100vw-24px))]! max-w-[480px]! rounded-3xl! border-0! p-7 bg-[color-mix(in_srgb,var(--list-color)_45%,var(--card))] dark:bg-[color-mix(in_srgb,var(--list-color)_14%,var(--card))] [transition:background-color_200ms,translate_200ms,transform_200ms,opacity_200ms] [&_[data-slot=sheet-description]]:text-inherit [&_[data-slot=sheet-description]]:opacity-75 max-[767px]:inset-2! max-[767px]:w-[calc(100vw-16px)]! max-[767px]:max-w-none! max-[767px]:p-6"
+        className="reading-list-sheet"
         style={{ "--list-color": color } as CSSProperties}
       >
         <form
@@ -86,12 +92,12 @@ export function ReadingListEditor({
               Name your list, choose a color, and search for books to add.
             </SheetDescription>
           </div>
-          <fieldset className="list-color-picker mt-7 flex gap-[12px] w-fit [align-self:center] p-[10px_14px] rounded-full bg-card">
+          <fieldset className="list-color-picker mt-7">
             <legend className="sr-only">List color</legend>
             {readingListColors.map((option) => (
               <label
                 key={option.name}
-                className="list-color-option [&:has(input:checked)]:outline-2 [&:has(input:checked)]:outline-foreground [&:has(input:checked)]:outline-offset-[3px] [&:has(input:focus-visible)]:outline-[3px] [&:has(input:focus-visible)]:outline-ring [&:has(input:focus-visible)]:outline-offset-[3px] relative grid [place-items:center] w-[24px] h-[24px] rounded-full [color:#30312f] [&_input]:absolute [&_input]:[inset:0] [&_input]:w-full [&_input]:h-full [&_input]:[appearance:none] [&_input]:rounded-[50%] [&_input]:[cursor:pointer] [&_svg]:[pointer-events:none]"
+                className="list-color-option"
                 style={{ background: option.value }}
               >
                 <input
@@ -108,7 +114,7 @@ export function ReadingListEditor({
               </label>
             ))}
           </fieldset>
-          <div className="list-editor-fields [&_label]:text-[13px] [&_legend]:text-[13px] [&_[data-slot=input]]:bg-card min-h-0 flex-1 overflow-y-auto py-7 [scrollbar-width:thin] [scrollbar-color:color-mix(in_srgb,_var(--foreground)_25%,_transparent)_transparent]">
+          <div className="list-editor-fields min-h-0 flex-1 overflow-y-auto py-7">
             <label htmlFor="reading-list-name">
               Name <span aria-hidden="true">*</span>
             </label>
@@ -149,10 +155,7 @@ export function ReadingListEditor({
               </div>
               <div className="mt-3 space-y-2">
                 {visibleBooks.map((book) => (
-                  <div
-                    key={book.id}
-                    className="list-book-option hover:bg-accent [&_[data-slot=button]]:size-7 [&_[data-slot=button]]:p-0 [&_[data-slot=button]_svg]:size-[14px] [&_.cover-type]:hidden [&_.cover-credit]:hidden flex items-center gap-[8px] p-[6px_10px] rounded-[10px] bg-card text-[12px] [line-height:1.35] [&_.book-cover]:w-[24px] [&_.book-cover]:shrink-0 [&_.book-cover]:rounded-[3px_5px_5px_3px] [&_.text-xs]:text-[10px]"
-                  >
+                  <div key={book.id} className="list-book-option">
                     <BookCover book={book} />
                     <span className="min-w-0">
                       <span className="block truncate">{book.title}</span>

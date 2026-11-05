@@ -1,5 +1,5 @@
-import { DiscoverOverview } from "@/features/home/ui/discover-overview";
+import { LibraryOverview } from "@/features/home/ui/library-overview"
 
 export default function HomePage() {
-  return <DiscoverOverview />;
+  return <LibraryOverview />
 }

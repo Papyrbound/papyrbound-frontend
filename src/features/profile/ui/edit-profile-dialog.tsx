@@ -1,6 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
+
+import { useRef } from "react";
 import Link from "next/link";
 import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
 import {
@@ -32,16 +34,16 @@ import {
 export function EditProfileDialog({ onClose }: { onClose: () => void }) {
   const { profile } = useAccount();
   const { titles, activeTitle } = useReadingTitles();
-  const [title, setTitle] = useState(activeTitle);
+  const [title, setTitle] = useLocalUIState(activeTitle);
   const selectedTitle =
     titles.find((item) => item.name === title && item.available)?.name ??
     "Page Turner";
-  const [name, setName] = useState(profile.name);
-  const [bio, setBio] = useState(profile.bio);
-  const [avatarSeed, setAvatarSeed] = useState(profile.avatarSeed);
-  const [open, setOpen] = useState(true);
+  const [name, setName] = useLocalUIState(profile.name);
+  const [bio, setBio] = useLocalUIState(profile.bio);
+  const [avatarSeed, setAvatarSeed] = useLocalUIState(profile.avatarSeed);
+  const [open, setOpen] = useLocalUIState(true);
   const nameRef = useRef<HTMLInputElement>(null);
-  const [error, setError] = useState("");
+  const [error, setError] = useLocalUIState("");
   return (
     <Dialog
       open={open}
@@ -51,7 +53,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
       }}
     >
       <DialogContent
-        className="reader-profile-dialog max-w-[min(720px,calc(100%-32px))] max-h-[calc(100dvh-32px)] overflow-y-auto"
+        className="reader-profile-dialog max-h-none max-w-[calc(100%-2rem)] gap-4 overflow-visible p-5 sm:max-w-[720px]"
         initialFocus={nameRef}
       >
         <DialogHeader>
@@ -61,7 +63,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
           </DialogDescription>
         </DialogHeader>
         <form
-          className="space-y-5"
+          className="space-y-3"
           onSubmit={(event) => {
             event.preventDefault();
             if (!name.trim()) return;
@@ -82,9 +84,9 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
               );
           }}
         >
-          <div className="grid grid-cols-[80px_minmax(0,1fr)] items-center gap-x-4 gap-y-1 sm:grid-cols-[80px_minmax(0,1fr)_auto]">
+          <div className="grid grid-cols-[64px_minmax(0,1fr)] items-center gap-x-4 gap-y-1 sm:grid-cols-[64px_minmax(0,1fr)_auto]">
             <div className="row-span-2 sm:row-span-1">
-              <ReaderAvatar seed={avatarSeed} size={80} />
+              <ReaderAvatar seed={avatarSeed} size={64} />
             </div>
             <p className="min-w-0 self-end truncate text-base font-medium sm:self-center">
               {name.trim() || "Your name"}
@@ -103,7 +105,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
                     <Button
                       type="button"
                       variant="outline"
-                      className="h-9 max-w-full gap-3 rounded-xl px-3 font-normal"
+                      className="h-8 max-w-full gap-2 rounded-lg px-3 font-normal"
                     />
                   }
                 >
@@ -112,7 +114,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="w-72 max-w-[calc(100vw-3rem)]"
+                  className="w-[264px] max-w-[calc(100vw-3rem)]"
                 >
                   <DropdownMenuRadioGroup
                     value={selectedTitle}
@@ -139,7 +141,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
               </DropdownMenu>
             </div>
           </div>
-          <fieldset>
+          <fieldset className="min-w-0">
             <legend className="mb-3 text-sm">Choose your avatar</legend>
             <ToggleGroup
               value={[avatarSeed]}
@@ -147,7 +149,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
                 if (value[0]) setAvatarSeed(value[0]);
               }}
               aria-label="Profile avatar"
-              className="reader-avatar-picker grid w-full grid-cols-4 max-[600px]:grid-cols-3 max-[380px]:grid-cols-2"
+              className="reader-avatar-picker grid w-full grid-cols-4 gap-2 sm:grid-cols-6"
               spacing={2}
             >
               {avatarSeeds.map((seed, index) => (
@@ -155,11 +157,11 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
                   key={seed}
                   value={seed}
                   aria-label={`Avatar ${index + 1}`}
-                  className="reader-avatar-choice relative h-[120px] min-w-0 rounded-[18px] border border-transparent p-[6px] aria-pressed:border-foreground aria-pressed:bg-muted [&_[data-slot=avatar]]:w-[min(104px,100%)]! [&_[data-slot=avatar]]:h-auto! [&_[data-slot=avatar]]:aspect-square [&_img]:w-full [&_img]:h-full"
+                  className="reader-avatar-choice relative h-[clamp(48px,10dvh,72px)] min-w-0 w-full rounded-xl border border-transparent p-1 aria-pressed:border-foreground aria-pressed:bg-muted"
                 >
-                  <ReaderAvatar seed={seed} size={104} />
+                  <ReaderAvatar seed={seed} size={56} />
                   {avatarSeed === seed && (
-                    <CheckIcon className="reader-avatar-check absolute right-px bottom-px size-[14px]! rounded-full bg-primary p-[2px] text-primary-foreground" />
+                    <CheckIcon className="reader-avatar-check" />
                   )}
                 </ToggleGroupItem>
               ))}
@@ -176,7 +178,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
               </Link>
             </p>
           </fieldset>
-          <div className="grid items-start gap-6 border-t border-border/60 pt-5 sm:grid-cols-2">
+          <div className="grid items-start gap-4 border-t border-border/60 pt-3 sm:grid-cols-2">
             <div className="grid min-w-0 gap-2.5">
               <label htmlFor="profile-name" className="text-xs font-medium">
                 Display name

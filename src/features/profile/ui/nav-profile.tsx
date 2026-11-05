@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
+
 import { useRouter } from "next/navigation";
 import { useAccount } from "@/features/profile/stores/account-store";
 import { useReadingTitles } from "@/features/profile/model/reading-titles";
@@ -34,7 +35,7 @@ export function NavProfile() {
   const { activeTitle } = useReadingTitles();
   const { isMobile, setOpenMobile } = useSidebar();
   const router = useRouter();
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useLocalUIState(false);
   function navigate(path: string) {
     setOpenMobile(false);
     router.push(path);
@@ -50,22 +51,22 @@ export function NavProfile() {
               render={
                 <SidebarMenuButton
                   size="lg"
-                  className="aria-expanded:bg-muted"
+                  className="h-14 gap-3 px-3 py-2 aria-expanded:bg-muted [&_[data-slot=avatar]]:size-7"
                   tooltip={`${profile.name} · ${activeTitle}`}
                 />
               }
             >
-              <ReaderAvatar seed={profile.avatarSeed} />
-              <div className="grid min-w-0 flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                <span className="truncate font-medium">{profile.name}</span>
-                <span className="truncate text-xs text-muted-foreground">
+              <ReaderAvatar seed={profile.avatarSeed} size={28} />
+              <div className="grid min-w-0 flex-1 text-left text-[13px] leading-[22px] group-data-[collapsible=icon]:hidden">
+                <span className="truncate font-normal">{profile.name}</span>
+                <span className="truncate text-[11px] leading-[18px] text-muted-foreground">
                   {activeTitle}
                 </span>
               </div>
               <ChevronsUpDownIcon className="ml-auto size-4 group-data-[collapsible=icon]:hidden" />
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-60"
+              className="w-[272px]"
               side={isMobile ? "top" : "right"}
               align="end"
               sideOffset={8}
@@ -78,7 +79,7 @@ export function NavProfile() {
                       <p className="truncate text-sm font-medium">
                         {profile.name}
                       </p>
-                      <p className="truncate text-xs text-muted-foreground">
+                      <p className="truncate text-[11px] leading-[18px] text-muted-foreground">
                         {activeTitle}
                       </p>
                     </div>

@@ -1,173 +1,275 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { CheckIcon, MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
-import {
-  useAccount,
-  updatePreferences,
-  type Preferences,
-} from "@/features/profile/stores/account-store";
-import { useReadingTitles } from "@/features/profile/model/reading-titles";
-import { ReaderAvatar } from "./reader-avatar";
-import { EditProfileDialog } from "./edit-profile-dialog";
-import { Card } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Switch } from "@/shared/ui/switch";
-import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
-import { Kbd } from "@/shared/ui/kbd";
+import { useAccount, updatePreferences } from "../stores/account-store";
 
-const themes = [
-  { value: "system", label: "System", icon: MonitorIcon },
-  { value: "light", label: "Light", icon: SunIcon },
-  { value: "dark", label: "Dark", icon: MoonIcon },
-] as const;
+import { useSettingsUI } from "../stores/settings-ui-store";
+
+import { EditProfileDialog } from "./edit-profile-dialog";
+
+import { Button } from "@/shared/ui/button";
+
+import { Switch } from "@/shared/ui/switch";
+
+import type { ReactNode } from "react";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
+
+import { ChevronDown } from "lucide-react";
+
+function Choice({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (value: string) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="outline"
+            className="h-8 w-40 justify-between text-[13px] sm:w-60"
+          />
+        }
+        aria-label={label}
+      >
+        {value}
+        <ChevronDown className="size-3" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuRadioGroup value={value} onValueChange={onChange}>
+          {options.map((o) => (
+            <DropdownMenuRadioItem key={o} value={o}>
+              {o}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function SettingsRow({
+  label,
+  description,
+  children,
+  className = "",
+}: {
+  label: string;
+  description?: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`flex min-h-[74px] flex-wrap items-center justify-between gap-3 py-3 sm:flex-nowrap sm:gap-5 sm:py-0 border-b border-border ${className}`}
+    >
+      <div>
+        <h3 className="text-sm font-medium leading-6">{label}</h3>
+        {description && (
+          <p className="mt-1 text-xs leading-[18px] text-muted-foreground">
+            {description}
+          </p>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+}
 
 export function SettingsPage() {
-  const { profile, preferences } = useAccount();
-  const { activeTitle } = useReadingTitles();
-  const [editing, setEditing] = useState(false);
-  const [message, setMessage] = useState("");
-  function changePreferences(details: Partial<Preferences>) {
-    const saved = updatePreferences(details);
-    setMessage(
-      saved
-        ? "Preferences saved on this device."
-        : "Preferences changed for this session. Device storage is unavailable.",
-    );
-  }
+  const { preferences, profile } = useAccount();
+  const ui = useSettingsUI();
   return (
-    <section
-      className="reader-page reader-settings max-[800px]:p-6 max-[600px]:px-5 max-[600px]:pt-5 max-[600px]:pb-9 p-[28px_40px_48px] w-full min-w-0 max-w-[1280px] m-[0_auto] max-w-[980px]"
-      aria-labelledby="settings-heading"
-    >
-      <header className="reader-page-heading [&_p:not(.reader-kicker)]:mt-2 [&_p:not(.reader-kicker)]:text-[13px] [&_p:not(.reader-kicker)]:text-muted-foreground max-[600px]:[&_h1]:text-2xl flex flex-wrap items-center justify-between gap-[20px] mb-[28px] [&_h1]:text-[28px] [&_h1]:[line-height:1.2] [&_h1]:font-medium [&_h1]:tracking-[-.8px]">
+    <main className="p-5 lg:px-12 lg:py-8">
+      <header className="mb-[30px] flex items-center justify-between gap-4">
         <div>
-          <h1 id="settings-heading">Settings</h1>
-          <p>Make this space feel like yours.</p>
+          <h1 className="text-3xl font-semibold leading-[42px]">Settings</h1>
+          <p className="mt-3 text-[13px] leading-6 text-muted-foreground">
+            Make Papyrbound feel like your own.
+          </p>
         </div>
+        <Button variant="outline" onClick={() => ui.patch({ editing: true })}>
+          Edit profile
+        </Button>
       </header>
-      <Card className="reader-settings-card mb-5 gap-0 rounded-[20px] p-6 shadow-none ring-0 [&_h2]:text-base [&_h2]:font-medium max-[600px]:p-5">
-        <h2>Profile</h2>
-        <div className="reader-settings-profile max-[600px]:flex-wrap max-[600px]:[&>button]:w-full flex items-center gap-[16px] mt-[22px]">
-          <ReaderAvatar seed={profile.avatarSeed} size={56} />
-          <div className="min-w-0 flex-1">
-            <p className="truncate font-medium">{profile.name}</p>
-            <p className="text-sm text-muted-foreground">{activeTitle}</p>
-            {profile.bio && (
-              <p className="mt-2 text-xs text-muted-foreground wrap-anywhere">
-                {profile.bio}
-              </p>
-            )}
-          </div>
-          <Button variant="outline" onClick={() => setEditing(true)}>
-            Edit profile
-          </Button>
-        </div>
-      </Card>
-      <Card className="reader-settings-card mb-5 gap-0 rounded-[20px] p-6 shadow-none ring-0 [&_h2]:text-base [&_h2]:font-medium max-[600px]:p-5">
-        <h2>Appearance</h2>
-        <p className="reader-setting-help text-[12px] text-muted-foreground [line-height:1.8] mt-[6px]">
-          Choose a theme for your reading space.
-        </p>
-        <ToggleGroup
-          value={[preferences.theme]}
-          onValueChange={(value) => {
-            const theme = value[0];
-            if (theme === "system" || theme === "light" || theme === "dark")
-              changePreferences({ theme });
-          }}
-          aria-label="Theme"
-          className="reader-theme-options my-5 mb-2 grid w-full grid-cols-3 max-[600px]:gap-2"
-          spacing={3}
-        >
-          {themes.map(({ value, label, icon: Icon }) => (
-            <ToggleGroupItem
-              key={value}
-              value={value}
-              className="reader-theme-option flex h-16 min-w-0 justify-start gap-[10px] rounded-2xl border border-border p-4 font-normal aria-pressed:border-ring aria-pressed:bg-muted max-[600px]:h-auto max-[600px]:min-h-[70px] max-[600px]:flex-wrap max-[600px]:justify-center max-[600px]:gap-2 max-[600px]:px-2 max-[600px]:py-3 max-[600px]:[&_svg:last-child:not(:first-child)]:hidden"
-              aria-label={`${label} theme`}
+      <div className="grid min-w-0 items-start gap-12 xl:grid-cols-[minmax(0,1.554fr)_minmax(300px,1fr)]">
+        <div className="space-y-7">
+          <section className="rounded-section bg-card px-6 pt-5">
+            <h2 className="mb-2 text-base font-semibold leading-[26px]">
+              Appearance
+            </h2>
+            <SettingsRow
+              label="Theme"
+              description="Choose how Papyrbound looks."
             >
-              <Icon />
-              <span>{label}</span>
-              {preferences.theme === value && (
-                <CheckIcon className="ml-auto size-4" />
-              )}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-        <div className="reader-setting-row last:pb-0 [&+.reader-setting-row]:mt-0 flex items-center justify-between gap-[24px] p-[20px_0] [border-top:1px_solid_var(--border)] mt-[12px] [&_label]:text-[14px] [&_label]:[cursor:pointer] [&_p]:text-[12px] [&_p]:text-muted-foreground [&_p]:mt-[4px] [&_p]:[line-height:1.8]">
-          <div>
-            <label htmlFor="setting-dots">Canvas dots</label>
-            <p>Show the subtle dot pattern behind your shelves.</p>
+              <div
+                className="flex h-9 w-full shrink-0 sm:w-[280px] rounded-xl bg-muted p-1"
+                role="group"
+                aria-label="Theme"
+              >
+                {(["system", "light", "dark"] as const).map((theme) => (
+                  <Button
+                    key={theme}
+                    variant="ghost"
+                    size="sm"
+                    aria-pressed={preferences.theme === theme}
+                    className={`h-7 flex-1 rounded-lg px-2 text-[13px] capitalize ${preferences.theme === theme ? "bg-selected shadow-soft hover:bg-selected dark:bg-foreground/10 dark:hover:bg-foreground/15" : "text-muted-foreground"}`}
+                    onClick={() => updatePreferences({ theme })}
+                  >
+                    {theme}
+                  </Button>
+                ))}
+              </div>
+            </SettingsRow>
+            <SettingsRow
+              label="Interface text size"
+              description="Adjust labels and navigation."
+              className="min-h-[78px]"
+            >
+              <Choice
+                label="Interface text size"
+                value={ui.interfaceSize}
+                options={["Small", "Default", "Large"]}
+                onChange={(interfaceSize) => ui.patch({ interfaceSize })}
+              />
+            </SettingsRow>
+            <SettingsRow
+              label="Show sidebar labels"
+              className="min-h-[72px] border-0 pt-2.5"
+            >
+              <Switch
+                aria-label="Show sidebar labels"
+                checked={ui.labels}
+                onCheckedChange={(labels) => ui.patch({ labels })}
+              />
+            </SettingsRow>
+          </section>
+          <section className="rounded-section bg-card px-6 pt-5">
+            <h2 className="mb-2 text-base font-semibold leading-[26px]">
+              Reading
+            </h2>
+            {[
+              [
+                "Page colour",
+                "Set the default reading background.",
+                ui.page,
+                ["White", "Paper", "Dark"],
+                (page: string) => ui.patch({ page }),
+              ],
+              [
+                "Reading font",
+                "Choose a comfortable typeface.",
+                ui.font,
+                ["Literata", "Sans serif"],
+                (font: string) => ui.patch({ font }),
+              ],
+              [
+                "Line spacing",
+                "Give your words room to breathe.",
+                ui.spacing,
+                ["Compact", "Comfortable", "Spacious"],
+                (spacing: string) => ui.patch({ spacing }),
+              ],
+            ].map(([label, desc, value, options, change], index) => (
+              <SettingsRow
+                key={String(label)}
+                label={String(label)}
+                description={String(desc)}
+                className={index ? "min-h-[78px]" : ""}
+              >
+                <Choice
+                  label={String(label)}
+                  value={String(value)}
+                  options={options as string[]}
+                  onChange={change as (v: string) => void}
+                />
+              </SettingsRow>
+            ))}
+            <SettingsRow
+              label="Resume where you left off"
+              description="Open books at your last reading position."
+              className="min-h-[68px] border-0"
+            >
+              <Switch
+                aria-label="Resume where you left off"
+                checked={ui.resume}
+                onCheckedChange={(resume) => ui.patch({ resume })}
+              />
+            </SettingsRow>
+            <p className="h-[52px] pt-3.5 text-xs leading-[18px] text-muted-foreground">
+              Changes apply to this preview. EPUB reading is not connected yet.
+            </p>
+          </section>
+          <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
+            <span>
+              {profile.name} · Profile and appearance saved on this device.
+            </span>
+            <label className="flex items-center gap-3">
+              Reduce animations
+              <Switch
+                aria-label="Reduce animations"
+                checked={preferences.reduceMotion}
+                onCheckedChange={(reduceMotion) =>
+                  updatePreferences({ reduceMotion })
+                }
+              />
+            </label>
           </div>
-          <Switch
-            aria-label="Canvas dots"
-            id="setting-dots"
-            checked={preferences.showDots}
-            onCheckedChange={(showDots) => changePreferences({ showDots })}
-          />
         </div>
-        <div className="reader-setting-row last:pb-0 [&+.reader-setting-row]:mt-0 flex items-center justify-between gap-[24px] p-[20px_0] [border-top:1px_solid_var(--border)] mt-[12px] [&_label]:text-[14px] [&_label]:[cursor:pointer] [&_p]:text-[12px] [&_p]:text-muted-foreground [&_p]:mt-[4px] [&_p]:[line-height:1.8]">
-          <div>
-            <label htmlFor="setting-motion">Reduce animations</label>
-            <p>
-              Keep transitions still. Your device’s motion preference is also
-              respected.
+        <section className="pt-1 xl:sticky xl:top-6">
+          <h2 className="text-base font-semibold leading-7">Reading preview</h2>
+          <p className="mb-[18px] mt-3 text-[13px] leading-[22px] text-muted-foreground">
+            Your default reading appearance.
+          </p>
+          <div
+            className={`relative min-h-[526px] rounded-section border border-soft-border px-8 pb-24 pt-12 sm:px-[52px] ${ui.page === "Dark" ? "bg-[#292929] text-[#e5e5e5]" : ui.page === "Paper" ? "bg-[#f3f0e7] text-[#44423d]" : "bg-white text-[#343434]"}`}
+          >
+            <p className="text-center text-[11px] leading-[18px] text-muted-foreground">
+              CHAPTER ONE
+            </p>
+            <h3
+              className={`mb-10 mt-9 text-[30px] font-normal leading-[41px] ${ui.font === "Literata" ? "font-[Georgia,serif]" : "font-sans"}`}
+            >
+              A place between pages
+            </h3>
+            <div
+              className={`space-y-8 text-[21px] ${ui.font === "Literata" ? "font-[Georgia,serif]" : "font-sans"} ${ui.spacing === "Compact" ? "leading-7" : ui.spacing === "Spacious" ? "leading-10" : "leading-[31.5px]"}`}
+            >
+              <p>
+                The room grew quiet as the afternoon light moved across the
+                floor. She turned the page, and for a moment the rest of the
+                world could wait.
+              </p>
+              <p>
+                There was something reassuring about a story held open: a place
+                to return to, a thought left unfinished, a small promise of what
+                might come next.
+              </p>
+            </div>
+            <p className="absolute inset-x-0 bottom-10 text-center text-xs text-muted-foreground">
+              1
             </p>
           </div>
-          <Switch
-            aria-label="Reduce animations"
-            id="setting-motion"
-            checked={preferences.reduceMotion}
-            onCheckedChange={(reduceMotion) =>
-              changePreferences({ reduceMotion })
-            }
-          />
-        </div>
-      </Card>
-      <Card className="reader-settings-card mb-5 gap-0 rounded-[20px] p-6 shadow-none ring-0 [&_h2]:text-base [&_h2]:font-medium max-[600px]:p-5">
-        <h2>Keyboard shortcuts</h2>
-        <div className="reader-setting-row last:pb-0 [&+.reader-setting-row]:mt-0 flex items-center justify-between gap-[24px] p-[20px_0] [border-top:1px_solid_var(--border)] mt-[12px] [&_label]:text-[14px] [&_label]:[cursor:pointer] [&_p]:text-[12px] [&_p]:text-muted-foreground [&_p]:mt-[4px] [&_p]:[line-height:1.8]">
-          <div>
-            <p className="text-foreground!">Search books</p>
-          </div>
-          <span className="flex gap-1">
-            <Kbd>Ctrl / ⌘</Kbd>
-            <Kbd>K</Kbd>
-          </span>
-        </div>
-        <div className="reader-setting-row last:pb-0 [&+.reader-setting-row]:mt-0 flex items-center justify-between gap-[24px] p-[20px_0] [border-top:1px_solid_var(--border)] mt-[12px] [&_label]:text-[14px] [&_label]:[cursor:pointer] [&_p]:text-[12px] [&_p]:text-muted-foreground [&_p]:mt-[4px] [&_p]:[line-height:1.8]">
-          <div>
-            <p className="text-foreground!">Toggle sidebar</p>
-          </div>
-          <span className="flex gap-1">
-            <Kbd>Ctrl / ⌘</Kbd>
-            <Kbd>B</Kbd>
-          </span>
-        </div>
-      </Card>
-      <p className="reader-section-caption text-[12px] [line-height:1.8] text-muted-foreground m-[20px_0]">
-        Profile and appearance preferences are saved on this device. Books,
-        lists, annotations, and reading activity currently reset when you reload
-        the app.
-      </p>
-      <p className="text-xs text-muted-foreground">
-        Avatar artwork by{" "}
-        <Link
-          href="https://github.com/uxderrick/navii"
-          target="_blank"
-          rel="noreferrer"
-          className="underline underline-offset-2"
-        >
-          Navii
-        </Link>
-        .
-      </p>
-      <p role="status" className="mt-4 text-sm text-muted-foreground">
-        {message}
-      </p>
-      {editing && <EditProfileDialog onClose={() => setEditing(false)} />}
-    </section>
+          <p className="mt-6 text-xs leading-5 text-muted-foreground">
+            You can change these options while reading, too.
+          </p>
+        </section>
+      </div>
+      {ui.editing && (
+        <EditProfileDialog onClose={() => ui.patch({ editing: false })} />
+      )}
+    </main>
   );
 }

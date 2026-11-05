@@ -1,15 +1,6 @@
 "use client";
-
-import {
-  createContext,
-  useContext,
-  useMemo,
-  useState,
-  type Dispatch,
-  type SetStateAction,
-  type ReactNode,
-} from "react";
-
+import { create } from "zustand";
+import type { Dispatch, SetStateAction, ReactNode } from "react";
 export type Collection = {
   id: string;
   name: string;
@@ -17,53 +8,58 @@ export type Collection = {
   bookIds: string[];
   pinned: boolean;
   lastBookAddedAt?: string;
+  createdAt?: string;
 };
-
 const initialCollections: Collection[] = [
   {
     id: "quiet-afternoons",
-    name: "Quiet afternoons",
+    name: "Evening reads",
     color: "#d9cae9",
     bookIds: ["quiet", "sun", "wild"],
-    pinned: true,
-    lastBookAddedAt: "2026-10-10T12:00:00-07:00",
+    pinned: false,
+    createdAt: "2026-10-14T12:00:00-07:00",
+    lastBookAddedAt: "2026-10-28T12:00:00-07:00",
   },
   {
     id: "far-from-home",
-    name: "Far from home",
+    name: "Stories to escape into",
     color: "#d6dfbd",
-    bookIds: ["atlas", "wild", "tidal"],
-    pinned: true,
-    lastBookAddedAt: "2026-10-09T12:00:00-07:00",
+    bookIds: ["wild", "sun", "atlas", "night"],
+    pinned: false,
+    createdAt: "2026-10-14T12:00:00-07:00",
+    lastBookAddedAt: "2026-10-27T12:00:00-07:00",
   },
   {
     id: "after-hours",
-    name: "After hours",
+    name: "Quiet discoveries",
     color: "#f0c6ac",
-    bookIds: ["night", "quiet", "tidal"],
+    bookIds: ["sun", "atlas", "night", "quiet", "wild"],
     pinned: false,
-    lastBookAddedAt: "2026-10-11T12:00:00-07:00",
+    createdAt: "2026-10-03T12:00:00-07:00",
+    lastBookAddedAt: "2026-10-25T12:00:00-07:00",
+  },
+  {
+    id: "weekend-shelf",
+    name: "Weekend shelf",
+    color: "#aac7d0",
+    bookIds: ["atlas", "night", "quiet", "sun", "wild"],
+    pinned: false,
+    createdAt: "2026-10-03T12:00:00-07:00",
+    lastBookAddedAt: "2026-10-22T12:00:00-07:00",
   },
 ];
 
-const CollectionsContext = createContext<{
+export const useCollections = create<{
   collections: Collection[];
   setCollections: Dispatch<SetStateAction<Collection[]>>;
-} | null>(null);
-
+}>((set) => ({
+  collections: initialCollections,
+  setCollections: (update) =>
+    set((s) => ({
+      collections:
+        typeof update === "function" ? update(s.collections) : update,
+    })),
+}));
 export function CollectionsProvider({ children }: { children: ReactNode }) {
-  const [collections, setCollections] = useState(initialCollections);
-  const value = useMemo(() => ({ collections, setCollections }), [collections]);
-  return (
-    <CollectionsContext.Provider value={value}>
-      {children}
-    </CollectionsContext.Provider>
-  );
-}
-
-export function useCollections() {
-  const context = useContext(CollectionsContext);
-  if (!context)
-    throw new Error("useCollections must be used inside CollectionsProvider");
-  return context;
+  return children;
 }

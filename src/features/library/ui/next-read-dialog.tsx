@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
+
 import { CheckIcon, PlusIcon, ShuffleIcon } from "lucide-react";
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
 import { BookCover } from "@/features/home/ui/book-cover";
@@ -17,8 +18,8 @@ import {
 
 export function NextReadDialog() {
   const { books, lists, toggleBook } = useReadingLists();
-  const [open, setOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [open, setOpen] = useLocalUIState(false);
+  const [selectedId, setSelectedId] = useLocalUIState<string | null>(null);
   const unread = books.filter((book) => book.progress <= 0);
   const wantToRead =
     lists.find((list) => list.id === "want-to-read")?.bookIds ?? [];
@@ -73,10 +74,7 @@ export function NextReadDialog() {
         {selected ? (
           <>
             <div className="flex items-center gap-6 py-2">
-              <div
-                className="next-read-cover w-28 shrink-0 [&_.cover-type]:text-[14px] [&_.cover-credit]:text-[6px]"
-                aria-hidden="true"
-              >
+              <div className="next-read-cover w-28 shrink-0" aria-hidden="true">
                 <BookCover book={selected} />
               </div>
               <div className="min-w-0">

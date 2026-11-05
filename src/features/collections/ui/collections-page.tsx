@@ -1,547 +1,589 @@
 "use client";
 
-import { useRef, useState, type CSSProperties } from "react";
+import { create } from "zustand";
+import { useIsCompactWindow } from "@/shared/hooks/use-mobile";
+
 import { useRouter, useSearchParams } from "next/navigation";
+
 import {
-  ArrowLeftIcon,
-  BookOpenIcon,
-  CheckIcon,
-  DotIcon,
-  FolderPlusIcon,
-  LibraryIcon,
-  MoreVerticalIcon,
-  PencilIcon,
-  PinIcon,
-  PinOffIcon,
-  PlusIcon,
-  RotateCwFadingClockIcon,
-  SearchIcon,
-  Trash2Icon,
+  Plus,
+  Pin,
+  PinOff,
+  Pencil,
+  BookPlus,
+  Trash2,
+  FolderOpen,
+  Check,
+  ListFilter,
+  Folder,
+  Clock,
+  Languages,
+  Calendar,
+  ArrowUp,
+  ArrowDown,
+  BookOpen,
 } from "lucide-react";
+
+import { useCollections, type Collection } from "../stores/collections-store";
+
+import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
+
+import { useWorkspace } from "@/app-shell/workspace-store";
+
+import { BookCover } from "@/features/home/ui/book-cover";
+
+import { LibraryFilter } from "@/features/library/ui/library-filter";
+
+import { BookGallery } from "@/features/library/ui/book-gallery";
+
+import { BookDetailsPanel } from "@/features/library/ui/book-details-panel";
+
 import { Button } from "@/shared/ui/button";
-import { Card } from "@/shared/ui/card";
-import { Checkbox } from "@/shared/ui/checkbox";
+
 import { Input } from "@/shared/ui/input";
+
+import { Checkbox } from "@/shared/ui/checkbox";
+
 import {
   Dialog,
-  DialogClose,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
 } from "@/shared/ui/dialog";
+
 import {
   DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
 } from "@/shared/ui/dropdown-menu";
-import { BookCover } from "@/features/home/ui/book-cover";
-import { BookGallery } from "@/features/library/ui/book-gallery";
-import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
-import {
-  useCollections,
-  type Collection,
-} from "@/features/collections/stores/collections-store";
 
-const colors = [
-  { name: "Neutral", value: "#FAF9F8" },
-  { name: "Lilac", value: "#d9cae9" },
-  { name: "Sage", value: "#d6dfbd" },
-  { name: "Peach", value: "#f0c6ac" },
-  { name: "Rose", value: "#cfaaae" },
-];
+const useCollectionUI = create<{
+  selected: string | null;
+  editor: Collection | "new" | null;
+  deleting: Collection | null;
+  sort: string;
+  order: string;
+  pinned: boolean;
+  patch: (
+    v: Partial<{
+      selected: string | null;
+      editor: Collection | "new" | null;
+      deleting: Collection | null;
+      sort: string;
+      order: string;
+      pinned: boolean;
+    }>,
+  ) => void;
+}>((set) => ({
+  selected: null,
+  editor: null,
+  deleting: null,
+  sort: "added",
+  order: "desc",
+  pinned: false,
+  patch: (v) => set(v),
+}));
 
-function lastAddedLabel(lastBookAddedAt: string | undefined, now: number) {
-  if (!lastBookAddedAt) return "No books added";
-  const days = Math.max(
-    0,
-    Math.floor((now - new Date(lastBookAddedAt).getTime()) / 86400000),
-  );
-  return days === 0
-    ? "Today"
-    : new Intl.RelativeTimeFormat("en-US", { numeric: "always" }).format(
-        -days,
-        "day",
-      );
+function date(value?: string) {
+  return value
+    ? new Date(value).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      })
+    : "No books added";
 }
 
-function CollectionEditor({
-  collection,
-  onClose,
-  onSave,
-}: {
-  collection?: Collection;
-  onClose: () => void;
-  onSave: (details: Pick<Collection, "name" | "color" | "bookIds">) => void;
-}) {
-  const { books } = useReadingLists();
-  const [name, setName] = useState(collection?.name ?? "");
-  const [color, setColor] = useState(collection?.color ?? colors[0].value);
-  const [bookIds, setBookIds] = useState(collection?.bookIds ?? []);
-  const [query, setQuery] = useState("");
-  const [open, setOpen] = useState(true);
-  const titleRef = useRef<HTMLInputElement>(null);
-  const pendingSave = useRef<Pick<
-    Collection,
-    "name" | "color" | "bookIds"
-  > | null>(null);
-  const results = books.filter((book) =>
-    `${book.title} ${book.author}`
-      .toLowerCase()
-      .includes(query.trim().toLowerCase()),
+export function CollectionToolbar() {
+  const ui = useCollectionUI();
+  const search = useSearchParams();
+  const { collections } = useCollections();
+  const opened = collections.find((c) => c.id === search.get("collection"));
+  if (opened) return (
+    <>
+      <LibraryFilter iconOnly />
+      <Button variant="secondary" onClick={() => ui.patch({ editor: opened })}>
+        <BookPlus />
+        Add books
+      </Button>
+    </>
   );
   return (
-    <Dialog
-      open={open}
-      onOpenChange={setOpen}
-      onOpenChangeComplete={(isOpen) => {
-        if (!isOpen) {
-          if (pendingSave.current) onSave(pendingSave.current);
-          else onClose();
-        }
-      }}
-    >
-      <DialogContent
-        initialFocus={titleRef}
-        className="collection-editor max-h-[calc(100dvh-32px)] overflow-y-auto"
-      >
-        <DialogHeader>
-          <DialogTitle>
-            {collection ? "Edit collection" : "New collection"}
-          </DialogTitle>
-          <DialogDescription>
-            Give your books a place together.
-          </DialogDescription>
-        </DialogHeader>
-        <form
-          className="space-y-5"
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (!name.trim()) return;
-            pendingSave.current = { name: name.trim(), color, bookIds };
-            setOpen(false);
-          }}
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          aria-label="Filter collections"
+          render={<Button variant="secondary" size="icon-sm" className="rounded-lg" />}
         >
-          <div className="space-y-2">
-            <label htmlFor="collection-name">Name</label>
-            <Input
-              id="collection-name"
-              ref={titleRef}
-              placeholder="e.g. Weekend escapes"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              required
-              maxLength={80}
-            />
-          </div>
-          <fieldset>
-            <legend className="mb-2 text-sm">Collection color</legend>
-            <div className="flex gap-2">
-              {colors.map((option) => (
-                <Button
-                  key={option.name}
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  aria-label={option.name}
-                  aria-pressed={color === option.value}
-                  style={{ background: option.value, color: "#36332f" }}
-                  onClick={() => setColor(option.value)}
-                >
-                  {color === option.value && <CheckIcon />}
-                </Button>
-              ))}
-            </div>
-          </fieldset>
-          <fieldset>
-            <legend className="mb-2 text-sm">
-              Books · {bookIds.length} selected
-            </legend>
-            <div className="relative">
-              <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="search"
-                aria-label="Search collection books"
-                placeholder="Find a book…"
-                className="pl-9"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") event.preventDefault();
-                }}
-              />
-            </div>
-            <div className="collection-book-picker mt-3 max-h-[220px] overflow-y-auto">
-              {results.map((book) => (
-                <label
-                  key={book.id}
-                  className="collection-book-option [&_.cover-type]:hidden [&_.cover-credit]:hidden hover:bg-[var(--row-hover)] flex items-center gap-[12px] p-[8px] rounded-[12px] cursor-pointer [&_.book-cover]:w-[28px] [&_.book-cover]:rounded-[3px]"
-                >
-                  <BookCover book={book} />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm">{book.title}</span>
-                    <span className="block truncate text-xs text-muted-foreground">
-                      {book.author}
-                    </span>
-                  </span>
-                  <Checkbox
-                    checked={bookIds.includes(book.id)}
-                    aria-label={`Include ${book.title}`}
-                    onCheckedChange={(checked) =>
-                      setBookIds((current) =>
-                        checked
-                          ? [...current, book.id]
-                          : current.filter((id) => id !== book.id),
-                      )
-                    }
-                  />
-                </label>
-              ))}
-              {results.length === 0 && (
-                <p className="py-6 text-center text-sm text-muted-foreground">
-                  No matching books.
-                </p>
-              )}
-            </div>
-          </fieldset>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setOpen(false)}
+          <ListFilter />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>Show</DropdownMenuLabel>
+            <DropdownMenuRadioGroup
+              value={ui.pinned ? "pinned" : "all"}
+              onValueChange={(value) =>
+                ui.patch({ pinned: value === "pinned" })
+              }
             >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={!name.trim()}>
-              {collection ? "Save changes" : "Create collection"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+              <DropdownMenuRadioItem value="all">
+                <Folder
+                  aria-hidden="true"
+                  className="text-muted-foreground"
+                />
+                All collections
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="pinned">
+                <Pin
+                  aria-hidden="true"
+                  className="text-muted-foreground"
+                />
+                Pinned only
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+            <DropdownMenuRadioGroup
+              value={ui.sort}
+              onValueChange={(sort) => ui.patch({ sort })}
+            >
+              {(
+                [
+                  ["added", "Last book added", Clock],
+                  ["name", "Collection name", Languages],
+                  ["created", "Date created", Calendar],
+                ] as const
+              ).map(([v, l, Icon]) => (
+                <DropdownMenuRadioItem key={v} value={v}>
+                  <Icon
+                    aria-hidden="true"
+                    className="text-muted-foreground"
+                  />
+                  {l}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>Order</DropdownMenuLabel>
+            <DropdownMenuRadioGroup
+              value={ui.order}
+              onValueChange={(order) => ui.patch({ order })}
+            >
+              <DropdownMenuRadioItem value="asc">
+                <ArrowUp
+                  aria-hidden="true"
+                  className="text-muted-foreground"
+                />
+                Ascending
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="desc">
+                <ArrowDown
+                  aria-hidden="true"
+                  className="text-muted-foreground"
+                />
+                Descending
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <Button onClick={() => ui.patch({ editor: "new" })}>
+        <Plus />
+        <span className="hidden sm:inline">New collection</span>
+        <span className="sr-only sm:hidden">New collection</span>
+      </Button>
+    </>
+  );
+}
+
+export function CollectionStack({
+  collection,
+  small = false,
+  panel = false,
+}: {
+  collection: Collection;
+  small?: boolean;
+  panel?: boolean;
+}) {
+  const { books } = useReadingLists();
+  const covers = collection.bookIds
+    .map((id) => books.find((b) => b.id === id))
+    .filter((b) => b !== undefined)
+    .slice(0, 3);
+  return (
+    <span
+      className={`relative block ${small ? "h-12 w-8 [&_.cover-type]:hidden [&_.cover-credit]:hidden" : panel ? "h-[304px] w-[200px]" : "h-[280px] w-[180px]"}`}
+    >
+      {(small ? covers.slice(0, 1) : covers.slice().reverse())
+        .map((book, i) => (
+          <span
+            key={book.id}
+            className={`absolute left-0 top-0 block [&_.book-cover]:rounded-[7px] ${small ? "w-8" : panel ? "w-48" : "w-[172.8px]"}`}
+            style={{
+              transform: small ? "none" : `translate(${i === 0 ? 6 : i === 1 ? 0 : 0}px,${i === 1 ? -7 : 0}px) rotate(${i === 0 ? 3 : -3}deg)`,
+            }}
+          >
+            <BookCover book={book} />
+          </span>
+        ))}
+      {!covers.length && (
+        <span className="flex h-full items-center justify-center rounded-xl bg-muted">
+          <BookOpen className="size-8 text-muted-foreground" />
+        </span>
+      )}
+    </span>
   );
 }
 
 export function CollectionsPage() {
-  const { books } = useReadingLists();
+  const compact = useIsCompactWindow();
   const { collections, setCollections } = useCollections();
+  const { books, markAsRead } = useReadingLists();
+  const { view, panelOpen, filter, sort } = useWorkspace();
+  const ui = useCollectionUI();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const selectedId = searchParams.get("collection");
-  const [editor, setEditor] = useState<{ collection?: Collection } | null>(
-    null,
-  );
-  const [deleting, setDeleting] = useState<Collection | null>(null);
-  const [now, setNow] = useState(() => new Date().getTime());
-  const selected = collections.find(
-    (collection) => collection.id === selectedId,
-  );
-  const collectionBooks = (collection: Collection) =>
-    books.filter((book) => collection.bookIds.includes(book.id));
-  function saveCollection(
-    details: Pick<Collection, "name" | "color" | "bookIds">,
-  ) {
-    const id = editor?.collection?.id ?? crypto.randomUUID();
-    const lastBookAddedAt = new Date().toISOString();
-    setNow(new Date(lastBookAddedAt).getTime());
-    setCollections((current) =>
-      editor?.collection
-        ? current.map((item) => {
-            if (item.id !== id) return item;
-            const hasNewBook = details.bookIds.some(
-              (bookId) => !item.bookIds.includes(bookId),
-            );
-            return {
-              ...item,
-              ...details,
-              lastBookAddedAt: hasNewBook
-                ? lastBookAddedAt
-                : item.lastBookAddedAt,
-            };
-          })
-        : [
-            ...current,
-            {
-              ...details,
-              id,
-              pinned: false,
-              lastBookAddedAt:
-                details.bookIds.length > 0 ? lastBookAddedAt : undefined,
-            },
-          ],
-    );
-    setEditor(null);
+  const search = useSearchParams();
+  const opened = collections.find((c) => c.id === search.get("collection"));
+  const selected =
+    collections.find((c) => c.id === ui.selected) ?? collections[0];
+  const visible = collections
+    .filter((c) => !ui.pinned || c.pinned)
+    .toSorted((a, b) => {
+      const result =
+        ui.sort === "name"
+          ? a.name.localeCompare(b.name)
+          : new Date(
+              (ui.sort === "created" ? a.createdAt : a.lastBookAddedAt) ?? 0,
+            ).getTime() -
+            new Date(
+              (ui.sort === "created" ? b.createdAt : b.lastBookAddedAt) ?? 0,
+            ).getTime();
+      return result * (ui.order === "desc" ? -1 : 1);
+    });
+  function edit(c: Collection) {
+    ui.patch({ editor: c });
   }
-  function togglePinned(collection: Collection) {
-    setCollections((current) =>
-      current.map((item) =>
-        item.id === collection.id ? { ...item, pinned: !item.pinned } : item,
-      ),
+  function pin(c: Collection) {
+    setCollections((cs) =>
+      cs.map((v) => (v.id === c.id ? { ...v, pinned: !v.pinned } : v)),
     );
   }
+  const menuActionClass =
+    "min-h-8 h-auto -mx-2 w-[calc(100%+1rem)] justify-start gap-2 rounded-lg px-2 py-1.5 text-sm font-normal hover:bg-foreground/10 focus-visible:bg-foreground/10";
+  const actions = selected && (
+    <div className="space-y-1">
+      <Button
+        variant="ghost"
+        className={menuActionClass}
+        onClick={() => router.push(`/collections?collection=${selected.id}`)}
+      >
+        <FolderOpen />
+        Open collection
+      </Button>
+      {[
+        ["Add books", BookPlus, () => edit(selected)],
+        ["Rename collection", Pencil, () => edit(selected)],
+        [
+          selected.pinned ? "Unpin collection" : "Pin collection",
+          selected.pinned ? PinOff : Pin,
+          () => pin(selected),
+        ],
+        [
+          "Mark all as finished",
+          Check,
+          () => selected.bookIds.forEach(markAsRead),
+        ],
+      ].map(([label, Icon, action]) => {
+        const I = Icon as typeof Pin;
+        return (
+          <Button
+            key={String(label)}
+            variant="ghost"
+            className={menuActionClass}
+            onClick={action as () => void}
+          >
+            <I />
+            {String(label)}
+          </Button>
+        );
+      })}
+      <div role="separator" className="my-1.5 h-px bg-foreground/5" />
+      <Button
+        variant="ghost"
+        className={`${menuActionClass} text-destructive hover:text-destructive`}
+        onClick={() => ui.patch({ deleting: selected })}
+      >
+        <Trash2 />
+        Delete collection
+      </Button>
+    </div>
+  );
 
   return (
     <>
-      {selected ? (
-        <section className="library-gallery collections-detail w-full p-[24px_40px_48px] max-[1199px]:px-8 max-[1199px]:pt-6 max-[1199px]:pb-12 max-[767px]:px-5 max-[767px]:pt-4 max-[767px]:pb-10">
-          <div className="mb-6 flex items-center justify-between gap-3">
-            <Button variant="ghost" onClick={() => router.push("/collections")}>
-              <ArrowLeftIcon />
-              Collections
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => setEditor({ collection: selected })}
-            >
-              <PencilIcon />
-              Edit collection
-            </Button>
-          </div>
-          <div className="gallery-heading flex items-baseline gap-[12px] mb-[32px] [&_h1]:text-[20px] [&_h1]:font-medium [&>span]:text-[12px] [&>span]:text-muted-foreground">
-            <h1>{selected.name}</h1>
-            <span>
-              {collectionBooks(selected).length}{" "}
-              {collectionBooks(selected).length === 1 ? "book" : "books"}
-            </span>
-          </div>
-          <BookGallery
-            books={collectionBooks(selected)}
-            onAddBooks={() => setEditor({ collection: selected })}
-          />
-        </section>
-      ) : (
-        <section
-          className="collections-page w-full px-10 pt-7 pb-12 max-[767px]:px-5 max-[767px]:pt-4 max-[767px]:pb-8"
-          aria-label="Collections"
-        >
-          <div className="collections-heading max-[767px]:mb-7 max-[767px]:flex-wrap max-[767px]:items-start max-[767px]:gap-3 max-[767px]:[&_h1]:text-[22px] flex items-center justify-between gap-[20px] mb-[32px] [&_h1]:text-[28px] [&_h1]:[line-height:1.2] [&_h1]:font-medium [&_h1]:tracking-[-.045em] [&_p]:mt-[8px] [&_p]:text-[12px] [&_p]:text-muted-foreground">
-            <div>
-              <h1>Your collections</h1>
-              <p>
-                {collections.length}{" "}
-                {collections.length === 1 ? "collection" : "collections"} ·
-                Books brought together by you
-              </p>
-            </div>
-            {collections.length > 0 && (
-              <Button onClick={() => setEditor({})}>
-                <PlusIcon />
-                New collection
-              </Button>
-            )}
-          </div>
-          <div className="collection-cards -ml-9 grid justify-start gap-3 [grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),300px))] max-[767px]:gap-4 max-[767px]:[grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),340px))]">
-            {[...collections]
-              .sort(
-                (first, second) => Number(second.pinned) - Number(first.pinned),
-              )
-              .map((collection) => {
-                const previewBooks = collectionBooks(collection);
-                return (
-                  <Card
-                    key={collection.id}
-                    className="collection-card group/collection relative min-h-[326px] cursor-pointer gap-0 overflow-hidden rounded-[30px] border border-transparent bg-transparent px-0 pb-6 pt-7 shadow-none ring-0 max-[767px]:px-1 hover:text-foreground before:pointer-events-none before:absolute before:inset-x-0 before:inset-y-3 before:rounded-[24px] before:bg-transparent before:transition-colors before:duration-200 before:content-[''] hover:before:bg-[color-mix(in_srgb,var(--collection-color)_7%,var(--card))] max-[767px]:before:inset-x-5 [&:has(.collection-card-title:focus-visible)]:outline-2 [&:has(.collection-card-title:focus-visible)]:outline-ring [&:has(.collection-card-title:focus-visible)]:outline-offset-2"
-                    style={
-                      {
-                        "--collection-color": collection.color,
-                      } as CSSProperties
-                    }
-                    onClick={(event) => {
-                      if (
-                        (event.target as HTMLElement).closest(
-                          "button, a, [role='menuitem'], [data-slot='dropdown-menu-content']",
-                        )
-                      )
-                        return;
-                      router.push(
-                        `/collections?collection=${encodeURIComponent(collection.id)}`,
-                      );
+      <div className="flex h-[calc(100dvh-3.5rem)] min-h-0">
+        <main className="@container min-w-0 flex-1 overflow-y-auto px-5 pt-[34px] pb-8 md:pl-9 md:pr-7">
+          {opened ? (
+            <>
+              <BookGallery
+                books={books
+                  .filter((b) => opened.bookIds.includes(b.id))
+                  .filter((b) =>
+                    filter === "reading"
+                      ? b.progress > 0 && b.progress < 100
+                      : filter === "new"
+                        ? b.progress === 0
+                        : filter === "finished"
+                          ? b.progress >= 100
+                          : true,
+                  )
+                  .toSorted((a, b) =>
+                    sort === "recent"
+                      ? books.indexOf(a) - books.indexOf(b)
+                      : a.title.localeCompare(b.title) * (sort === "za" ? -1 : 1),
+                  )}
+                onAddBooks={() => edit(opened)}
+              />
+            </>
+          ) : (
+            <>
+              <div
+                className={
+                  view === "grid"
+                    ? panelOpen
+                      ? "grid grid-cols-1 gap-x-6 gap-y-8 @min-[448px]:grid-cols-2 @min-[700px]:grid-cols-3 @min-[896px]:grid-cols-4"
+                      : "grid grid-cols-[repeat(auto-fill,minmax(min(100%,212px),212px))] gap-x-24 gap-y-8"
+                    : "space-y-1"
+                }
+              >
+                {visible.map((c) => (
+                  <button
+                    key={c.id}
+                    className={`min-w-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${selected?.id === c.id ? "bg-selected shadow-selection" : "hover:bg-hover"} ${view === "grid" ? "w-full max-w-[212px] rounded-2xl p-4 pb-2" : "flex w-full items-center gap-4 rounded-selection px-3 py-2 pr-6"}`}
+                    onClick={() => {
+                      ui.patch({ selected: c.id });
+                      if (compact)
+                        router.push(`/collections?collection=${c.id}`);
                     }}
+                    onDoubleClick={() =>
+                      router.push(`/collections?collection=${c.id}`)
+                    }
+                    aria-label={`Select ${c.name}. Double click to open.`}
+                    aria-pressed={selected?.id === c.id}
                   >
-                    <div className="collection-open relative z-10 hover:bg-transparent flex flex-col justify-start w-full h-auto p-[0] border-0 rounded-[0] gap-[0] whitespace-normal overflow-visible bg-transparent [color:inherit]">
-                      <span
-                        className="collection-preview relative block aspect-[6/5] w-full overflow-hidden"
-                        aria-hidden="true"
-                      >
-                        <span className="collection-cover-stack relative block size-full">
-                          {previewBooks.slice(0, 3).map((book, coverIndex) => (
-                            <span
-                              className={`collection-preview-cover absolute block drop-shadow-[0_12px_14px_rgb(0_0_0_/_18%)] [&_.book-cover]:rounded-[5px_9px_9px_5px]${coverIndex === 0 ? " left-[12%] top-[3%] z-30 w-[52%] [&_.cover-type]:max-w-[78%] [&_.cover-type]:text-base [&_.cover-credit]:text-[6px]" : coverIndex === 1 ? " left-[29.5%] top-[10%] z-20 w-[47%] [&_.cover-type]:left-[75%] [&_.cover-type]:top-[11%] [&_.cover-type]:text-[9px] [&_.cover-type]:font-medium [&_.cover-type]:[writing-mode:vertical-rl] [&_.cover-art]:hidden [&_.cover-credit]:hidden" : " left-[42%] top-[13%] z-10 w-[47%] [&_.cover-type]:left-[75%] [&_.cover-type]:top-[11%] [&_.cover-type]:text-[9px] [&_.cover-type]:font-medium [&_.cover-type]:[writing-mode:vertical-rl] [&_.cover-art]:hidden [&_.cover-credit]:hidden"}`}
-                              key={book.id}
-                            >
-                              <BookCover book={book} />
-                            </span>
-                          ))}
-                        </span>
-                        {previewBooks.length === 0 && (
-                          <BookOpenIcon className="collection-preview-empty absolute left-1/2 top-1/2 size-9 -translate-1/2 text-muted-foreground" />
+                    <CollectionStack collection={c} small={view === "list"} />
+                    <span
+                      className={
+                        view === "grid"
+                          ? "mt-4 block max-w-48"
+                          : "min-w-0 flex-1"
+                      }
+                    >
+                      <span className={`flex items-center gap-2 ${view === "grid" ? "text-lg font-medium leading-7" : "h-6 text-sm font-semibold leading-6"}`}>
+                        <span className="truncate">{c.name}</span>
+                        {c.pinned && (
+                          <Pin className="size-3 text-muted-foreground" />
                         )}
                       </span>
-                    </div>
-                    <div className="collection-card-footer relative z-10 flex items-start justify-between pt-3">
-                      <div className="collection-card-info min-w-0 flex-1 pl-[12%] pr-14 text-left">
-                        <div className="collection-title-row flex min-w-0 items-center justify-start gap-1.5">
-                          <Button
-                            variant="ghost"
-                            className="collection-card-title static block h-auto w-auto min-w-0 rounded-none border-0 bg-transparent p-0 text-left text-lg leading-6 font-medium tracking-tight whitespace-normal text-inherit [overflow-wrap:anywhere]"
-                            onClick={() =>
-                              router.push(
-                                `/collections?collection=${encodeURIComponent(collection.id)}`,
-                              )
-                            }
-                            aria-label={`Open ${collection.name}, ${previewBooks.length} ${previewBooks.length === 1 ? "book" : "books"}`}
-                          >
-                            {collection.name}
-                          </Button>
-                          {collection.pinned && (
-                            <Button
-                              variant="ghost"
-                              size="icon-xs"
-                              className="collection-pin relative z-[2] size-[22px]! min-w-[22px] shrink-0 rounded-full border-0 bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] p-[3px] text-muted-foreground transition-none hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-muted-foreground active:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] [&_svg]:size-4 [&_svg]:stroke-[1.5]"
-                              aria-label={`Unpin ${collection.name}`}
-                              onClick={() => togglePinned(collection)}
-                            >
-                              <PinIcon aria-hidden="true" />
-                            </Button>
-                          )}
-                        </div>
-                        <Button
-                          variant="ghost"
-                          className="collection-card-meta mt-1 flex h-auto! min-h-6 w-auto! flex-wrap items-center justify-start gap-0 rounded-none! border-0! bg-transparent! p-0! text-left text-xs font-normal text-muted-foreground scale-100! hover:bg-transparent! active:bg-transparent!"
-                          aria-label={`Open books in ${collection.name}`}
-                          onClick={() =>
-                            router.push(
-                              `/collections?collection=${encodeURIComponent(collection.id)}`,
-                            )
-                          }
-                        >
-                          <span
-                            className="collection-book-count inline-flex h-[22px] shrink-0 items-center gap-1 rounded-full bg-secondary px-2 text-secondary-foreground"
-                            aria-label={`${previewBooks.length} books`}
-                          >
-                            <LibraryIcon
-                              aria-hidden="true"
-                              className="size-4"
-                            />
-                            {previewBooks.length}
-                          </span>
-                          <span
-                            aria-hidden="true"
-                            className="collection-meta-dot inline-flex size-6 shrink-0 items-center justify-center"
-                          >
-                            <DotIcon className="size-6" />
-                          </span>
-                          <span
-                            className="collection-card-updated inline-flex min-w-0 items-center gap-1 whitespace-nowrap"
-                            aria-label={`Last book added: ${lastAddedLabel(collection.lastBookAddedAt, now)}`}
-                          >
-                            <RotateCwFadingClockIcon
-                              aria-hidden="true"
-                              className="size-4"
-                            />
-                            {collection.lastBookAddedAt ? (
-                              <time dateTime={collection.lastBookAddedAt}>
-                                {lastAddedLabel(
-                                  collection.lastBookAddedAt,
-                                  now,
-                                )}
-                              </time>
-                            ) : (
-                              "No books added"
-                            )}
-                          </span>
-                        </Button>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          render={
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              className="collection-menu absolute right-5 top-3 z-[2] size-7! shrink-0 rounded-full bg-transparent p-1 text-muted-foreground transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)] hover:text-foreground focus-visible:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)] aria-expanded:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)] [&_svg]:size-5"
-                            />
-                          }
-                          aria-label={`Options for ${collection.name}`}
-                        >
-                          <MoreVerticalIcon />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56">
-                          <DropdownMenuItem
-                            onClick={() => setEditor({ collection })}
-                          >
-                            <PencilIcon />
-                            Edit collection
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => togglePinned(collection)}
-                          >
-                            {collection.pinned ? <PinOffIcon /> : <PinIcon />}
-                            {collection.pinned
-                              ? "Unpin collection"
-                              : "Pin collection"}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            variant="destructive"
-                            onClick={() => setDeleting(collection)}
-                          >
-                            <Trash2Icon />
-                            Delete collection
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </Card>
-                );
-              })}
-          </div>
-          {collections.length === 0 && (
-            <Card className="collection-empty items-center px-6 py-12 text-center shadow-none ring-0 [&_h2]:text-[20px] [&_p]:text-[13px] [&_p]:text-muted-foreground">
-              <FolderPlusIcon className="size-10 text-muted-foreground" />
-              <h2>Your next chapter starts here.</h2>
-              <p>Bring a few books together in your first collection.</p>
-              <Button onClick={() => setEditor({})}>
-                <PlusIcon />
-                New collection
-              </Button>
-            </Card>
+                      <span className={`mt-1 block text-xs text-muted-foreground ${view === "grid" ? "leading-5" : "h-[18px] leading-[18px]"}`}>
+                        {c.bookIds.length} {c.bookIds.length === 1 ? "book" : "books"}
+                      </span>
+                    </span>
+                    {view === "list" && (
+                      <span className="hidden shrink-0 text-xs text-muted-foreground sm:block">
+                        Added {date(c.lastBookAddedAt)}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+              {!visible.length && (
+                <p className="py-16 text-center text-muted-foreground">
+                  No collections match. Create a collection or clear the filter.
+                </p>
+              )}
+            </>
           )}
-        </section>
-      )}
-      {editor && (
-        <CollectionEditor
-          collection={editor.collection}
-          onClose={() => setEditor(null)}
-          onSave={saveCollection}
-        />
-      )}
+        </main>
+        {opened ? (
+          <BookDetailsPanel />
+        ) : (
+          panelOpen &&
+          selected && (
+            <aside className="hidden w-[360px] shrink-0 overflow-y-auto bg-card px-6 pb-10 pt-20 lg:block">
+              <div className="mx-auto w-fit">
+                <CollectionStack collection={selected} panel />
+              </div>
+              <p className="mt-3 text-xs leading-5 text-muted-foreground">
+                Collection
+              </p>
+              <h2 className="mt-3 text-2xl font-semibold leading-10">
+                {selected.name}
+              </h2>
+              <h3 className="mb-2 mt-8 text-base font-semibold leading-8">
+                Information
+              </h3>
+              <dl className="space-y-1 text-xs">
+                {[
+                  ["Created", date(selected.createdAt)],
+                  ["Last book added", date(selected.lastBookAddedAt)],
+                  ["Location", "My library"],
+                  ["Contents", `${selected.bookIds.length} books`],
+                ].map(([k, v]) => (
+                  <div
+                    key={k}
+                    className="flex h-8 items-center justify-between gap-3"
+                  >
+                    <dt className="text-muted-foreground">{k}</dt>
+                    <dd>{v}</dd>
+                  </div>
+                ))}
+              </dl>
+              <h3 className="mb-2 mt-4 text-base font-semibold leading-6">
+                Actions
+              </h3>
+              {actions}
+            </aside>
+          )
+        )}
+      </div>
+
       <Dialog
-        open={deleting !== null}
-        onOpenChange={(open) => {
-          if (!open) setDeleting(null);
+        open={ui.editor !== null}
+        onOpenChange={(o) => {
+          if (!o) ui.patch({ editor: null });
+        }}
+      >
+        <DialogContent className="max-h-[85dvh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {ui.editor === "new" ? "New collection" : "Edit collection"}
+            </DialogTitle>
+            <DialogDescription>Bring your books together.</DialogDescription>
+          </DialogHeader>
+          {ui.editor && (
+            <form
+              key={ui.editor === "new" ? "new" : ui.editor.id}
+              id="collection-form"
+              className="space-y-5"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const data = new FormData(e.currentTarget),
+                  name = String(data.get("name") ?? "").trim(),
+                  bookIds = data.getAll("books").map(String);
+                if (!name) return;
+                const current = ui.editor !== "new" ? ui.editor : null;
+                const at = new Date().toISOString();
+                setCollections((cs) =>
+                  current
+                    ? cs.map((c) =>
+                        c.id === current.id
+                          ? {
+                              ...c,
+                              name,
+                              bookIds,
+                              lastBookAddedAt: bookIds.some(
+                                (id) => !c.bookIds.includes(id),
+                              )
+                                ? at
+                                : c.lastBookAddedAt,
+                            }
+                          : c,
+                      )
+                    : [
+                        ...cs,
+                        {
+                          id: crypto.randomUUID(),
+                          name,
+                          bookIds,
+                          color: "#d9cae9",
+                          pinned: false,
+                          createdAt: at,
+                          lastBookAddedAt: bookIds.length ? at : undefined,
+                        },
+                      ],
+                );
+                ui.patch({ editor: null });
+              }}
+            >
+              <label className="block space-y-2">
+                Name
+                <Input
+                  name="name"
+                  defaultValue={ui.editor === "new" ? "" : ui.editor.name}
+                  required
+                  maxLength={80}
+                />
+              </label>
+              <fieldset>
+                <legend className="mb-3 text-sm">Books</legend>
+                <div className="max-h-60 space-y-2 overflow-y-auto">
+                  {books.map((b) => (
+                    <label
+                      key={b.id}
+                      className="flex items-center gap-3 rounded-lg p-2 hover:bg-muted"
+                    >
+                      <Checkbox
+                        name="books"
+                        value={b.id}
+                        defaultChecked={
+                          ui.editor !== "new" &&
+                          !!ui.editor?.bookIds.includes(b.id)
+                        }
+                      />
+                      <span className="text-sm">{b.title}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            </form>
+          )}
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline" />}>
+              Cancel
+            </DialogClose>
+            <Button form="collection-form" type="submit">
+              {ui.editor === "new" ? "Create" : "Save changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!ui.deleting}
+        onOpenChange={(o) => {
+          if (!o) ui.patch({ deleting: null });
         }}
       >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete collection?</DialogTitle>
             <DialogDescription>
-              Delete “{deleting?.name}”? Its books will stay in your library.
+              Delete {ui.deleting?.name}? Its books will stay in your library.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <DialogClose render={<Button variant="ghost" />}>
+            <DialogClose render={<Button variant="outline" />}>
               Cancel
             </DialogClose>
             <Button
               variant="destructive"
               onClick={() => {
-                setCollections((current) =>
-                  current.filter((item) => item.id !== deleting?.id),
+                setCollections((cs) =>
+                  cs.filter((c) => c.id !== ui.deleting?.id),
                 );
-                setDeleting(null);
+                ui.patch({ deleting: null, selected: null });
               }}
             >
               Delete collection

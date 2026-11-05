@@ -1,14 +1,6 @@
 "use client";
-
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-  type PropsWithChildren,
-} from "react";
-
+import { create } from "zustand";
+import { type PropsWithChildren } from "react";
 import {
   defaultReadingLists,
   getReadingListUrl,
@@ -20,15 +12,14 @@ import {
   sampleBooks,
   type SampleBook,
 } from "@/features/home/model/sample-books";
-
 export type ReadingActivityEvent = {
   id: string;
   bookTitle: string;
   kind: "added" | "completed" | "unread" | "deleted";
   at: string;
 };
-
-type ReadingListsContextValue = {
+type ReadingListsState = {
+  updateBook: (id: string, details: { title: string; author: string }) => void;
   books: SampleBook[];
   activity: ReadingActivityEvent[];
   addBook: (details: { title: string; author: string }) => void;
@@ -43,119 +34,108 @@ type ReadingListsContextValue = {
   toggleBook: (listId: string, bookId: string) => void;
 };
 
-const ReadingListsContext = createContext<ReadingListsContextValue | null>(
-  null,
-);
+export const useReadingLists = create<ReadingListsState>((set, get) => {
+  const setBooks = (
+    update: (
+      books: (SampleBook & { previousProgress?: number })[],
+    ) => SampleBook[],
+  ) => set((s) => ({ books: update(s.books) }));
+  const setLists = (update: (lists: ReadingList[]) => ReadingList[]) =>
+    set((s) => ({ lists: update(s.lists) }));
+  const recordActivity = (
+    bookTitle: string,
+    kind: ReadingActivityEvent["kind"],
+  ) =>
+    set((s) => ({
+      activity: [
+        {
+          id: crypto.randomUUID(),
+          bookTitle,
+          kind,
+          at: new Date().toISOString(),
+        },
+        ...s.activity,
+      ].slice(0, 200),
+    }));
+  const addBook = (details: { title: string; author: string }) => {
+    if (!details.title.trim() || !details.author.trim()) return;
+    const book: SampleBook = {
+      id: crypto.randomUUID(),
+      title: details.title.trim(),
+      author: details.author.trim(),
+      genre: "Uncategorized",
+      pages: 0,
+      progress: 0,
+      paper: "#d9cae9",
+      ink: "#494059",
+      tone: "var(--content-lilac)",
+      art: "orbit",
+    };
+    setBooks((current) => [...current, book]);
+    recordActivity(book.title, "added");
+  };
 
-export function ReadingListsProvider({ children }: PropsWithChildren) {
-  const [books, setBooks] =
-    useState<(SampleBook & { previousProgress?: number })[]>(sampleBooks);
-  const [lists, setLists] = useState<ReadingList[]>(defaultReadingLists);
-  const [activity, setActivity] = useState<ReadingActivityEvent[]>([]);
-  const recordActivity = useCallback(
-    (bookTitle: string, kind: ReadingActivityEvent["kind"]) => {
-      const event: ReadingActivityEvent = {
-        id: crypto.randomUUID(),
-        bookTitle,
-        kind,
-        at: new Date().toISOString(),
-      };
-      setActivity((current) => [event, ...current].slice(0, 200));
-    },
-    [],
-  );
+  const markAsRead = (bookId: string) => {
+    const target = get().books.find((book) => book.id === bookId);
+    if (!target || target.progress >= 100) return;
+    setBooks((current) =>
+      current.map((book) =>
+        book.id === bookId && book.progress < 100
+          ? { ...book, previousProgress: book.progress, progress: 100 }
+          : book,
+      ),
+    );
+    setLists((current) =>
+      current.map((list) =>
+        list.id === "completed"
+          ? {
+              ...list,
+              bookIds: [...new Set([...(list.bookIds ?? []), bookId])],
+            }
+          : list,
+      ),
+    );
+    recordActivity(target.title, "completed");
+  };
 
-  const addBook = useCallback(
-    (details: { title: string; author: string }) => {
-      if (!details.title.trim() || !details.author.trim()) return;
-      const book: SampleBook = {
-        id: crypto.randomUUID(),
-        title: details.title.trim(),
-        author: details.author.trim(),
-        genre: "Uncategorized",
-        pages: 0,
-        progress: 0,
-        paper: "#d9cae9",
-        ink: "#494059",
-        tone: "var(--content-lilac)",
-        art: "orbit",
-      };
-      setBooks((current) => [...current, book]);
-      recordActivity(book.title, "added");
-    },
-    [recordActivity],
-  );
+  const markAsUnread = (bookId: string) => {
+    const target = get().books.find((book) => book.id === bookId);
+    if (!target || target.progress < 100) return;
+    setBooks((current) =>
+      current.map((book) =>
+        book.id === bookId && book.progress >= 100
+          ? {
+              ...book,
+              progress: book.previousProgress ?? 0,
+              previousProgress: undefined,
+            }
+          : book,
+      ),
+    );
+    setLists((current) =>
+      current.map((list) =>
+        list.id === "completed"
+          ? { ...list, bookIds: list.bookIds?.filter((id) => id !== bookId) }
+          : list,
+      ),
+    );
+    recordActivity(target.title, "unread");
+  };
 
-  const markAsRead = useCallback(
-    (bookId: string) => {
-      const target = books.find((book) => book.id === bookId);
-      if (!target || target.progress >= 100) return;
-      setBooks((current) =>
-        current.map((book) =>
-          book.id === bookId && book.progress < 100
-            ? { ...book, previousProgress: book.progress, progress: 100 }
-            : book,
-        ),
-      );
-      setLists((current) =>
-        current.map((list) =>
-          list.id === "completed"
-            ? {
-                ...list,
-                bookIds: [...new Set([...(list.bookIds ?? []), bookId])],
-              }
-            : list,
-        ),
-      );
-      recordActivity(target.title, "completed");
-    },
-    [books, recordActivity],
-  );
+  const deleteBook = (bookId: string) => {
+    const target = get().books.find((book) => book.id === bookId);
+    if (!target) return;
+    setBooks((current) => current.filter((book) => book.id !== bookId));
+    setLists((current) =>
+      current.map((list) => ({
+        ...list,
+        bookIds: list.bookIds?.filter((id) => id !== bookId),
+      })),
+    );
+    recordActivity(target.title, "deleted");
+  };
 
-  const markAsUnread = useCallback(
-    (bookId: string) => {
-      const target = books.find((book) => book.id === bookId);
-      if (!target || target.progress < 100) return;
-      setBooks((current) =>
-        current.map((book) =>
-          book.id === bookId && book.progress >= 100
-            ? {
-                ...book,
-                progress: book.previousProgress ?? 0,
-                previousProgress: undefined,
-              }
-            : book,
-        ),
-      );
-      setLists((current) =>
-        current.map((list) =>
-          list.id === "completed"
-            ? { ...list, bookIds: list.bookIds?.filter((id) => id !== bookId) }
-            : list,
-        ),
-      );
-      recordActivity(target.title, "unread");
-    },
-    [books, recordActivity],
-  );
-
-  const deleteBook = useCallback(
-    (bookId: string) => {
-      const target = books.find((book) => book.id === bookId);
-      if (!target) return;
-      setBooks((current) => current.filter((book) => book.id !== bookId));
-      setLists((current) =>
-        current.map((list) => ({
-          ...list,
-          bookIds: list.bookIds?.filter((id) => id !== bookId),
-        })),
-      );
-      recordActivity(target.title, "deleted");
-    },
-    [books, recordActivity],
-  );
-
-  const createList = useCallback((details: ReadingListDetails) => {
+  const createList = (details: ReadingListDetails) => {
     const trimmedName = details.name.trim();
     if (!trimmedName) return;
     const id = crypto.randomUUID();
@@ -180,9 +160,9 @@ export function ReadingListsProvider({ children }: PropsWithChildren) {
       ];
     });
     return id;
-  }, []);
+  };
 
-  const updateList = useCallback((id: string, details: ReadingListDetails) => {
+  const updateList = (id: string, details: ReadingListDetails) => {
     if (!details.name.trim()) return;
     setLists((current) =>
       current.map((list) =>
@@ -191,16 +171,16 @@ export function ReadingListsProvider({ children }: PropsWithChildren) {
           : list,
       ),
     );
-  }, []);
+  };
 
-  const deleteList = useCallback((id: string) => {
+  const deleteList = (id: string) => {
     setLists((current) => {
       if (current.find((list) => list.id === id)?.isDefault) return current;
       return current.filter((list) => list.id !== id);
     });
-  }, []);
+  };
 
-  const togglePinned = useCallback((id: string) => {
+  const togglePinned = (id: string) => {
     setLists((current) => {
       const target = current.find((list) => list.id === id);
       if (!target || target.isDefault) return current;
@@ -217,9 +197,9 @@ export function ReadingListsProvider({ children }: PropsWithChildren) {
         list.id === id ? { ...list, isPinned: !list.isPinned } : list,
       );
     });
-  }, []);
+  };
 
-  const toggleBook = useCallback((listId: string, bookId: string) => {
+  const toggleBook = (listId: string, bookId: string) => {
     setLists((current) =>
       current.map((list) => {
         if (list.id !== listId) return list;
@@ -232,52 +212,37 @@ export function ReadingListsProvider({ children }: PropsWithChildren) {
         };
       }),
     );
-  }, []);
+  };
 
-  const value = useMemo(
-    () => ({
-      books,
-      activity,
-      addBook,
-      markAsRead,
-      markAsUnread,
-      deleteBook,
-      lists,
-      createList,
-      updateList,
-      deleteList,
-      togglePinned,
-      toggleBook,
-    }),
-    [
-      books,
-      activity,
-      addBook,
-      markAsRead,
-      markAsUnread,
-      deleteBook,
-      lists,
-      createList,
-      updateList,
-      deleteList,
-      togglePinned,
-      toggleBook,
-    ],
-  );
-
-  return (
-    <ReadingListsContext.Provider value={value}>
-      {children}
-    </ReadingListsContext.Provider>
-  );
-}
-
-export function useReadingLists() {
-  const context = useContext(ReadingListsContext);
-
-  if (!context) {
-    throw new Error("useReadingLists must be used within ReadingListsProvider");
-  }
-
-  return context;
+  return {
+    updateBook: (id, details) =>
+      set((s) => ({
+        books: s.books.map((b) => (b.id === id ? { ...b, ...details } : b)),
+      })),
+    books: sampleBooks,
+    lists: defaultReadingLists.map((list) => ({
+      ...list,
+      bookIds:
+        list.id === "completed"
+          ? sampleBooks
+              .filter((book) => book.progress >= 100)
+              .map((book) => book.id)
+          : list.id === "want-to-read"
+            ? ["night"]
+            : ["quiet", "sun", "night"],
+    })),
+    activity: [],
+    addBook,
+    markAsRead,
+    markAsUnread,
+    deleteBook,
+    createList,
+    updateList,
+    deleteList,
+    togglePinned,
+    toggleBook,
+  };
+});
+export function ReadingListsProvider({ children }: PropsWithChildren) {
+  return children;
 }
