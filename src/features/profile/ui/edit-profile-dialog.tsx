@@ -53,7 +53,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
       }}
     >
       <DialogContent
-        className="reader-profile-dialog max-h-[calc(100dvh-2rem)] max-w-[calc(100%-2rem)] overflow-y-auto sm:max-w-[720px]"
+        className="reader-profile-dialog max-h-none max-w-[calc(100%-2rem)] gap-4 overflow-visible p-5 sm:max-w-[720px]"
         initialFocus={nameRef}
       >
         <DialogHeader>
@@ -63,7 +63,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
           </DialogDescription>
         </DialogHeader>
         <form
-          className="space-y-5"
+          className="space-y-3"
           onSubmit={(event) => {
             event.preventDefault();
             if (!name.trim()) return;
@@ -84,9 +84,9 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
               );
           }}
         >
-          <div className="grid grid-cols-[80px_minmax(0,1fr)] items-center gap-x-4 gap-y-1 sm:grid-cols-[80px_minmax(0,1fr)_auto]">
+          <div className="grid grid-cols-[64px_minmax(0,1fr)] items-center gap-x-4 gap-y-1 sm:grid-cols-[64px_minmax(0,1fr)_auto]">
             <div className="row-span-2 sm:row-span-1">
-              <ReaderAvatar seed={avatarSeed} size={80} />
+              <ReaderAvatar seed={avatarSeed} size={64} />
             </div>
             <p className="min-w-0 self-end truncate text-base font-medium sm:self-center">
               {name.trim() || "Your name"}
@@ -149,7 +149,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
                 if (value[0]) setAvatarSeed(value[0]);
               }}
               aria-label="Profile avatar"
-              className="reader-avatar-picker grid w-full grid-cols-2 gap-3 min-[381px]:grid-cols-3 sm:grid-cols-4"
+              className="reader-avatar-picker grid w-full grid-cols-4 gap-2 sm:grid-cols-6"
               spacing={2}
             >
               {avatarSeeds.map((seed, index) => (
@@ -157,9 +157,9 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
                   key={seed}
                   value={seed}
                   aria-label={`Avatar ${index + 1}`}
-                  className="reader-avatar-choice relative aspect-square h-auto min-w-0 w-full rounded-[18px] border border-transparent p-2 aria-pressed:border-foreground aria-pressed:bg-muted"
+                  className="reader-avatar-choice relative h-[clamp(48px,10dvh,72px)] min-w-0 w-full rounded-xl border border-transparent p-1 aria-pressed:border-foreground aria-pressed:bg-muted"
                 >
-                  <ReaderAvatar seed={seed} size={104} />
+                  <ReaderAvatar seed={seed} size={56} />
                   {avatarSeed === seed && (
                     <CheckIcon className="reader-avatar-check" />
                   )}
@@ -178,7 +178,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
               </Link>
             </p>
           </fieldset>
-          <div className="grid items-start gap-6 border-t border-border/60 pt-5 sm:grid-cols-2">
+          <div className="grid items-start gap-4 border-t border-border/60 pt-3 sm:grid-cols-2">
             <div className="grid min-w-0 gap-2.5">
               <label htmlFor="profile-name" className="text-xs font-medium">
                 Display name
