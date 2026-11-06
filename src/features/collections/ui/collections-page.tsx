@@ -225,15 +225,13 @@ export function CollectionStack({
     <span
       className={`relative block ${small ? "h-12 w-8 [&_.cover-type]:hidden [&_.cover-credit]:hidden" : panel ? "h-[304px] w-[200px]" : "h-[280px] w-[180px]"}`}
     >
-      {covers
-        .slice()
-        .reverse()
+      {(small ? covers.slice(0, 1) : covers.slice().reverse())
         .map((book, i) => (
           <span
             key={book.id}
             className={`absolute left-0 top-0 block [&_.book-cover]:rounded-[7px] ${small ? "w-8" : panel ? "w-48" : "w-[172.8px]"}`}
             style={{
-              transform: `translate(${i === 0 ? 6 : i === 1 ? 0 : 0}px,${i === 1 ? -7 : 0}px) rotate(${i === 0 ? 3 : -3}deg)`,
+              transform: small ? "none" : `translate(${i === 0 ? 6 : i === 1 ? 0 : 0}px,${i === 1 ? -7 : 0}px) rotate(${i === 0 ? 3 : -3}deg)`,
             }}
           >
             <BookCover book={book} />
@@ -361,7 +359,7 @@ export function CollectionsPage() {
                 {visible.map((c) => (
                   <button
                     key={c.id}
-                    className={`min-w-0 rounded-2xl text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${selected?.id === c.id ? "bg-selected shadow-selection" : "hover:bg-hover"} ${view === "grid" ? "w-full max-w-[212px] p-4 pb-2" : "flex h-[68px] w-full items-center gap-5 px-4"}`}
+                    className={`min-w-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${selected?.id === c.id ? "bg-selected shadow-selection" : "hover:bg-hover"} ${view === "grid" ? "w-full max-w-[212px] rounded-2xl p-4 pb-2" : "flex w-full items-center gap-4 rounded-selection px-3 py-2 pr-6"}`}
                     onClick={() => {
                       ui.patch({ selected: c.id });
                       if (compact)
@@ -381,24 +379,19 @@ export function CollectionsPage() {
                           : "min-w-0 flex-1"
                       }
                     >
-                      <span className="flex items-center gap-2 text-lg font-medium leading-7">
+                      <span className={`flex items-center gap-2 ${view === "grid" ? "text-lg font-medium leading-7" : "h-6 text-sm font-semibold leading-6"}`}>
                         <span className="truncate">{c.name}</span>
                         {c.pinned && (
                           <Pin className="size-3 text-muted-foreground" />
                         )}
                       </span>
-                      {view === "grid" && (
-                        <span className="mt-1 block text-xs leading-5 text-muted-foreground">
-                          {c.bookIds.length} books
-                        </span>
-                      )}
+                      <span className={`mt-1 block text-xs text-muted-foreground ${view === "grid" ? "leading-5" : "h-[18px] leading-[18px]"}`}>
+                        {c.bookIds.length} {c.bookIds.length === 1 ? "book" : "books"}
+                      </span>
                     </span>
                     {view === "list" && (
-                      <span className="text-xs text-muted-foreground">
-                        {c.bookIds.length} books{" "}
-                        <span className="hidden sm:inline">
-                          · Added {date(c.lastBookAddedAt)}
-                        </span>
+                      <span className="hidden shrink-0 text-xs text-muted-foreground sm:block">
+                        Added {date(c.lastBookAddedAt)}
                       </span>
                     )}
                   </button>
