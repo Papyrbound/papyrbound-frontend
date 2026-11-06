@@ -151,7 +151,7 @@ export function AppHeader() {
                 size="icon-sm"
                 className={
                   view === v
-                    ? "h-6 w-7 rounded-md bg-selected shadow-soft"
+                    ? "h-6 w-7 rounded-md border-foreground/10 bg-selected text-foreground shadow-soft hover:bg-selected dark:bg-foreground/15 dark:hover:bg-foreground/20"
                     : "h-6 w-7 rounded-md text-muted-foreground"
                 }
                 aria-label={`${v} view`}
