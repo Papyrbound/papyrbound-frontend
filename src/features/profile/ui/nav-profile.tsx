@@ -58,7 +58,7 @@ export function NavProfile() {
             >
               <ReaderAvatar seed={profile.avatarSeed} size={28} />
               <div className="grid min-w-0 flex-1 text-left text-[13px] leading-[22px] group-data-[collapsible=icon]:hidden">
-                <span className="truncate font-medium">{profile.name}</span>
+                <span className="truncate font-normal">{profile.name}</span>
                 <span className="truncate text-[11px] leading-[18px] text-muted-foreground">
                   {activeTitle}
                 </span>
