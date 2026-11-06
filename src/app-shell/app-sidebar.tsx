@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   BookOpen,
+  BookCopy,
   PanelsTopLeft,
   ChevronsUpDown,
   Library,
@@ -152,7 +153,7 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
             }
           >
             {libraryKind === "books" ? (
-              <BookOpen aria-hidden="true" strokeWidth={1.5} />
+              <BookCopy aria-hidden="true" strokeWidth={1.5} />
             ) : (
               <PanelsTopLeft aria-hidden="true" strokeWidth={1.5} />
             )}
@@ -174,7 +175,7 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
               }}
             >
               <DropdownMenuRadioItem value="books" closeOnClick>
-                <BookOpen
+                <BookCopy
                   aria-hidden="true"
                   className="text-current"
                   strokeWidth={1.5}
