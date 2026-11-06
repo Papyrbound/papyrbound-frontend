@@ -12,7 +12,6 @@ import {
   List,
   Bookmark,
   Highlighter,
-  FileText,
   Check,
   ChevronRight,
 } from "lucide-react";
@@ -102,8 +101,6 @@ export function BookDetailsPanel({
     .find((l) => l.id === "favourites")
     ?.bookIds?.includes(book.id);
 
-  const actionClass = "h-8 w-full justify-start gap-1.5 rounded-lg px-3 text-[13px]";
-
   const menuActionClass =
     "min-h-8 h-auto -mx-2 w-[calc(100%+1rem)] justify-start gap-2 rounded-lg px-2 py-1.5 text-sm font-normal hover:bg-foreground/10 focus-visible:bg-foreground/10";
 
@@ -124,16 +121,6 @@ export function BookDetailsPanel({
         <p className="mt-1.5 text-sm leading-5 text-muted-foreground">
           {book.author}
         </p>
-        {!reading && (
-          <Button
-            variant="outline"
-            className={`${actionClass} mt-2`}
-            onClick={() => setDialog("synopsis")}
-          >
-            <FileText />
-            Read synopsis
-          </Button>
-        )}
       </div>
 
       <h3
