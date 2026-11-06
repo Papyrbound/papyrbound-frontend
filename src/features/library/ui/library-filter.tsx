@@ -34,7 +34,7 @@ export function LibraryFilter({ iconOnly = false }: { iconOnly?: boolean }) {
         render={
           <Button
             variant="secondary"
-            size={iconOnly ? "icon" : "default"}
+            size={iconOnly ? "icon-sm" : "default"}
             aria-label="Filter books"
             title="Filter books"
             className={iconOnly ? "rounded-lg" : ""}

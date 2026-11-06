@@ -38,7 +38,8 @@ export function AddBookDialog() {
       <DialogTrigger
         render={
           <Button
-            className="h-10 rounded-xl px-4 sm:w-[152px]"
+            size="sm"
+            className="rounded-lg px-3 text-[13px] sm:w-[136px]"
             title="Import books"
           />
         }

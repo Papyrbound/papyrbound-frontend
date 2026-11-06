@@ -135,12 +135,12 @@ export function AppHeader() {
       <Suspense fallback={<span className="flex-1 text-sm">Papyrbound</span>}>
         <RouteBreadcrumbs pathname={pathname} />
       </Suspense>
-      <div className="ml-auto flex items-center gap-4">
+      <div className="ml-auto flex items-center gap-3">
         {pathname === "/library" && <LibraryFilter iconOnly />}
         <AddBookDialog />
         {gallery && (
           <div
-            className="flex h-10 w-[88px] items-center justify-center gap-1 rounded-xl border border-soft-border bg-secondary p-1 shadow-soft"
+            className="flex h-8 w-[72px] items-center justify-center gap-1 rounded-lg border border-soft-border bg-secondary p-1 shadow-soft"
             role="group"
             aria-label="Library view"
           >
@@ -151,8 +151,8 @@ export function AppHeader() {
                 size="icon-sm"
                 className={
                   view === v
-                    ? "h-8 w-[36px] rounded-lg bg-selected shadow-soft"
-                    : "h-8 w-[36px] rounded-lg text-muted-foreground"
+                    ? "h-6 w-7 rounded-md bg-selected shadow-soft"
+                    : "h-6 w-7 rounded-md text-muted-foreground"
                 }
                 aria-label={`${v} view`}
                 aria-pressed={view === v}
@@ -166,7 +166,7 @@ export function AppHeader() {
         {hasPanel && (
           <Button
             variant="outline"
-            size="icon"
+            size="icon-sm"
             className="rounded-lg"
             aria-label={panelOpen ? "Hide details panel" : "Show details panel"}
             aria-pressed={panelOpen}
