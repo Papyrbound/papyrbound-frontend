@@ -9,32 +9,39 @@ import Link from "next/link";
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
 import { BookDetailsPanel } from "@/features/library/ui/book-details-panel";
 import { BookGallery } from "@/features/library/ui/book-gallery";
+import { useWorkspace } from "@/app-shell/workspace-store";
 import { ReadingListEditor } from "./reading-list-editor";
 
 export function ReadingListsPage() {
   const { books, lists, updateList } = useReadingLists();
+  const { filter, sort } = useWorkspace();
   const [isEditing, setIsEditing] = useLocalUIState(false);
   const searchParams = useSearchParams();
   const selectedListId = searchParams.get("list");
   const selectedList = lists.find((list) => list.id === selectedListId);
-  const listBooks = books.filter((book) =>
-    selectedList?.bookIds?.includes(book.id),
-  );
+  const listBooks = books
+    .filter((book) => selectedList?.bookIds?.includes(book.id))
+    .filter((book) =>
+      filter === "reading"
+        ? book.progress > 0 && book.progress < 100
+        : filter === "new"
+          ? book.progress === 0
+          : filter === "finished"
+            ? book.progress >= 100
+            : true,
+    )
+    .toSorted((a, b) =>
+      sort === "recent"
+        ? books.indexOf(a) - books.indexOf(b)
+        : a.title.localeCompare(b.title) * (sort === "za" ? -1 : 1),
+    );
 
   return (
     <div className="flex h-[calc(100dvh-3.5rem)] min-h-0">
       <section
-        className="@container min-w-0 flex-1 overflow-y-auto px-5 py-8 lg:px-9"
+        className="@container min-w-0 flex-1 overflow-y-auto px-5 pt-[34px] pb-8 md:pl-9 md:pr-7"
         aria-label={selectedList?.name ?? "Reading lists"}
       >
-        <div className="mb-[38px] flex flex-wrap items-center gap-4 px-3 text-3xl font-semibold leading-[42px]">
-          <h1>{selectedList?.name ?? "Reading lists"}</h1>
-          {selectedList && (
-            <span className="text-xs font-normal text-muted-foreground">
-              {listBooks.length} {listBooks.length === 1 ? "book" : "books"}
-            </span>
-          )}
-        </div>
         {selectedList ? (
           <BookGallery
             books={listBooks}

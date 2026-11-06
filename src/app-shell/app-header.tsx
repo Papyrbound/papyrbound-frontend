@@ -15,6 +15,7 @@ import { SidebarTrigger } from "@/shared/ui/sidebar";
 import { Button } from "@/shared/ui/button";
 import { LibraryFilter } from "@/features/library/ui/library-filter";
 import { AddBookDialog } from "@/features/library/ui/add-book-dialog";
+import { CollectionToolbar } from "@/features/collections/ui/collections-page";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -136,7 +137,14 @@ export function AppHeader() {
         <RouteBreadcrumbs pathname={pathname} />
       </Suspense>
       <div className="ml-auto flex items-center gap-3">
-        {pathname === "/library" && <LibraryFilter iconOnly />}
+        {(pathname === "/library" || pathname === "/reading-lists") && (
+          <LibraryFilter iconOnly />
+        )}
+        {pathname === "/collections" && (
+          <Suspense>
+            <CollectionToolbar />
+          </Suspense>
+        )}
         <AddBookDialog />
         {gallery && (
           <div

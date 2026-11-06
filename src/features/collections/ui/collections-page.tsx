@@ -21,7 +21,6 @@ import {
   Calendar,
   ArrowUp,
   ArrowDown,
-  ArrowLeft,
   BookOpen,
 } from "lucide-react";
 
@@ -32,6 +31,8 @@ import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-s
 import { useWorkspace } from "@/app-shell/workspace-store";
 
 import { BookCover } from "@/features/home/ui/book-cover";
+
+import { LibraryFilter } from "@/features/library/ui/library-filter";
 
 import { BookGallery } from "@/features/library/ui/book-gallery";
 
@@ -100,6 +101,112 @@ function date(value?: string) {
     : "No books added";
 }
 
+export function CollectionToolbar() {
+  const ui = useCollectionUI();
+  const search = useSearchParams();
+  const { collections } = useCollections();
+  const opened = collections.find((c) => c.id === search.get("collection"));
+  if (opened) return (
+    <>
+      <LibraryFilter iconOnly />
+      <Button variant="secondary" onClick={() => ui.patch({ editor: opened })}>
+        <BookPlus />
+        Add books
+      </Button>
+    </>
+  );
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          aria-label="Filter collections"
+          render={<Button variant="secondary" size="icon-sm" className="rounded-lg" />}
+        >
+          <ListFilter />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>Show</DropdownMenuLabel>
+            <DropdownMenuRadioGroup
+              value={ui.pinned ? "pinned" : "all"}
+              onValueChange={(value) =>
+                ui.patch({ pinned: value === "pinned" })
+              }
+            >
+              <DropdownMenuRadioItem value="all">
+                <Folder
+                  aria-hidden="true"
+                  className="text-muted-foreground"
+                />
+                All collections
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="pinned">
+                <Pin
+                  aria-hidden="true"
+                  className="text-muted-foreground"
+                />
+                Pinned only
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+            <DropdownMenuRadioGroup
+              value={ui.sort}
+              onValueChange={(sort) => ui.patch({ sort })}
+            >
+              {(
+                [
+                  ["added", "Last book added", Clock],
+                  ["name", "Collection name", Languages],
+                  ["created", "Date created", Calendar],
+                ] as const
+              ).map(([v, l, Icon]) => (
+                <DropdownMenuRadioItem key={v} value={v}>
+                  <Icon
+                    aria-hidden="true"
+                    className="text-muted-foreground"
+                  />
+                  {l}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>Order</DropdownMenuLabel>
+            <DropdownMenuRadioGroup
+              value={ui.order}
+              onValueChange={(order) => ui.patch({ order })}
+            >
+              <DropdownMenuRadioItem value="asc">
+                <ArrowUp
+                  aria-hidden="true"
+                  className="text-muted-foreground"
+                />
+                Ascending
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="desc">
+                <ArrowDown
+                  aria-hidden="true"
+                  className="text-muted-foreground"
+                />
+                Descending
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <Button onClick={() => ui.patch({ editor: "new" })}>
+        <Plus />
+        <span className="hidden sm:inline">New collection</span>
+        <span className="sr-only sm:hidden">New collection</span>
+      </Button>
+    </>
+  );
+}
+
 export function CollectionStack({
   collection,
   small = false,
@@ -145,7 +252,7 @@ export function CollectionsPage() {
   const compact = useIsCompactWindow();
   const { collections, setCollections } = useCollections();
   const { books, markAsRead } = useReadingLists();
-  const { view, panelOpen } = useWorkspace();
+  const { view, panelOpen, filter, sort } = useWorkspace();
   const ui = useCollectionUI();
   const router = useRouter();
   const search = useSearchParams();
@@ -217,127 +324,31 @@ export function CollectionsPage() {
   return (
     <>
       <div className="flex h-[calc(100dvh-3.5rem)] min-h-0">
-        <main className="@container min-w-0 flex-1 overflow-y-auto px-5 py-8 lg:px-8">
+        <main className="@container min-w-0 flex-1 overflow-y-auto px-5 pt-[34px] pb-8 md:pl-9 md:pr-7">
           {opened ? (
             <>
-              <Button
-                variant="ghost"
-                onClick={() => router.push("/collections")}
-              >
-                <ArrowLeft />
-                Collections
-              </Button>
-              <header className="my-6 flex items-center justify-between">
-                <h1 className="text-3xl font-semibold leading-[42px]">
-                  {opened.name}
-                </h1>
-                <Button variant="secondary" onClick={() => edit(opened)}>
-                  <BookPlus />
-                  Add books
-                </Button>
-              </header>
               <BookGallery
-                books={books.filter((b) => opened.bookIds.includes(b.id))}
+                books={books
+                  .filter((b) => opened.bookIds.includes(b.id))
+                  .filter((b) =>
+                    filter === "reading"
+                      ? b.progress > 0 && b.progress < 100
+                      : filter === "new"
+                        ? b.progress === 0
+                        : filter === "finished"
+                          ? b.progress >= 100
+                          : true,
+                  )
+                  .toSorted((a, b) =>
+                    sort === "recent"
+                      ? books.indexOf(a) - books.indexOf(b)
+                      : a.title.localeCompare(b.title) * (sort === "za" ? -1 : 1),
+                  )}
                 onAddBooks={() => edit(opened)}
               />
             </>
           ) : (
             <>
-              <header className="mb-[38px] flex min-h-[42px] flex-wrap items-center justify-between gap-4 lg:px-4">
-                <h1 className="text-3xl font-semibold leading-[42px]">
-                  Collections
-                </h1>
-                <div className="flex gap-4">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger
-                      render={<Button variant="secondary" />}
-                    >
-                      <ListFilter />
-                      Filter
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuGroup>
-                        <DropdownMenuLabel>Show</DropdownMenuLabel>
-                        <DropdownMenuRadioGroup
-                          value={ui.pinned ? "pinned" : "all"}
-                          onValueChange={(value) =>
-                            ui.patch({ pinned: value === "pinned" })
-                          }
-                        >
-                          <DropdownMenuRadioItem value="all">
-                            <Folder
-                              aria-hidden="true"
-                              className="text-muted-foreground"
-                            />
-                            All collections
-                          </DropdownMenuRadioItem>
-                          <DropdownMenuRadioItem value="pinned">
-                            <Pin
-                              aria-hidden="true"
-                              className="text-muted-foreground"
-                            />
-                            Pinned only
-                          </DropdownMenuRadioItem>
-                        </DropdownMenuRadioGroup>
-                      </DropdownMenuGroup>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuGroup>
-                        <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-                        <DropdownMenuRadioGroup
-                          value={ui.sort}
-                          onValueChange={(sort) => ui.patch({ sort })}
-                        >
-                          {(
-                            [
-                              ["added", "Last book added", Clock],
-                              ["name", "Collection name", Languages],
-                              ["created", "Date created", Calendar],
-                            ] as const
-                          ).map(([v, l, Icon]) => (
-                            <DropdownMenuRadioItem key={v} value={v}>
-                              <Icon
-                                aria-hidden="true"
-                                className="text-muted-foreground"
-                              />
-                              {l}
-                            </DropdownMenuRadioItem>
-                          ))}
-                        </DropdownMenuRadioGroup>
-                      </DropdownMenuGroup>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuGroup>
-                        <DropdownMenuLabel>Order</DropdownMenuLabel>
-                        <DropdownMenuRadioGroup
-                          value={ui.order}
-                          onValueChange={(order) => ui.patch({ order })}
-                        >
-                          <DropdownMenuRadioItem value="asc">
-                            <ArrowUp
-                              aria-hidden="true"
-                              className="text-muted-foreground"
-                            />
-                            Ascending
-                          </DropdownMenuRadioItem>
-                          <DropdownMenuRadioItem value="desc">
-                            <ArrowDown
-                              aria-hidden="true"
-                              className="text-muted-foreground"
-                            />
-                            Descending
-                          </DropdownMenuRadioItem>
-                        </DropdownMenuRadioGroup>
-                      </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <Button
-                    className="w-[180px]"
-                    onClick={() => ui.patch({ editor: "new" })}
-                  >
-                    <Plus />
-                    New collection
-                  </Button>
-                </div>
-              </header>
               <div
                 className={
                   view === "grid"
