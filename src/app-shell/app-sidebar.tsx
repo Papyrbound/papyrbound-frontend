@@ -147,7 +147,7 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
             render={
               <Button
                 variant="secondary"
-                className="-mt-1 h-8 w-full justify-start gap-2 rounded-lg border border-soft-border bg-popover px-3 text-[13px] font-normal shadow-sm hover:bg-popover/80"
+                className="-mt-1 h-10 w-full justify-start gap-2.5 rounded-xl border border-soft-border bg-popover px-3 text-[13px] font-normal shadow-sm hover:bg-popover/80"
               />
             }
           >
