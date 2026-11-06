@@ -141,7 +141,7 @@ export function BookGallery({
               }}
             >
               <FolderPlus />
-              Add to collection…
+              Add to collection
             </ContextMenuItem>
             <ContextMenuItem
               onClick={() =>
@@ -160,7 +160,7 @@ export function BookGallery({
               }}
             >
               <Pencil />
-              Edit book details…
+              Edit book details
             </ContextMenuItem>
             {listId && listId !== "completed" && (
               <ContextMenuItem onClick={() => toggleBook(listId, book.id)}>
@@ -176,7 +176,7 @@ export function BookGallery({
               }}
             >
               <Trash2 />
-              Delete book…
+              Delete book
             </ContextMenuItem>
           </ContextMenuContent>
         </ContextMenu>

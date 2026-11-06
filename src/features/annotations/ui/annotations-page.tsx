@@ -331,7 +331,7 @@ export function AnnotationsPage() {
                             onClick={() => ui.patch({ deleting: a.id })}
                           >
                             <Trash2 />
-                            Delete annotation…
+                            Delete annotation
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

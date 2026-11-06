@@ -240,14 +240,14 @@ export function BookDetailsPanel({
               onClick={() => setDialog("collections")}
             >
               <FolderPlus />
-              Add to collection…
+              Add to collection
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={<Button variant="ghost" className={menuActionClass} />}
               >
                 <Library />
-                Move to shelf…
+                Move to shelf
                 <ChevronRight className="ml-auto" />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
@@ -275,7 +275,7 @@ export function BookDetailsPanel({
               onClick={() => setDialog("edit")}
             >
               <Pencil />
-              Edit book details…
+              Edit book details
             </Button>
             <div
               role="separator"
@@ -287,7 +287,7 @@ export function BookDetailsPanel({
               onClick={() => setDialog("delete")}
             >
               <Trash2 />
-              Delete book…
+              Delete book
             </Button>
           </>
         )}

@@ -196,14 +196,14 @@ export function CollectionsPage() {
           Check,
           () => selected.bookIds.forEach(markAsRead),
         ],
-        ["Delete collection…", Trash2, () => ui.patch({ deleting: selected })],
+        ["Delete collection", Trash2, () => ui.patch({ deleting: selected })],
       ].map(([label, Icon, action]) => {
         const I = Icon as typeof Pin;
         return (
           <Button
             key={String(label)}
             variant="outline"
-            className={`h-8 w-full justify-start text-sm ${label === "Delete collection…" ? "text-destructive" : ""}`}
+            className={`h-8 w-full justify-start text-sm ${label === "Delete collection" ? "text-destructive" : ""}`}
             onClick={action as () => void}
           >
             <I />
