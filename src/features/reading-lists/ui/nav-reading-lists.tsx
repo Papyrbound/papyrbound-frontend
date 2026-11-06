@@ -285,7 +285,7 @@ export function NavReadingLists() {
                 <ListFilterIcon />
                 <span>More lists</span>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-64" side="right" align="start">
+              <DropdownMenuContent className="w-[232px]" side="right" align="start">
                 <DropdownMenuGroup>
                   <DropdownMenuLabel>
                     {overflowLists.length} more reading lists

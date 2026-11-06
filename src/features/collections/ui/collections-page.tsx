@@ -255,7 +255,7 @@ export function CollectionsPage() {
                       <ListFilter />
                       Filter
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[248px]">
+                    <DropdownMenuContent align="end" className="w-56">
                       <DropdownMenuGroup>
                         <DropdownMenuLabel>Show</DropdownMenuLabel>
                         <DropdownMenuRadioGroup
@@ -341,14 +341,16 @@ export function CollectionsPage() {
               <div
                 className={
                   view === "grid"
-                    ? "grid grid-cols-1 gap-y-8 @min-[500px]:grid-cols-2 @min-[840px]:grid-cols-3 @min-[1120px]:grid-cols-4"
+                    ? panelOpen
+                      ? "grid grid-cols-1 gap-x-6 gap-y-8 @min-[448px]:grid-cols-2 @min-[700px]:grid-cols-3 @min-[896px]:grid-cols-4"
+                      : "grid grid-cols-[repeat(auto-fill,minmax(min(100%,212px),212px))] gap-x-24 gap-y-8"
                     : "space-y-1"
                 }
               >
                 {visible.map((c) => (
                   <button
                     key={c.id}
-                    className={`min-w-0 rounded-2xl text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${selected?.id === c.id ? "bg-selected shadow-selection" : "hover:bg-hover"} ${view === "grid" ? "w-[212px] p-4 pb-2" : "flex h-[68px] w-full items-center gap-5 px-4"}`}
+                    className={`min-w-0 rounded-2xl text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${selected?.id === c.id ? "bg-selected shadow-selection" : "hover:bg-hover"} ${view === "grid" ? "w-full max-w-[212px] p-4 pb-2" : "flex h-[68px] w-full items-center gap-5 px-4"}`}
                     onClick={() => {
                       ui.patch({ selected: c.id });
                       if (compact)

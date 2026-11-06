@@ -46,7 +46,7 @@ export function TeamSwitcher({
             <ChevronDownIcon className="opacity-50" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-64 rounded-lg"
+            className="w-[232px] rounded-lg"
             align="start"
             side="bottom"
             sideOffset={4}

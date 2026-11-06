@@ -44,7 +44,7 @@ export function LibraryFilter({ iconOnly = false }: { iconOnly?: boolean }) {
         <ListFilter />
         {!iconOnly && "Filter"}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[248px]">
+      <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuGroup>
           <DropdownMenuLabel>Show</DropdownMenuLabel>
           <DropdownMenuRadioGroup value={filter} onValueChange={setFilter}>

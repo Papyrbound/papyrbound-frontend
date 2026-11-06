@@ -148,7 +148,7 @@ export function AnnotationEditor({
                   </span>
                   <ChevronDownIcon />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-72">
+                <DropdownMenuContent className="w-[264px]">
                   <DropdownMenuRadioGroup
                     value={bookId}
                     onValueChange={setBookId}

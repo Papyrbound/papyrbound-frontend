@@ -66,7 +66,7 @@ export function NavProfile() {
               <ChevronsUpDownIcon className="ml-auto size-4 group-data-[collapsible=icon]:hidden" />
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-[300px]"
+              className="w-[272px]"
               side={isMobile ? "top" : "right"}
               align="end"
               sideOffset={8}

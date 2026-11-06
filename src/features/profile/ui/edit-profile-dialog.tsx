@@ -111,7 +111,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="w-72 max-w-[calc(100vw-3rem)]"
+                  className="w-[264px] max-w-[calc(100vw-3rem)]"
                 >
                   <DropdownMenuRadioGroup
                     value={selectedTitle}

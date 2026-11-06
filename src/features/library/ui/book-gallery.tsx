@@ -39,7 +39,7 @@ export function BookGallery({
   emptyMessage?: string;
   listId?: string;
 }) {
-  const { view, selectedId, selectBook, setDialog } = useWorkspace();
+  const { view, selectedId, selectBook, setDialog, panelOpen } = useWorkspace();
   const {
     books: libraryBooks,
     toggleBook,
@@ -66,7 +66,9 @@ export function BookGallery({
     <div
       className={
         view === "grid"
-          ? "grid grid-cols-2 items-start gap-y-[36.8px] @min-[840px]:grid-cols-3 @min-[1120px]:grid-cols-4"
+          ? panelOpen
+            ? "grid grid-cols-2 items-start gap-x-6 gap-y-[36.8px] @min-[700px]:grid-cols-3 @min-[896px]:grid-cols-4"
+            : "grid grid-cols-2 items-start gap-x-4 gap-y-[36.8px] @min-[500px]:grid-cols-[repeat(auto-fill,196.8px)] @min-[500px]:gap-x-[111.2px]"
           : "space-y-1"
       }
     >
@@ -118,7 +120,7 @@ export function BookGallery({
               )}
             </button>
           </ContextMenuTrigger>
-          <ContextMenuContent className="w-[300px]">
+          <ContextMenuContent className="w-[272px]">
             <ContextMenuItem
               onClick={() => {
                 selectBook(book.id);

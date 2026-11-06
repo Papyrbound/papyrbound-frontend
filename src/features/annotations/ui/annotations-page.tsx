@@ -133,7 +133,7 @@ export function AnnotationsPage() {
           >
             {books.find((b) => b.id === ui.book)?.title ?? "All books"}
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-[300px]">
+          <DropdownMenuContent className="w-[272px]">
             <DropdownMenuRadioGroup
               value={ui.book}
               onValueChange={(book) => ui.patch({ book })}
@@ -158,7 +158,7 @@ export function AnnotationsPage() {
             <ListFilter />
             Filter
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56">
+          <DropdownMenuContent className="w-52">
             <DropdownMenuGroup>
               <DropdownMenuLabel>Sort by</DropdownMenuLabel>
               <DropdownMenuRadioGroup
@@ -263,7 +263,7 @@ export function AnnotationsPage() {
                         >
                           <MoreHorizontal />
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-[300px]">
+                        <DropdownMenuContent align="end" className="w-[272px]">
                           <DropdownMenuItem
                             onClick={() => {
                               selectBook(book.id);
