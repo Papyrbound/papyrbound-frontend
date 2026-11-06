@@ -51,7 +51,7 @@ export function NavProfile() {
               render={
                 <SidebarMenuButton
                   size="lg"
-                  className="h-10 gap-3 p-0 aria-expanded:bg-muted [&_[data-slot=avatar]]:size-7"
+                  className="h-[58px] gap-3 rounded-2xl bg-muted/75 px-3 py-2 hover:bg-accent aria-expanded:bg-accent [&_[data-slot=avatar]]:size-8"
                   tooltip={`${profile.name} · ${activeTitle}`}
                 />
               }

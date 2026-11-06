@@ -5,7 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import {
   BookOpen,
   PanelsTopLeft,
-  ChevronsUpDown,
+  Settings,
   Library,
   Highlighter,
   Heart,
@@ -40,6 +40,7 @@ import { Button } from "@/shared/ui/button";
 import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
 import { ReadingListEditor } from "@/features/reading-lists/ui/reading-list-editor";
+import { AddBookDialog } from "@/features/library/ui/add-book-dialog";
 
 const navigation = [
   { label: "Reading Now", href: "/", icon: BookOpen },
@@ -60,6 +61,15 @@ const shelves = [
     icon: CircleCheck,
   },
 ];
+const descriptions: Record<string, string> = {
+  "Reading Now": "Pick up where you left off",
+  Library: "All your books in one place",
+  Annotations: "Highlights and notes",
+  Favourites: "Books you love",
+  Collections: "Stories, grouped your way",
+  "Want to Read": "Your next chapter",
+  Finished: "Books you’ve completed",
+};
 function Navigation() {
   const labels = useSettingsUI((s) => s.labels);
   const { lists, createList } = useReadingLists();
@@ -73,7 +83,7 @@ function Navigation() {
         {items.map(({ label, href, icon: Icon }) => (
           <SidebarMenuItem key={href}>
             <SidebarMenuButton
-              className={`h-8 rounded-lg px-3 text-[13px] leading-4 ${labels ? "" : "[&>span]:sr-only"}`}
+              className={`h-[52px] gap-3 rounded-xl px-2.5 text-[13px] leading-4 hover:bg-muted/70 data-active:bg-muted/80 data-active:font-normal ${labels ? "" : "[&>span:last-child]:sr-only"}`}
               isActive={
                 href.includes("?")
                   ? path + "?" + search.toString() === href
@@ -82,10 +92,13 @@ function Navigation() {
               render={<Link href={href} onClick={() => setOpenMobile(false)} />}
             >
               <Icon
-                className="size-4 text-current"
+                className="size-6 shrink-0 text-muted-foreground"
                 strokeWidth={1.5}
               />
-              <span>{label}</span>
+              <span className="grid min-w-0 gap-1">
+                <span className="truncate font-medium">{label}</span>
+                <span className="truncate text-xs font-normal text-muted-foreground">{descriptions[label] ?? "Your personal reading shelf"}</span>
+              </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         ))}
@@ -94,8 +107,8 @@ function Navigation() {
   }
   return (
     <>
-      <div className="px-3">{links(navigation)}</div>
-      <div className="mt-6 px-3">
+      <div className="px-2">{links(navigation)}</div>
+      <div className="mt-4 px-2">
         <div className="mb-3 flex h-5 items-center justify-between px-2">
           <Link
             href="/reading-lists"
@@ -135,19 +148,21 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
   const libraryKind = useWorkspace((state) => state.libraryKind);
   const setLibraryKind = useWorkspace((state) => state.setLibraryKind);
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
-      <SidebarHeader className="gap-4 px-3 pb-0 pt-4">
-        <Link href="/" className="h-8 px-2 text-lg font-semibold leading-8">
+    <Sidebar variant="floating" collapsible="offcanvas" className="[&_[data-slot=sidebar-inner]]:rounded-[24px]" {...props}>
+      <SidebarHeader className="gap-2 px-2 pb-0 pt-2">
+        <Link href="/" className="sr-only">
           Papyrbound
         </Link>
-        <BookSearchDialog />
+        <div className="grid grid-cols-3 gap-2">
+        <BookSearchDialog compact />
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label={`Library type: ${libraryKind === "books" ? "Books" : "Comics"}`}
             render={
               <Button
                 variant="secondary"
-                className="-mt-1 h-10 w-full justify-start gap-2.5 rounded-xl border border-soft-border bg-popover px-3 text-[13px] font-medium shadow-sm hover:bg-popover/80"
+                title={libraryKind === "books" ? "Books" : "Comics"}
+                className="h-9 w-full justify-center rounded-full border-0 bg-muted text-muted-foreground shadow-none hover:bg-accent"
               />
             }
           >
@@ -156,15 +171,11 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
             ) : (
               <PanelsTopLeft aria-hidden="true" strokeWidth={1.5} />
             )}
-            {libraryKind === "books" ? "Books" : "Comics"}
-            <ChevronsUpDown
-              aria-hidden="true"
-              className="ml-auto size-3.5 text-current"
-            />
+            <span className="sr-only">{libraryKind === "books" ? "Books" : "Comics"}</span>
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="start"
-            className="w-[var(--anchor-width)]"
+            className="w-40"
           >
             <DropdownMenuRadioGroup
               value={libraryKind}
@@ -192,13 +203,23 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
+        <AddBookDialog compact />
+        </div>
       </SidebarHeader>
-      <SidebarContent className="gap-0 pt-4">
+      <SidebarContent className="gap-0 pt-2">
         <Suspense>
           <Navigation />
         </Suspense>
       </SidebarContent>
-      <SidebarFooter className="px-5 pb-5 pt-3">
+      <SidebarFooter className="gap-3 px-2 pb-2 pt-3">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton render={<Link href="/settings" />} className="h-9 rounded-xl px-3 text-muted-foreground">
+              <Settings strokeWidth={1.5} />
+              <span>Settings</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
         <NavProfile />
       </SidebarFooter>
     </Sidebar>

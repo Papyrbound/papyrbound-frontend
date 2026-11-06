@@ -2,8 +2,8 @@
 
 import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
 
-import { useRef } from "react";
-import { UploadIcon } from "lucide-react";
+import { useId, useRef } from "react";
+import { Plus, UploadIcon } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import {
@@ -18,7 +18,8 @@ import {
 } from "@/shared/ui/dialog";
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
 
-export function AddBookDialog() {
+export function AddBookDialog({ compact = false }: { compact?: boolean }) {
+  const formId = useId();
   const [open, setOpen] = useLocalUIState(false);
   const [title, setTitle] = useLocalUIState("");
   const [author, setAuthor] = useLocalUIState("");
@@ -38,14 +39,14 @@ export function AddBookDialog() {
       <DialogTrigger
         render={
           <Button
-            className="h-10 rounded-xl px-4 sm:w-[152px]"
+            className={compact ? "h-9 w-full rounded-full bg-[#2676ff] px-3 text-white shadow-none hover:bg-[#1764eb]" : "h-10 rounded-xl px-4 sm:w-[152px]"}
             title="Import books"
           />
         }
         aria-label="Import books"
       >
-        <UploadIcon aria-hidden="true" />
-        <span className="hidden sm:inline">Import books</span>
+        {compact ? <Plus aria-hidden="true" /> : <UploadIcon aria-hidden="true" />}
+        <span className={compact ? "sr-only" : "hidden sm:inline"}>Import books</span>
       </DialogTrigger>
       <DialogContent initialFocus={titleRef}>
         <DialogHeader>
@@ -65,10 +66,10 @@ export function AddBookDialog() {
           }}
         >
           <div className="space-y-2">
-            <label htmlFor="add-book-title">Title</label>
+            <label htmlFor={`${formId}-title`}>Title</label>
             <Input
               ref={titleRef}
-              id="add-book-title"
+              id={`${formId}-title`}
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Book title"
@@ -77,9 +78,9 @@ export function AddBookDialog() {
             />
           </div>
           <div className="space-y-2">
-            <label htmlFor="add-book-author">Author</label>
+            <label htmlFor={`${formId}-author`}>Author</label>
             <Input
-              id="add-book-author"
+              id={`${formId}-author`}
               value={author}
               onChange={(event) => setAuthor(event.target.value)}
               placeholder="Author name"

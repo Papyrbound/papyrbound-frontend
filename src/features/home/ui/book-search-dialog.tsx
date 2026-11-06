@@ -26,7 +26,7 @@ import type { SampleBook } from "../model/sample-books";
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
 import { BookCover } from "./book-cover";
 
-export function BookSearchDialog() {
+export function BookSearchDialog({ compact = false }: { compact?: boolean }) {
   const { books } = useReadingLists();
   const selectBook = useWorkspace((state) => state.selectBook);
   const router = useRouter();
@@ -78,15 +78,15 @@ export function BookSearchDialog() {
         render={
           <Button
             variant="secondary"
-            className="h-9 w-full justify-start rounded-lg border-0 bg-white px-3 text-xs text-muted-foreground shadow-none dark:bg-background"
+            className={compact ? "h-9 w-full justify-center rounded-full border-0 bg-muted text-muted-foreground shadow-none hover:bg-accent" : "h-9 w-full justify-start rounded-lg border-0 bg-white px-3 text-xs text-muted-foreground shadow-none dark:bg-background"}
           />
         }
         aria-label="Search books"
         aria-keyshortcuts="Control+k Meta+k"
       >
         <Search aria-hidden="true" />
-        <span>Search library</span>
-        <KbdGroup className="ml-auto" aria-hidden="true">
+        <span className={compact ? "sr-only" : ""}>Search library</span>
+        <KbdGroup className={compact ? "hidden" : "ml-auto"} aria-hidden="true">
           <Kbd className="h-5 w-12 rounded-sm bg-secondary text-[10px] font-medium shadow-none">
             Ctrl K
           </Kbd>
