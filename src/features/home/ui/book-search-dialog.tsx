@@ -78,7 +78,7 @@ export function BookSearchDialog() {
         render={
           <Button
             variant="secondary"
-            className="h-9 w-full justify-start rounded-lg border-0 bg-white px-3 text-xs text-muted-foreground shadow-none dark:bg-background"
+            className="h-8 w-full justify-start rounded-lg border-0 bg-white px-3 text-xs text-muted-foreground shadow-none dark:bg-background"
           />
         }
         aria-label="Search books"

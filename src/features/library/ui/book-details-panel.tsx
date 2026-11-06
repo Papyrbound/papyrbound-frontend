@@ -102,7 +102,7 @@ export function BookDetailsPanel({
     .find((l) => l.id === "favourites")
     ?.bookIds?.includes(book.id);
 
-  const actionClass = `${reading ? "h-9" : "h-8"} w-full justify-start rounded-[10px] px-3 text-sm`;
+  const actionClass = "h-8 w-full justify-start gap-1.5 rounded-lg px-3 text-[13px]";
 
   const menuActionClass =
     "min-h-8 h-auto -mx-2 w-[calc(100%+1rem)] justify-start gap-2 rounded-lg px-2 py-1.5 text-sm font-normal hover:bg-foreground/10 focus-visible:bg-foreground/10";

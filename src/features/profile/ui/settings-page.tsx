@@ -39,7 +39,7 @@ function Choice({
         render={
           <Button
             variant="outline"
-            className="h-9 w-40 justify-between text-[13px] sm:w-60"
+            className="h-8 w-40 justify-between text-[13px] sm:w-60"
           />
         }
         aria-label={label}
