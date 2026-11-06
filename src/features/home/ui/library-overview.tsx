@@ -56,7 +56,7 @@ export function LibraryOverview() {
   }
 
   return (
-    <div className="flex h-[calc(100dvh-4rem)] min-h-0">
+    <div className="flex h-[calc(100dvh-3.5rem)] min-h-0">
       <main className="@container min-w-0 flex-1 overflow-y-auto px-5 pb-9 pt-[35px] lg:pl-12 lg:pr-3">
         <div className="max-w-[1236px]">
           <h1 className="mb-4 text-[28px] font-semibold leading-[38px]">

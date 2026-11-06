@@ -216,7 +216,7 @@ export function CollectionsPage() {
 
   return (
     <>
-      <div className="flex h-[calc(100dvh-4rem)] min-h-0">
+      <div className="flex h-[calc(100dvh-3.5rem)] min-h-0">
         <main className="@container min-w-0 flex-1 overflow-y-auto px-5 py-8 lg:px-8">
           {opened ? (
             <>
