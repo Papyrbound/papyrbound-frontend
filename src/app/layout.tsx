@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AppHeader } from "@/app-shell/app-header";
 import { AppSidebar } from "@/app-shell/app-sidebar";
+import { NativeContextMenuGuard } from "@/app-shell/native-context-menu-guard";
 import { ReadingListsProvider } from "@/features/reading-lists/stores/reading-lists-store";
 import { CollectionsProvider } from "@/features/collections/stores/collections-store";
 import { AnnotationsProvider } from "@/features/annotations/stores/annotations-store";
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={cn("h-full", "antialiased", "font-sans", inter.variable)}
     >
       <body className="min-h-full flex flex-col">
+        <NativeContextMenuGuard />
         <AppearanceProvider>
           <ReadingMotionProvider>
             <ReadingListsProvider>
