@@ -279,10 +279,13 @@ export function CollectionsPage() {
       cs.map((v) => (v.id === c.id ? { ...v, pinned: !v.pinned } : v)),
     );
   }
+  const menuActionClass =
+    "min-h-8 h-auto -mx-2 w-[calc(100%+1rem)] justify-start gap-2 rounded-lg px-2 py-1.5 text-sm font-normal hover:bg-foreground/10 focus-visible:bg-foreground/10";
   const actions = selected && (
     <div className="space-y-1">
       <Button
-        className="h-8 w-full justify-start text-sm"
+        variant="ghost"
+        className={menuActionClass}
         onClick={() => router.push(`/collections?collection=${selected.id}`)}
       >
         <FolderOpen />
@@ -301,14 +304,13 @@ export function CollectionsPage() {
           Check,
           () => selected.bookIds.forEach(markAsRead),
         ],
-        ["Delete collection", Trash2, () => ui.patch({ deleting: selected })],
       ].map(([label, Icon, action]) => {
         const I = Icon as typeof Pin;
         return (
           <Button
             key={String(label)}
-            variant="outline"
-            className={`h-8 w-full justify-start text-sm ${label === "Delete collection" ? "text-destructive" : ""}`}
+            variant="ghost"
+            className={menuActionClass}
             onClick={action as () => void}
           >
             <I />
@@ -316,6 +318,15 @@ export function CollectionsPage() {
           </Button>
         );
       })}
+      <div role="separator" className="my-1.5 h-px bg-foreground/5" />
+      <Button
+        variant="ghost"
+        className={`${menuActionClass} text-destructive hover:text-destructive`}
+        onClick={() => ui.patch({ deleting: selected })}
+      >
+        <Trash2 />
+        Delete collection
+      </Button>
     </div>
   );
 
