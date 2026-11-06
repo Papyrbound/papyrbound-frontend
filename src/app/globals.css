@@ -15,7 +15,6 @@
   --color-popover: var(--popover);
   --color-popover-foreground: var(--foreground);
   --color-primary: var(--primary);
-  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--foreground);
@@ -64,8 +63,7 @@
   --card: #f6f6f6;
   --popover: #fcfcfc;
   --foreground: #2b2b2b;
-  --primary: var(--color-blue-600);
-  --primary-hover: var(--color-blue-700);
+  --primary: #303030;
   --primary-foreground: #ffffff;
   --secondary: #f5f5f5;
   --muted: #eeeeee;
@@ -95,9 +93,8 @@
   --card: #232323;
   --popover: #2b2b2b;
   --foreground: #f2f2f2;
-  --primary: var(--color-blue-600);
-  --primary-hover: var(--color-blue-700);
-  --primary-foreground: #ffffff;
+  --primary: #ffffff;
+  --primary-foreground: #1a1a1a;
   --secondary: #333333;
   --muted: #333333;
   --muted-foreground: #999999;
