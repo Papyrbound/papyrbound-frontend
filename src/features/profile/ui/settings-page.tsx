@@ -125,7 +125,7 @@ export function SettingsPage() {
                     variant="ghost"
                     size="sm"
                     aria-pressed={preferences.theme === theme}
-                    className={`h-7 flex-1 rounded-lg px-2 text-[13px] capitalize ${preferences.theme === theme ? "bg-selected shadow-soft" : "text-muted-foreground"}`}
+                    className={`h-7 flex-1 rounded-lg px-2 text-[13px] capitalize ${preferences.theme === theme ? "bg-selected shadow-soft hover:bg-selected dark:bg-foreground/10 dark:hover:bg-foreground/15" : "text-muted-foreground"}`}
                     onClick={() => updatePreferences({ theme })}
                   >
                     {theme}
