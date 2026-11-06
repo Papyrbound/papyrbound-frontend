@@ -52,7 +52,10 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
         if (!isOpen) onClose();
       }}
     >
-      <DialogContent className="reader-profile-dialog" initialFocus={nameRef}>
+      <DialogContent
+        className="reader-profile-dialog max-h-[calc(100dvh-2rem)] max-w-[calc(100%-2rem)] overflow-y-auto sm:max-w-[720px]"
+        initialFocus={nameRef}
+      >
         <DialogHeader>
           <DialogTitle>Edit profile</DialogTitle>
           <DialogDescription>
@@ -138,7 +141,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
               </DropdownMenu>
             </div>
           </div>
-          <fieldset>
+          <fieldset className="min-w-0">
             <legend className="mb-3 text-sm">Choose your avatar</legend>
             <ToggleGroup
               value={[avatarSeed]}
@@ -146,7 +149,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
                 if (value[0]) setAvatarSeed(value[0]);
               }}
               aria-label="Profile avatar"
-              className="reader-avatar-picker"
+              className="reader-avatar-picker grid w-full grid-cols-2 gap-3 min-[381px]:grid-cols-3 sm:grid-cols-4"
               spacing={2}
             >
               {avatarSeeds.map((seed, index) => (
@@ -154,7 +157,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
                   key={seed}
                   value={seed}
                   aria-label={`Avatar ${index + 1}`}
-                  className="reader-avatar-choice"
+                  className="reader-avatar-choice relative aspect-square h-auto min-w-0 w-full rounded-[18px] border border-transparent p-2 aria-pressed:border-foreground aria-pressed:bg-muted"
                 >
                   <ReaderAvatar seed={seed} size={104} />
                   {avatarSeed === seed && (
