@@ -14,6 +14,7 @@ import {
   Trash2,
   StickyNote,
   Check,
+  ChevronsUpDown,
 } from "lucide-react";
 
 import { useAnnotations } from "../stores/annotations-store";
@@ -29,6 +30,7 @@ import { BookCover } from "@/features/home/ui/book-cover";
 import { Button } from "@/shared/ui/button";
 
 import { Input } from "@/shared/ui/input";
+import { Popover, PopoverContent, PopoverTrigger, PopoverTitle } from "@/shared/ui/popover";
 
 import {
   Accordion,
@@ -89,6 +91,89 @@ const useAnnotationUI = create<{
   patch: (v) => set(v),
 }));
 
+export function AnnotationsToolbar() {
+  const ui = useAnnotationUI();
+  const { annotations } = useAnnotations();
+  const { books } = useReadingLists();
+  const groups = books.filter((b) => annotations.some((a) =>
+    a.bookId === b.id && (ui.book === "all" || a.bookId === ui.book) &&
+    `${a.content} ${a.note}`.toLowerCase().includes(ui.query.toLowerCase()),
+  ));
+  return (
+    <>
+      <Popover>
+        <PopoverTrigger aria-label="Search annotations" render={<Button variant="secondary" size="icon-sm" />}><Search /></PopoverTrigger>
+        <PopoverContent align="end" className="w-72 max-w-[calc(100vw-2rem)]">
+          <PopoverTitle>Search annotations</PopoverTitle>
+          <Input placeholder="Search quotes and notes" aria-label="Search annotations" value={ui.query} onChange={(e) => ui.patch({ query: e.target.value })} />
+        </PopoverContent>
+      </Popover>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            aria-label="Filter annotations by book"
+            render={<Button variant="secondary" size="icon-sm" title={books.find((b) => b.id === ui.book)?.title ?? "All books"} />}
+          >
+            <BookOpen />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[272px]">
+            <DropdownMenuRadioGroup
+              value={ui.book}
+              onValueChange={(book) => ui.patch({ book })}
+            >
+              <DropdownMenuRadioItem value="all">
+                All books
+              </DropdownMenuRadioItem>
+              {books
+                .filter((b) => annotations.some((a) => a.bookId === b.id))
+                .map((b) => (
+                  <DropdownMenuRadioItem key={b.id} value={b.id}>
+                    {b.title}
+                  </DropdownMenuRadioItem>
+                ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={<Button variant="secondary" size="icon-sm" aria-label="Sort annotations" />}
+          >
+            <ListFilter />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+              <DropdownMenuRadioGroup
+                value={ui.sort}
+                onValueChange={(sort) => ui.patch({ sort })}
+              >
+                <DropdownMenuRadioItem value="newest">
+                  Newest first
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="oldest">
+                  Oldest first
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label={ui.expanded.length ? "Collapse all annotations" : "Expand all annotations"}
+          title={ui.expanded.length ? "Collapse all annotations" : "Expand all annotations"}
+          className="text-xs text-muted-foreground"
+          onClick={() =>
+            ui.patch({
+              expanded: ui.expanded.length ? [] : groups.map((b) => b.id),
+            })
+          }
+        >
+          <ChevronsUpDown />
+        </Button>
+    </>
+  );
+}
+
 export function AnnotationsPage() {
   const { annotations, setAnnotations } = useAnnotations();
   const { books } = useReadingLists();
@@ -110,85 +195,7 @@ export function AnnotationsPage() {
   const expanded = ui.query ? groups.map((b) => b.id) : ui.expanded;
 
   return (
-    <main className="p-5 lg:px-12 lg:py-8">
-      <h1 className="text-3xl font-semibold leading-[42px]">Annotations</h1>
-      <p className="mt-3 text-[13px] leading-6 text-muted-foreground">
-        {annotations.length} annotations across{" "}
-        {new Set(annotations.map((a) => a.bookId)).size} books
-      </p>
-      <div className="mb-8 mt-[26px] flex flex-wrap items-center gap-4">
-        <div className="relative w-full sm:mr-2 sm:w-[540px]">
-          <Search className="absolute left-3 top-3 size-4 text-muted-foreground" />
-          <Input
-            className="h-10 rounded-xl border-0 bg-secondary pl-10"
-            placeholder="Search quotes and notes"
-            aria-label="Search annotations"
-            value={ui.query}
-            onChange={(e) => ui.patch({ query: e.target.value })}
-          />
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={<Button variant="secondary" className="w-44" />}
-          >
-            {books.find((b) => b.id === ui.book)?.title ?? "All books"}
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-[272px]">
-            <DropdownMenuRadioGroup
-              value={ui.book}
-              onValueChange={(book) => ui.patch({ book })}
-            >
-              <DropdownMenuRadioItem value="all">
-                All books
-              </DropdownMenuRadioItem>
-              {books
-                .filter((b) => annotations.some((a) => a.bookId === b.id))
-                .map((b) => (
-                  <DropdownMenuRadioItem key={b.id} value={b.id}>
-                    {b.title}
-                  </DropdownMenuRadioItem>
-                ))}
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={<Button variant="secondary" className="w-[104px]" />}
-          >
-            <ListFilter />
-            Filter
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-52">
-            <DropdownMenuGroup>
-              <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-              <DropdownMenuRadioGroup
-                value={ui.sort}
-                onValueChange={(sort) => ui.patch({ sort })}
-              >
-                <DropdownMenuRadioItem value="newest">
-                  Newest first
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="oldest">
-                  Oldest first
-                </DropdownMenuRadioItem>
-              </DropdownMenuRadioGroup>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="ml-auto text-xs text-muted-foreground"
-          onClick={() =>
-            ui.patch({
-              expanded: ui.expanded.length ? [] : groups.map((b) => b.id),
-            })
-          }
-        >
-          {ui.expanded.length ? "Collapse all" : "Expand all"}
-        </Button>
-      </div>
-
+    <main aria-label="Annotations" className="px-5 pt-[34px] pb-8 md:pl-9 md:pr-7">
       <Accordion
         multiple
         value={expanded}

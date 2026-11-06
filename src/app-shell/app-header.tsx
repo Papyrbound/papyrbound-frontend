@@ -16,6 +16,7 @@ import { Button } from "@/shared/ui/button";
 import { LibraryFilter } from "@/features/library/ui/library-filter";
 import { AddBookDialog } from "@/features/library/ui/add-book-dialog";
 import { CollectionToolbar } from "@/features/collections/ui/collections-page";
+import { AnnotationsToolbar } from "@/features/annotations/ui/annotations-page";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -137,6 +138,7 @@ export function AppHeader() {
         <RouteBreadcrumbs pathname={pathname} />
       </Suspense>
       <div className="ml-auto flex items-center gap-3">
+        {pathname === "/annotations" && <AnnotationsToolbar />}
         {(pathname === "/library" || pathname === "/reading-lists") && (
           <LibraryFilter iconOnly />
         )}
