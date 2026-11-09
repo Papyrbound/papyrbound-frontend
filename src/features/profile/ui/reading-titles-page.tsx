@@ -32,7 +32,7 @@ export function ReadingTitlesPage() {
         </span>
       </header>
       <Card className="reader-current-title">
-        <ReaderAvatar seed={profile.avatarSeed} size={56} />
+        <ReaderAvatar seed={profile.avatarSeed} src={profile.avatarUrl} size={56} />
         <div>
           <p className="text-xs text-muted-foreground">Your current title</p>
           <h2 className="mt-1 text-xl">{activeTitle}</h2>

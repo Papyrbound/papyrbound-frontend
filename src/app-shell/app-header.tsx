@@ -37,6 +37,7 @@ const routeLabels: Record<string, string> = {
   "/reading-titles": "Reading titles",
   "/reading-activity": "Reading activity",
   "/settings": "Settings",
+  "/profile": "Profile",
 };
 
 function RouteBreadcrumbs({ pathname }: { pathname: string }) {

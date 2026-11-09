@@ -1,18 +1,14 @@
 "use client";
 
-import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
-
 import { useRouter } from "next/navigation";
 import { useAccount } from "@/features/profile/stores/account-store";
 import { useReadingTitles } from "@/features/profile/model/reading-titles";
 import { ReaderAvatar } from "./reader-avatar";
-import { EditProfileDialog } from "./edit-profile-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
@@ -23,11 +19,9 @@ import {
   useSidebar,
 } from "@/shared/ui/sidebar";
 import {
-  BookOpenCheckIcon,
   ChevronsUpDownIcon,
   SettingsIcon,
   TrophyIcon,
-  UserRoundPenIcon,
 } from "lucide-react";
 
 export function NavProfile() {
@@ -35,7 +29,6 @@ export function NavProfile() {
   const { activeTitle } = useReadingTitles();
   const { isMobile, setOpenMobile } = useSidebar();
   const router = useRouter();
-  const [editing, setEditing] = useLocalUIState(false);
   function navigate(path: string) {
     setOpenMobile(false);
     router.push(path);
@@ -56,7 +49,7 @@ export function NavProfile() {
                 />
               }
             >
-              <ReaderAvatar seed={profile.avatarSeed} size={28} />
+              <ReaderAvatar seed={profile.avatarSeed} src={profile.avatarUrl} size={28} />
               <div className="grid min-w-0 flex-1 text-left text-[13px] leading-[22px] group-data-[collapsible=icon]:hidden">
                 <span className="truncate font-normal">{profile.name}</span>
                 <span className="truncate text-[11px] leading-[18px] text-muted-foreground">
@@ -72,9 +65,13 @@ export function NavProfile() {
               sideOffset={8}
             >
               <DropdownMenuGroup>
-                <DropdownMenuLabel className="p-0 font-normal">
+                <DropdownMenuItem
+                  className="p-0 font-normal"
+                  aria-label="Open profile"
+                  onClick={() => navigate("/profile")}
+                >
                   <div className="flex items-center gap-3 px-2 py-2">
-                    <ReaderAvatar seed={profile.avatarSeed} />
+                    <ReaderAvatar seed={profile.avatarSeed} src={profile.avatarUrl} />
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium">
                         {profile.name}
@@ -84,21 +81,13 @@ export function NavProfile() {
                       </p>
                     </div>
                   </div>
-                </DropdownMenuLabel>
+                </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem onClick={() => setEditing(true)}>
-                  <UserRoundPenIcon />
-                  Edit profile
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/reading-titles")}>
                   <TrophyIcon />
                   Reading titles
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/reading-activity")}>
-                  <BookOpenCheckIcon />
-                  Reading activity
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/settings")}>
                   <SettingsIcon />
@@ -109,7 +98,6 @@ export function NavProfile() {
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
-      {editing && <EditProfileDialog onClose={() => setEditing(false)} />}
     </>
   );
 }
