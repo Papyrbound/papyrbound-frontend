@@ -246,7 +246,7 @@ export function ReadingActivityPage() {
               if (!book) return null;
               return (
                 <div key={s.date} className="flex items-center gap-4 py-2">
-                  <span className="w-7 shrink-0 [&_.cover-type]:hidden [&_.cover-credit]:hidden">
+                  <span className="w-7 shrink-0 [&_.book-cover]:rounded-sm [&_.cover-type]:hidden [&_.cover-credit]:hidden">
                     <BookCover book={book} />
                   </span>
                   <div className="min-w-0 flex-1">
@@ -274,7 +274,7 @@ export function ReadingActivityPage() {
             <div className="grid grid-cols-2 gap-4">
               {finished.slice(0, 2).map((b) => (
                 <div key={b.id} className="min-w-0">
-                  <div className="w-[72px]">
+                  <div className="w-[72px] [&_.book-cover]:rounded-md">
                     <BookCover book={b} />
                   </div>
                   <h3 className="mt-5 text-sm font-medium leading-[22px]">
