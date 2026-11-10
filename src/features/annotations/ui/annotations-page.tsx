@@ -245,18 +245,19 @@ export function AnnotationsPage() {
                   .map((a) => (
                     <article
                       key={a.id}
-                      className="relative py-5 pr-10"
+                      className="py-5"
                     >
                       <header className="mb-3">
                         <TraceLine className="w-full flex-wrap text-xs">
                           <TraceIcon style={{ color: annotationColors[a.color] }}>
                             {a.kind === "highlight" ? <Highlighter /> : <StickyNote />}
                           </TraceIcon>
-                          <TraceTitle className="whitespace-normal">
+                          <TraceTitle className="flex-1 whitespace-normal">
                           {a.chapter ? `${a.chapter} · ` : ""}Page{" "}
                           {a.page ?? "—"}
                           </TraceTitle>
-                          <TraceDescription className="ml-auto text-xs">
+                          <span className="ml-auto inline-flex shrink-0 items-center gap-2">
+                          <TraceDescription className="text-xs">
                         <time dateTime={a.createdAt}>
                           {a.createdLabel ??
                             new Date(a.createdAt).toLocaleDateString("en-US", {
@@ -265,31 +266,12 @@ export function AnnotationsPage() {
                             })}
                         </time>
                           </TraceDescription>
-                        </TraceLine>
-                      </header>
-                      <p
-                        className="border-l-2 py-1 pl-4 text-base leading-7 text-foreground"
-                        style={{ borderColor: annotationColors[a.color] }}
-                      >
-                        {a.kind === "highlight" ? `“${a.content}”` : a.content}
-                      </p>
-                      {a.note && (
-                        <div className="mt-4 flex items-center gap-3 text-sm leading-[22px] text-muted-foreground">
-                          <StickyNote className="size-3.5 shrink-0" />
-                          <p>
-                            <span className="sr-only">Your note: </span>
-                            {a.note}
-                          </p>
-                        </div>
-                      )}
-
                       <DropdownMenu>
                         <DropdownMenuTrigger
                           render={
                             <Button
                               variant="ghost"
                               size="icon-sm"
-                              className="absolute right-0 top-4"
                             />
                           }
                           aria-label="Annotation options"
@@ -368,6 +350,26 @@ export function AnnotationsPage() {
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
+                          </span>
+                        </TraceLine>
+                      </header>
+                      <p
+                        className="border-l-2 py-1 pl-4 text-base leading-7 text-foreground"
+                        style={{ borderColor: annotationColors[a.color] }}
+                      >
+                        {a.kind === "highlight" ? `“${a.content}”` : a.content}
+                      </p>
+                      {a.note && (
+                        <div className="mt-4 flex items-center gap-3 text-sm leading-[22px] text-muted-foreground">
+                          <StickyNote className="size-3.5 shrink-0" />
+                          <p>
+                            <span className="sr-only">Your note: </span>
+                            {a.note}
+                          </p>
+                        </div>
+                      )}
+
+
                     </article>
                   ))}
               </Trace>
