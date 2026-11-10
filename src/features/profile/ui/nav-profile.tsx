@@ -74,7 +74,7 @@ export function NavProfile() {
                 <DropdownMenuItem
                   className="p-0 font-normal"
                   aria-label="Open profile"
-                  onClick={() => setEditing(true)}
+                  onClick={() => navigate("/profile")}
                 >
                   <div className="flex items-center gap-3 px-2 py-2">
                     <ReaderAvatar seed={profile.avatarSeed} />
