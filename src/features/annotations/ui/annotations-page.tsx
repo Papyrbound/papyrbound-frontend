@@ -33,11 +33,15 @@ import { Input } from "@/shared/ui/input";
 import { Popover, PopoverContent, PopoverTrigger, PopoverTitle } from "@/shared/ui/popover";
 
 import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from "@/shared/ui/accordion";
+  Trace,
+  TraceLine,
+  TraceIcon,
+  TraceTitle,
+  TraceDescription,
+  TraceCollapsible,
+  TraceCollapsibleTrigger,
+  TraceCollapsibleContent,
+} from "@/shared/ui/trace";
 
 import {
   DropdownMenu,
@@ -105,7 +109,20 @@ export function AnnotationsToolbar() {
         <PopoverTrigger aria-label="Search annotations" render={<Button variant="secondary" size="icon-sm" />}><Search /></PopoverTrigger>
         <PopoverContent align="end" className="w-72 max-w-[calc(100vw-2rem)]">
           <PopoverTitle>Search annotations</PopoverTitle>
-          <Input placeholder="Search quotes and notes" aria-label="Search annotations" value={ui.query} onChange={(e) => ui.patch({ query: e.target.value })} />
+          <Input
+            placeholder="Search quotes and notes"
+            aria-label="Search annotations"
+            value={ui.query}
+            onChange={(e) => {
+              const query = e.target.value;
+              ui.patch({
+                query,
+                expanded: query ? books.filter((book) => annotations.some((a) =>
+                  a.bookId === book.id && `${a.content} ${a.note}`.toLowerCase().includes(query.toLowerCase()),
+                )).map((book) => book.id) : ui.expanded,
+              });
+            }}
+          />
         </PopoverContent>
       </Popover>
         <DropdownMenu>
@@ -192,47 +209,54 @@ export function AnnotationsPage() {
         (ui.sort === "newest" ? 1 : -1),
     );
   const groups = books.filter((b) => visible.some((a) => a.bookId === b.id));
-  const expanded = ui.query ? groups.map((b) => b.id) : ui.expanded;
+  const expanded = ui.expanded;
 
   return (
     <main aria-label="Annotations" className="px-5 pt-[34px] pb-8 md:pl-9 md:pr-7">
-      <Accordion
-        multiple
-        value={expanded}
-        onValueChange={(expanded) => ui.patch({ expanded })}
-        className="space-y-6"
-      >
+      <Trace className="gap-6">
         {groups.map((book) => (
-          <AccordionItem key={book.id} value={book.id}>
-            <AccordionTrigger className="h-[88px] gap-5 rounded-[14px] bg-secondary px-4 py-3 hover:bg-muted">
-              <span className="w-10 shrink-0 [&_.cover-type]:hidden [&_.cover-credit]:hidden">
-                <BookCover book={book} />
-              </span>
-              <span className="min-w-0">
-                <span className="block text-lg font-semibold">
-                  {book.title}
-                </span>
-                <span className="mt-1 block text-xs text-muted-foreground">
-                  {book.author} ·{" "}
-                  {visible.filter((a) => a.bookId === book.id).length}{" "}
-                  annotations
-                </span>
-              </span>
-            </AccordionTrigger>
-            <AccordionContent>
-              <div className="divide-y divide-border pl-3 sm:pl-[76px]">
+          <TraceCollapsible
+            key={book.id}
+            open={expanded.includes(book.id)}
+            onOpenChange={(open) => ui.patch({
+              expanded: open
+                ? [...new Set([...ui.expanded, book.id])]
+                : ui.expanded.filter((id) => id !== book.id),
+            })}
+          >
+            <TraceCollapsibleTrigger className="w-full gap-3 px-3 py-3 hover:bg-hover">
+              <TraceLine className="w-full gap-3 text-foreground">
+                <TraceIcon className="h-12 w-8 [&_.book-cover]:rounded-sm [&_.cover-type]:hidden [&_.cover-credit]:hidden">
+                  <BookCover book={book} />
+                </TraceIcon>
+                <TraceTitle className="flex-1">
+                  <span className="block truncate text-base font-medium">{book.title}</span>
+                  <span className="mt-1 block truncate text-xs text-muted-foreground">{book.author}</span>
+                </TraceTitle>
+                <TraceDescription className="text-xs">
+                  {visible.filter((a) => a.bookId === book.id).length} annotations
+                </TraceDescription>
+              </TraceLine>
+            </TraceCollapsibleTrigger>
+            <TraceCollapsibleContent className="ml-7 pr-1 pl-5">
+              <Trace className="gap-0 divide-y divide-border">
                 {visible
                   .filter((a) => a.bookId === book.id)
-                  .map((a, index) => (
+                  .map((a) => (
                     <article
                       key={a.id}
-                      className={`relative pr-10 ${index ? "py-6" : "py-7"}`}
+                      className="relative py-5 pr-10"
                     >
-                      <header className="mb-4 flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
-                        <span>
+                      <header className="mb-3">
+                        <TraceLine className="w-full flex-wrap text-xs">
+                          <TraceIcon style={{ color: annotationColors[a.color] }}>
+                            {a.kind === "highlight" ? <Highlighter /> : <StickyNote />}
+                          </TraceIcon>
+                          <TraceTitle className="whitespace-normal">
                           {a.chapter ? `${a.chapter} · ` : ""}Page{" "}
                           {a.page ?? "—"}
-                        </span>
+                          </TraceTitle>
+                          <TraceDescription className="ml-auto text-xs">
                         <time dateTime={a.createdAt}>
                           {a.createdLabel ??
                             new Date(a.createdAt).toLocaleDateString("en-US", {
@@ -240,9 +264,11 @@ export function AnnotationsPage() {
                               day: "numeric",
                             })}
                         </time>
+                          </TraceDescription>
+                        </TraceLine>
                       </header>
                       <p
-                        className="-ml-6 border-l-[3px] py-[9px] pl-[21px] text-xl leading-7"
+                        className="border-l-2 py-1 pl-4 text-base leading-7 text-foreground"
                         style={{ borderColor: annotationColors[a.color] }}
                       >
                         {a.kind === "highlight" ? `“${a.content}”` : a.content}
@@ -263,7 +289,7 @@ export function AnnotationsPage() {
                             <Button
                               variant="ghost"
                               size="icon-sm"
-                              className="absolute right-0 top-7"
+                              className="absolute right-0 top-4"
                             />
                           }
                           aria-label="Annotation options"
@@ -344,11 +370,11 @@ export function AnnotationsPage() {
                       </DropdownMenu>
                     </article>
                   ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
+              </Trace>
+            </TraceCollapsibleContent>
+          </TraceCollapsible>
         ))}
-      </Accordion>
+      </Trace>
       {!groups.length && (
         <p className="py-16 text-center text-muted-foreground">
           No annotations match your search.
