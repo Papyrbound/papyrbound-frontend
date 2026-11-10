@@ -116,7 +116,7 @@ export function ProfilePage() {
                   <Button
                     key={book.id}
                     variant="ghost"
-                    className="h-auto w-full justify-start gap-4 rounded-lg px-0 py-3 text-left"
+                    className="-mx-3 h-auto w-[calc(100%+1.5rem)] justify-start gap-4 rounded-lg px-3 py-3 text-left"
                     onClick={() => { selectBook(book.id); router.push("/library"); }}
                     aria-label={`View ${book.title}`}
                   >
