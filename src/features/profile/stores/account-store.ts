@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { isStoredProfileBanner } from "../model/profile-banner";
+import { isStoredProfileBanner, isStoredProfilePhoto } from "../model/profile-banner";
 import {
   localProfile,
   type LocalProfile,
@@ -38,6 +38,7 @@ function getSnapshot(): Account {
             version: 1,
             profile: {
               ...localProfile,
+              avatarUrl: isStoredProfilePhoto(profile?.avatarUrl) ? profile.avatarUrl : undefined,
               banner: profile?.banner === null
                 ? null
                 : isStoredProfileBanner(profile?.banner)

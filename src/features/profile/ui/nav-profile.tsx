@@ -49,7 +49,7 @@ export function NavProfile() {
                 />
               }
             >
-              <ReaderAvatar seed={profile.avatarSeed} size={28} />
+              <ReaderAvatar seed={profile.avatarSeed} src={profile.avatarUrl} size={28} />
               <div className="grid min-w-0 flex-1 text-left text-[13px] leading-[22px] group-data-[collapsible=icon]:hidden">
                 <span className="truncate font-normal">{profile.name}</span>
                 <span className="truncate text-[11px] leading-[18px] text-muted-foreground">
@@ -71,7 +71,7 @@ export function NavProfile() {
                   onClick={() => navigate("/profile")}
                 >
                   <div className="flex items-center gap-3 px-2 py-2">
-                    <ReaderAvatar seed={profile.avatarSeed} />
+                    <ReaderAvatar seed={profile.avatarSeed} src={profile.avatarUrl} />
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium">
                         {profile.name}

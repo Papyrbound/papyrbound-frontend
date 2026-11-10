@@ -6,7 +6,7 @@ import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Camera, CheckIcon, ChevronsUpDownIcon, Trash2 } from "lucide-react";
-import { prepareProfileBanner } from "../model/profile-banner";
+import { prepareProfileBanner, prepareProfilePhoto } from "../model/profile-banner";
 import {
   useAccount,
   updateAccount,
@@ -43,6 +43,10 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
   const [name, setName] = useLocalUIState(profile.name);
   const [bio, setBio] = useLocalUIState(profile.bio);
   const [avatarSeed, setAvatarSeed] = useLocalUIState(profile.avatarSeed);
+  const [avatarUrl, setAvatarUrl] = useLocalUIState(profile.avatarUrl);
+  const [photoError, setPhotoError] = useLocalUIState("");
+  const [processingPhoto, setProcessingPhoto] = useLocalUIState(false);
+  const photoInput = useRef<HTMLInputElement>(null);
   const [banner, setBanner] = useLocalUIState(profile.banner);
   const [bannerError, setBannerError] = useLocalUIState("");
   const [processingBanner, setProcessingBanner] = useLocalUIState(false);
@@ -72,7 +76,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
           className="flex flex-col gap-4 [@media(max-height:740px)]:gap-3"
           onSubmit={(event) => {
             event.preventDefault();
-            if (!name.trim() || processingBanner) return;
+            if (!name.trim() || processingBanner || processingPhoto) return;
             const saved = updateAccount((current) => ({
               ...current,
               profile: {
@@ -80,6 +84,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
                 name: name.trim(),
                 bio: bio.trim(),
                 avatarSeed,
+                avatarUrl,
                 banner,
                 title: selectedTitle,
               },
@@ -126,11 +131,17 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
           </div>
           <div className="grid grid-cols-[64px_minmax(0,1fr)] items-center gap-x-4 gap-y-1 sm:grid-cols-[64px_minmax(0,1fr)_auto]">
             <div className="row-span-2 sm:row-span-1">
-              <ReaderAvatar seed={avatarSeed} size={64} />
+              <ReaderAvatar seed={avatarSeed} src={avatarUrl} size={64} />
             </div>
-            <p className="min-w-0 self-end truncate text-base font-medium sm:self-center">
-              {name.trim() || "Your name"}
-            </p>
+            <div className="min-w-0 self-end sm:self-center">
+              <p className="truncate text-base font-medium">{name.trim() || "Your name"}</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <Button type="button" variant="secondary" size="xs" disabled={processingPhoto} onClick={() => photoInput.current?.click()}>
+                  <Camera />{processingPhoto ? "Preparing photo" : avatarUrl ? "Change photo" : "Upload photo"}
+                </Button>
+                {avatarUrl && <Button type="button" variant="ghost" size="xs" disabled={processingPhoto} onClick={() => { setAvatarUrl(undefined); setPhotoError(""); }}>Remove photo</Button>}
+              </div>
+            </div>
             <div className="col-start-2 grid min-w-0 gap-1.5 justify-self-start self-start sm:col-start-3 sm:justify-self-end sm:self-center">
               <span
                 id="profile-title-label"
@@ -181,12 +192,26 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
               </DropdownMenu>
             </div>
           </div>
+          <input ref={photoInput} type="file" accept="image/jpeg,image/png,image/webp" aria-label="Choose profile photo" className="sr-only" tabIndex={-1}
+            onChange={async (event) => {
+              const file = event.target.files?.[0];
+              event.target.value = "";
+              if (!file) return;
+              setProcessingPhoto(true);
+              setPhotoError("");
+              try { setAvatarUrl(await prepareProfilePhoto(file)); }
+              catch (cause) { setPhotoError(cause instanceof Error ? cause.message : "This photo could not be opened. Choose another image."); }
+              finally { setProcessingPhoto(false); }
+            }}
+          />
+          {photoError && <p role="alert" className="text-xs text-destructive">{photoError}</p>}
           <fieldset className="min-w-0">
-            <legend className="mb-3 text-sm">Choose your avatar</legend>
+            <legend className="mb-3 text-sm">Or choose an avatar</legend>
             <ToggleGroup
-              value={[avatarSeed]}
+              value={avatarUrl ? [] : [avatarSeed]}
+              disabled={processingPhoto}
               onValueChange={(value) => {
-                if (value[0]) setAvatarSeed(value[0]);
+                if (value[0]) { setAvatarSeed(value[0]); setAvatarUrl(undefined); setPhotoError(""); }
               }}
               aria-label="Profile avatar"
               className="reader-avatar-picker grid w-full grid-cols-4 gap-2 sm:grid-cols-6"
@@ -200,7 +225,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
                   className="reader-avatar-choice relative h-[clamp(48px,10dvh,72px)] min-w-0 w-full rounded-xl border border-transparent p-1 aria-pressed:border-foreground aria-pressed:bg-muted [@media(max-height:740px)]:h-[clamp(40px,8dvh,56px)]"
                 >
                   <ReaderAvatar seed={seed} size={56} />
-                  {avatarSeed === seed && (
+                  {!avatarUrl && avatarSeed === seed && (
                     <CheckIcon className="reader-avatar-check" />
                   )}
                 </ToggleGroupItem>
@@ -280,7 +305,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={!name.trim() || processingBanner}>
+            <Button type="submit" disabled={!name.trim() || processingBanner || processingPhoto}>
               Save profile
             </Button>
           </DialogFooter>

@@ -65,7 +65,7 @@ export function ProfilePage() {
         <CardContent className="px-5 pb-6 sm:px-7">
           <div className="flex items-start justify-between gap-4">
             <div className="relative -mt-12 rounded-full ring-[6px] ring-card">
-              <ReaderAvatar seed={profile.avatarSeed} size={96} />
+              <ReaderAvatar seed={profile.avatarSeed} src={profile.avatarUrl} size={96} />
             </div>
             <Button variant="outline" className="mt-4 rounded-full px-4" onClick={() => setEditing(true)}>
               <Pencil />
