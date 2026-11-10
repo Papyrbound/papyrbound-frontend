@@ -1,12 +1,9 @@
 "use client";
 
-import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
-
 import { useRouter } from "next/navigation";
 import { useAccount } from "@/features/profile/stores/account-store";
 import { useReadingTitles } from "@/features/profile/model/reading-titles";
 import { ReaderAvatar } from "./reader-avatar";
-import { EditProfileDialog } from "./edit-profile-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,7 +23,6 @@ import {
   ChevronsUpDownIcon,
   SettingsIcon,
   TrophyIcon,
-  UserRoundPenIcon,
 } from "lucide-react";
 
 export function NavProfile() {
@@ -34,7 +30,6 @@ export function NavProfile() {
   const { activeTitle } = useReadingTitles();
   const { isMobile, setOpenMobile } = useSidebar();
   const router = useRouter();
-  const [editing, setEditing] = useLocalUIState(false);
   function navigate(path: string) {
     setOpenMobile(false);
     router.push(path);
@@ -91,10 +86,6 @@ export function NavProfile() {
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem onClick={() => setEditing(true)}>
-                  <UserRoundPenIcon />
-                  Edit profile
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/reading-titles")}>
                   <TrophyIcon />
                   Reading titles
@@ -112,7 +103,6 @@ export function NavProfile() {
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
-      {editing && <EditProfileDialog onClose={() => setEditing(false)} />}
     </>
   );
 }
