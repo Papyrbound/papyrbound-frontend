@@ -15,9 +15,10 @@ import { useWorkspace } from "@/app-shell/workspace-store";
 import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
 import { BookCover } from "@/features/home/ui/book-cover";
 import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardTitle } from "@/shared/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/ui/tabs";
 
 const sections = ["Reading", "Highlights", "Activity"] as const;
-type Section = (typeof sections)[number];
 
 const activityLabels = {
   added: "Added to the library",
@@ -34,7 +35,6 @@ export function ProfilePage() {
   const { collections } = useCollections();
   const selectBook = useWorkspace((state) => state.selectBook);
   const [editing, setEditing] = useLocalUIState(false);
-  const [section, setSection] = useLocalUIState<Section>("Reading");
   const router = useRouter();
   const reading = books.filter((book) => book.progress > 0 && book.progress < 100);
   const bookIds = new Set(books.map((book) => book.id));
@@ -50,7 +50,7 @@ export function ProfilePage() {
 
   return (
     <main aria-label="Profile" className="px-4 py-6 sm:px-8 sm:py-8">
-      <div className="mx-auto max-w-[760px] overflow-hidden rounded-3xl border border-border/70 bg-card">
+      <Card className="mx-auto w-full max-w-[760px] gap-0 border border-border/70 py-0 shadow-none ring-0">
         <div className="relative h-40 bg-secondary sm:h-52">
           <Image
             src="/covers/whale-paper-boat.png"
@@ -61,7 +61,7 @@ export function ProfilePage() {
             className="object-cover object-[center_48%]"
           />
         </div>
-        <div className="px-5 pb-6 sm:px-7">
+        <CardContent className="px-5 pb-6 sm:px-7">
           <div className="flex items-start justify-between gap-4">
             <div className="relative -mt-12 rounded-full ring-[6px] ring-card">
               <ReaderAvatar seed={profile.avatarSeed} size={96} />
@@ -71,18 +71,18 @@ export function ProfilePage() {
               Edit profile
             </Button>
           </div>
-          <h1 className="mt-4 break-words text-2xl font-semibold leading-tight sm:text-[28px]">
-            {profile.name}
-          </h1>
+          <CardTitle className="mt-4 break-words text-2xl font-semibold leading-tight sm:text-[28px]">
+            <h1>{profile.name}</h1>
+          </CardTitle>
           <Link href="/reading-titles" className="mt-1 inline-block text-sm text-muted-foreground hover:text-foreground">
             {activeTitle}
           </Link>
           {profile.bio ? (
             <p className="mt-4 max-w-xl whitespace-pre-wrap break-words text-sm leading-6">{profile.bio}</p>
           ) : (
-            <button className="mt-4 text-sm text-muted-foreground underline-offset-4 hover:underline" onClick={() => setEditing(true)}>
+            <Button variant="link" className="mt-4 h-auto justify-start p-0 text-sm text-muted-foreground" onClick={() => setEditing(true)}>
               Add a little about yourself
-            </button>
+            </Button>
           )}
           <div className="mt-6 flex flex-wrap gap-x-6 gap-y-3">
             {stats.map((stat) => (
@@ -92,59 +92,52 @@ export function ProfilePage() {
               </Link>
             ))}
           </div>
-        </div>
+        </CardContent>
 
-        <div className="grid grid-cols-3 border-y border-border/70" role="group" aria-label="Profile sections">
-          {sections.map((item) => (
-            <button
-              key={item}
-              aria-pressed={section === item}
-              onClick={() => setSection(item)}
-              className={`border-b-2 px-2 py-4 text-sm outline-none transition-colors hover:bg-hover focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring ${section === item ? "border-foreground font-medium text-foreground" : "border-transparent text-muted-foreground"}`}
-            >
-              {item}
-            </button>
-          ))}
-        </div>
-
-        <section aria-label={section} className="min-h-48 px-5 py-5 sm:px-7">
-          {section === "Reading" && (
-            <>
-              <div className="mb-4 flex items-center justify-between gap-3">
-                <h2 className="text-sm font-medium">Currently reading</h2>
-                <Link href="/reading-activity" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-                  Reading activity <ArrowUpRight className="size-3.5" />
-                </Link>
+        <Tabs defaultValue="Reading" className="gap-0">
+          <TabsList variant="line" aria-label="Profile sections" className="grid w-full grid-cols-3 gap-0 border-y border-border/70 p-0 group-data-horizontal/tabs:h-auto">
+            {sections.map((item) => (
+              <TabsTrigger key={item} value={item} className="h-12 rounded-none font-normal data-active:font-medium group-data-horizontal/tabs:after:bottom-0">
+                {item}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          <TabsContent value="Reading" className="min-h-48 px-5 py-5 sm:px-7">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="text-sm font-medium">Currently reading</h2>
+              <Link href="/reading-activity" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+                Reading activity <ArrowUpRight className="size-3.5" />
+              </Link>
+            </div>
+            {reading.length ? (
+              <div className="divide-y divide-border/60">
+                {reading.map((book) => (
+                  <Button
+                    key={book.id}
+                    variant="ghost"
+                    className="h-auto w-full justify-start gap-4 rounded-lg px-0 py-3 text-left"
+                    onClick={() => { selectBook(book.id); router.push("/library"); }}
+                    aria-label={`View ${book.title}`}
+                  >
+                    <span className="w-10 shrink-0 [&_.book-cover]:rounded-sm [&_.cover-type]:hidden [&_.cover-credit]:hidden"><BookCover book={book} /></span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium">{book.title}</span>
+                      <span className="mt-1 block truncate text-xs text-muted-foreground">{book.author}</span>
+                    </span>
+                    <span className="shrink-0 text-xs text-muted-foreground">{book.progress}% read</span>
+                  </Button>
+                ))}
               </div>
-              {reading.length ? (
-                <div className="divide-y divide-border/60">
-                  {reading.map((book) => (
-                    <button
-                      key={book.id}
-                      className="flex w-full items-center gap-4 rounded-lg py-3 text-left outline-none hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring"
-                      onClick={() => { selectBook(book.id); router.push("/library"); }}
-                      aria-label={`View ${book.title}`}
-                    >
-                      <span className="w-10 shrink-0 [&_.book-cover]:rounded-sm [&_.cover-type]:hidden [&_.cover-credit]:hidden"><BookCover book={book} /></span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium">{book.title}</span>
-                        <span className="mt-1 block truncate text-xs text-muted-foreground">{book.author}</span>
-                      </span>
-                      <span className="shrink-0 text-xs text-muted-foreground">{book.progress}% read</span>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="py-6 text-sm text-muted-foreground">
-                  <BookOpen className="mb-3 size-5" />
-                  <p>No books in progress yet.</p>
-                  <Link href="/library" className="mt-2 inline-block text-foreground underline underline-offset-4">Find your next read</Link>
-                </div>
-              )}
-            </>
-          )}
-          {section === "Highlights" && (
-            highlights.length ? (
+            ) : (
+              <div className="py-6 text-sm text-muted-foreground">
+                <BookOpen className="mb-3 size-5" />
+                <p>No books in progress yet.</p>
+                <Link href="/library" className="mt-2 inline-block text-foreground underline underline-offset-4">Find your next read</Link>
+              </div>
+            )}
+          </TabsContent>
+          <TabsContent value="Highlights" className="min-h-48 px-5 py-5 sm:px-7">
+            {highlights.length ? (
               <div className="divide-y divide-border/60">
                 {highlights.map((note) => (
                   <Link key={note.id} href="/annotations" className="block rounded-lg py-4 outline-none hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring">
@@ -153,10 +146,12 @@ export function ProfilePage() {
                   </Link>
                 ))}
               </div>
-            ) : <p className="py-6 text-sm text-muted-foreground">Your saved highlights will appear here.</p>
-          )}
-          {section === "Activity" && (
-            activity.length ? (
+            ) : (
+              <p className="py-6 text-sm text-muted-foreground">Your saved highlights will appear here.</p>
+            )}
+          </TabsContent>
+          <TabsContent value="Activity" className="min-h-48 px-5 py-5 sm:px-7">
+            {activity.length ? (
               <div className="divide-y divide-border/60">
                 {activity.map((event) => (
                   <div key={event.id} className="py-4">
@@ -168,10 +163,12 @@ export function ProfilePage() {
                   </div>
                 ))}
               </div>
-            ) : <p className="py-6 text-sm text-muted-foreground">Books you add or finish will appear here.</p>
-          )}
-        </section>
-      </div>
+            ) : (
+              <p className="py-6 text-sm text-muted-foreground">Books you add or finish will appear here.</p>
+            )}
+          </TabsContent>
+        </Tabs>
+      </Card>
       {editing && <EditProfileDialog onClose={() => setEditing(false)} />}
     </main>
   );
