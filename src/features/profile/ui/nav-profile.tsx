@@ -12,7 +12,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
@@ -72,7 +71,11 @@ export function NavProfile() {
               sideOffset={8}
             >
               <DropdownMenuGroup>
-                <DropdownMenuLabel className="p-0 font-normal">
+                <DropdownMenuItem
+                  className="p-0 font-normal"
+                  aria-label="Open profile"
+                  onClick={() => setEditing(true)}
+                >
                   <div className="flex items-center gap-3 px-2 py-2">
                     <ReaderAvatar seed={profile.avatarSeed} />
                     <div className="min-w-0">
@@ -84,7 +87,7 @@ export function NavProfile() {
                       </p>
                     </div>
                   </div>
-                </DropdownMenuLabel>
+                </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
