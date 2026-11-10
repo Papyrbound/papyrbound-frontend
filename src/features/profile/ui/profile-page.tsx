@@ -52,14 +52,15 @@ export function ProfilePage() {
     <main aria-label="Profile" className="px-4 py-6 sm:px-8 sm:py-8">
       <Card className="mx-auto w-full max-w-[760px] gap-0 border border-border/70 py-0 shadow-none ring-0">
         <div className="relative h-40 bg-secondary sm:h-52">
-          <Image
-            src="/covers/whale-paper-boat.png"
-            alt="A paper boat sailing above an illustrated whale"
+          {profile.banner && <Image
+            src={profile.banner}
+            alt="Profile banner"
             fill
             priority
             sizes="(max-width: 800px) 100vw, 760px"
             className="object-cover object-[center_48%]"
-          />
+            unoptimized={profile.banner.startsWith("data:")}
+          />}
         </div>
         <CardContent className="px-5 pb-6 sm:px-7">
           <div className="flex items-start justify-between gap-4">

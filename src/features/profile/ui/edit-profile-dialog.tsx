@@ -3,8 +3,10 @@
 import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
 
 import { useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
+import { Camera, CheckIcon, ChevronsUpDownIcon, Trash2 } from "lucide-react";
+import { prepareProfileBanner } from "../model/profile-banner";
 import {
   useAccount,
   updateAccount,
@@ -41,6 +43,10 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
   const [name, setName] = useLocalUIState(profile.name);
   const [bio, setBio] = useLocalUIState(profile.bio);
   const [avatarSeed, setAvatarSeed] = useLocalUIState(profile.avatarSeed);
+  const [banner, setBanner] = useLocalUIState(profile.banner);
+  const [bannerError, setBannerError] = useLocalUIState("");
+  const [processingBanner, setProcessingBanner] = useLocalUIState(false);
+  const bannerInput = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useLocalUIState(true);
   const nameRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useLocalUIState("");
@@ -53,7 +59,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
       }}
     >
       <DialogContent
-        className="reader-profile-dialog max-h-none max-w-[calc(100%-2rem)] gap-4 overflow-visible p-5 sm:max-w-[720px]"
+        className="reader-profile-dialog min-h-[min(760px,calc(100dvh-2rem))] max-h-none max-w-[calc(100%-2rem)] grid-rows-[auto_1fr] gap-5 overflow-visible p-6 sm:max-w-[720px] [@media(max-height:740px)]:gap-3 [@media(max-height:740px)]:p-4"
         initialFocus={nameRef}
       >
         <DialogHeader>
@@ -63,10 +69,10 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
           </DialogDescription>
         </DialogHeader>
         <form
-          className="space-y-3"
+          className="flex flex-col gap-4 [@media(max-height:740px)]:gap-3"
           onSubmit={(event) => {
             event.preventDefault();
-            if (!name.trim()) return;
+            if (!name.trim() || processingBanner) return;
             const saved = updateAccount((current) => ({
               ...current,
               profile: {
@@ -74,6 +80,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
                 name: name.trim(),
                 bio: bio.trim(),
                 avatarSeed,
+                banner,
                 title: selectedTitle,
               },
             }));
@@ -84,6 +91,39 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
               );
           }}
         >
+          <div className="space-y-2">
+            <div className="relative flex h-[clamp(64px,14dvh,136px)] items-center justify-center overflow-hidden rounded-xl bg-secondary [@media(max-height:740px)]:h-[clamp(48px,10dvh,74px)]">
+              {banner && (
+                <Image src={banner} alt="Banner preview" fill sizes="720px" unoptimized={banner.startsWith("data:")} className="object-cover object-[center_48%]" />
+              )}
+              <div className="relative flex items-center gap-2 rounded-xl bg-card/95 p-2 shadow-soft">
+                <Button type="button" variant="secondary" disabled={processingBanner} onClick={() => bannerInput.current?.click()}>
+                  <Camera />
+                  {processingBanner ? "Preparing image" : banner ? "Change banner" : "Add banner"}
+                </Button>
+                {banner && <Button type="button" variant="ghost" size="icon-sm" aria-label="Remove banner" disabled={processingBanner} onClick={() => { setBanner(null); setBannerError(""); }}><Trash2 /></Button>}
+              </div>
+            </div>
+            <input
+              ref={bannerInput}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              aria-label="Choose profile banner"
+              className="sr-only"
+              tabIndex={-1}
+              onChange={async (event) => {
+                const file = event.target.files?.[0];
+                event.target.value = "";
+                if (!file) return;
+                setProcessingBanner(true);
+                setBannerError("");
+                try { setBanner(await prepareProfileBanner(file)); }
+                catch (cause) { setBannerError(cause instanceof Error ? cause.message : "This image could not be opened. Choose another image."); }
+                finally { setProcessingBanner(false); }
+              }}
+            />
+            {bannerError && <p role="alert" className="text-xs text-destructive">{bannerError}</p>}
+          </div>
           <div className="grid grid-cols-[64px_minmax(0,1fr)] items-center gap-x-4 gap-y-1 sm:grid-cols-[64px_minmax(0,1fr)_auto]">
             <div className="row-span-2 sm:row-span-1">
               <ReaderAvatar seed={avatarSeed} size={64} />
@@ -157,7 +197,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
                   key={seed}
                   value={seed}
                   aria-label={`Avatar ${index + 1}`}
-                  className="reader-avatar-choice relative h-[clamp(48px,10dvh,72px)] min-w-0 w-full rounded-xl border border-transparent p-1 aria-pressed:border-foreground aria-pressed:bg-muted"
+                  className="reader-avatar-choice relative h-[clamp(48px,10dvh,72px)] min-w-0 w-full rounded-xl border border-transparent p-1 aria-pressed:border-foreground aria-pressed:bg-muted [@media(max-height:740px)]:h-[clamp(40px,8dvh,56px)]"
                 >
                   <ReaderAvatar seed={seed} size={56} />
                   {avatarSeed === seed && (
@@ -232,7 +272,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
               {error}
             </p>
           )}
-          <DialogFooter>
+          <DialogFooter className="mt-auto">
             <Button
               type="button"
               variant="ghost"
@@ -240,7 +280,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={!name.trim()}>
+            <Button type="submit" disabled={!name.trim() || processingBanner}>
               Save profile
             </Button>
           </DialogFooter>

@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import { isStoredProfileBanner } from "../model/profile-banner";
 import {
   localProfile,
   type LocalProfile,
@@ -37,6 +38,11 @@ function getSnapshot(): Account {
             version: 1,
             profile: {
               ...localProfile,
+              banner: profile?.banner === null
+                ? null
+                : isStoredProfileBanner(profile?.banner)
+                  ? profile.banner
+                  : localProfile.banner,
               name:
                 typeof profile?.name === "string" && profile.name.trim()
                   ? profile.name.trim().slice(0, 60)
