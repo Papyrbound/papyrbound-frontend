@@ -31,7 +31,7 @@ export const useWorkspace = create<WorkspaceState>((set) => ({
   filter: "all",
   sort: "recent",
   dialog: null,
-  setLibraryKind: (libraryKind) => set({ libraryKind }),
+  setLibraryKind: (libraryKind) => set({ libraryKind, selectedId: null, dialog: null, query: "" }),
   selectBook: (selectedId) => set({ selectedId, panelOpen: true }),
   setPanelOpen: (panelOpen) => set({ panelOpen }),
   setView: (view) => set({ view }),

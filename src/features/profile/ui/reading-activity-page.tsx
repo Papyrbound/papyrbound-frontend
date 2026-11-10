@@ -6,7 +6,7 @@ import { CircleCheck, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { activityPreview, heatmapDays } from "../model/activity-preview";
 
-import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
+import { useActiveLibrary } from "@/features/library/model/use-active-library";
 
 import { BookCover } from "@/features/home/ui/book-cover";
 
@@ -44,7 +44,7 @@ const useActivityUI = create<{
 }));
 
 export function ReadingActivityPage() {
-  const { books } = useReadingLists();
+  const { books, label, plural } = useActiveLibrary();
   const ui = useActivityUI();
   const { day } = ui;
   const anchor = new Date(`${activityPreview.end}T12:00:00Z`);
@@ -56,7 +56,7 @@ export function ReadingActivityPage() {
   const end = new Date(start.getTime() + 6 * 86400000);
   const sessions = activityPreview.sessions.filter(
     (session) =>
-      session.date >= start.toISOString().slice(0, 10) &&
+      books.some((book) => book.id === session.bookId) && session.date >= start.toISOString().slice(0, 10) &&
       session.date <= end.toISOString().slice(0, 10),
   );
   const weekLabel = `${start.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })} – ${end.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}`;
@@ -103,7 +103,7 @@ export function ReadingActivityPage() {
             "Pages read this week",
           ],
           ["4 days", "Preview reading streak"],
-          [String(finished.length), "Books finished in your library"],
+          [String(finished.length), `${label} finished in your library`],
         ].map(([n, l]) => (
           <div key={l} className="border-r border-border pr-8 last:border-0">
             <p className="text-4xl font-medium leading-[49px]">{n}</p>
@@ -288,7 +288,7 @@ export function ReadingActivityPage() {
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Completed books will appear here.
+              Completed {plural} will appear here.
             </p>
           )}
         </section>

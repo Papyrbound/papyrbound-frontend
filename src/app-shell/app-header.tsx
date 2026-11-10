@@ -26,7 +26,7 @@ import {
   BreadcrumbSeparator,
 } from "@/shared/ui/breadcrumb";
 import { useCollections } from "@/features/collections/stores/collections-store";
-import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
+import { useActiveLibrary } from "@/features/library/model/use-active-library";
 
 const routeLabels: Record<string, string> = {
   "/": "Reading Now",
@@ -42,8 +42,9 @@ const routeLabels: Record<string, string> = {
 
 function RouteBreadcrumbs({ pathname }: { pathname: string }) {
   const searchParams = useSearchParams();
-  const { collections } = useCollections();
-  const { books, lists } = useReadingLists();
+  const { collections: allCollections } = useCollections();
+  const { books, lists, kind } = useActiveLibrary();
+  const collections = allCollections.filter((collection) => (collection.kind ?? "books") === kind);
   const segments = pathname.split("/").filter(Boolean);
   const items =
     segments.length === 0
@@ -115,7 +116,7 @@ export function AppHeader() {
     pathname === "/collections";
   const hasPanel = gallery || pathname === "/";
   return (
-    <header className="flex h-14 shrink-0 items-center border-b border-border/55 bg-background px-4">
+    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center border-b border-border/55 bg-background px-4">
       <SidebarTrigger className="mr-3 text-muted-foreground md:hidden" />
       <div className="mr-[19px] hidden items-center gap-1 md:flex">
         <Button

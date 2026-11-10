@@ -12,7 +12,7 @@ import {
 
 import { useWorkspace } from "@/app-shell/workspace-store";
 
-import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
+import { useActiveLibrary } from "@/features/library/model/use-active-library";
 
 import { BookCover } from "@/features/home/ui/book-cover";
 
@@ -31,7 +31,7 @@ import {
 export function BookGallery({
   books,
   onAddBooks,
-  emptyMessage = "No books here yet.",
+  emptyMessage,
   listId,
 }: {
   books: SampleBook[];
@@ -45,18 +45,19 @@ export function BookGallery({
     toggleBook,
     markAsRead,
     markAsUnread,
-  } = useReadingLists();
+    noun, plural,
+  } = useActiveLibrary();
   const activeId = selectedId ?? libraryBooks[0]?.id;
 
   if (!books.length)
     return (
       <div className="py-20 text-center">
         <BookOpen className="mx-auto mb-4 size-8 text-muted-foreground" />
-        <p className="text-muted-foreground">{emptyMessage}</p>
+        <p className="text-muted-foreground">{emptyMessage ?? `No ${plural} here yet.`}</p>
         {onAddBooks && (
           <Button className="mt-5" onClick={onAddBooks}>
             <Plus />
-            Add books
+            Add {plural}
           </Button>
         )}
       </div>
@@ -115,7 +116,7 @@ export function BookGallery({
                     : book.progress
                       ? `${book.progress}% read`
                       : "New"}{" "}
-                  · EPUB
+                  · {book.format ?? "EPUB"}
                 </span>
               )}
             </button>
@@ -160,7 +161,7 @@ export function BookGallery({
               }}
             >
               <Pencil />
-              Edit book details
+              Edit {noun} details
             </ContextMenuItem>
             {listId && listId !== "completed" && (
               <ContextMenuItem onClick={() => toggleBook(listId, book.id)}>
@@ -176,7 +177,7 @@ export function BookGallery({
               }}
             >
               <Trash2 />
-              Delete book
+              Delete {noun}
             </ContextMenuItem>
           </ContextMenuContent>
         </ContextMenu>

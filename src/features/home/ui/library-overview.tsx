@@ -1,13 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { useWorkspace } from "@/app-shell/workspace-store";
-import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
+import { useActiveLibrary } from "@/features/library/model/use-active-library";
 import { BookDetailsPanel } from "@/features/library/ui/book-details-panel";
 import { BookCover } from "./book-cover";
 import type { SampleBook } from "../model/sample-books";
 
 export function LibraryOverview() {
-  const { books, lists } = useReadingLists();
+  const { books, lists, noun, label } = useActiveLibrary();
   const { selectBook, selectedId, setDialog, panelOpen } = useWorkspace();
   const recent = books.filter((book) => book.progress > 0).slice(0, 4);
   const finished = books.filter((book) => book.progress >= 100);
@@ -29,9 +30,9 @@ export function LibraryOverview() {
       <button
         key={book.id}
         onClick={() => selectBook(book.id)}
-        className="flex w-full items-start gap-[19px] rounded-xl text-left outline-none hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring"
+        className="-mx-3 flex w-[calc(100%+1.5rem)] items-start gap-[19px] rounded-xl px-3 py-3 text-left outline-none hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <span className="block w-[55px] shrink-0">
+        <span className="block w-[55px] shrink-0 [&_.book-cover]:rounded-[4px]">
           <BookCover book={book} />
         </span>
         <span className="min-w-0 pt-2.5">
@@ -91,7 +92,7 @@ export function LibraryOverview() {
           </div>
           {!recent.length && (
             <p className="py-12 text-muted-foreground">
-              Start a book from your library to see it here.
+              Start a {noun} from your library to see it here.
             </p>
           )}
           <div className="mt-[39px] grid gap-12 @min-[750px]:grid-cols-[minmax(0,1.26fr)_minmax(0,1fr)] lg:mr-10">
@@ -103,20 +104,29 @@ export function LibraryOverview() {
                 {next.map((book) => row(book, "next"))}
                 {!next.length && (
                   <p className="text-sm text-muted-foreground">
-                    Your next book is waiting in the library.
+                    Your next {noun} is waiting in the library.
                   </p>
                 )}
               </section>
               <section className="mt-[44.5px]">
-                <h2 className="mb-[18px] text-2xl font-semibold leading-[33px]">
-                  Finished
-                </h2>
+                <div className="mb-[18px] flex items-center justify-between gap-3">
+                  <h2 className="text-2xl font-semibold leading-[33px]">
+                    Finished
+                  </h2>
+                  <Link
+                    href="/reading-lists?list=completed"
+                    aria-label={`View all finished ${noun}s`}
+                    className="shrink-0 rounded-sm text-sm text-muted-foreground outline-none hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    View all
+                  </Link>
+                </div>
                 <div className="space-y-[25.5px]">
                   {finished.slice(0, 2).map((book) => row(book, "finished"))}
                 </div>
                 {!finished.length && (
                   <p className="text-sm text-muted-foreground">
-                    Books you finish will appear here.
+                    {label} you finish will appear here.
                   </p>
                 )}
               </section>

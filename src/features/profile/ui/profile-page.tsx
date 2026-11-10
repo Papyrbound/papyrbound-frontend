@@ -6,9 +6,10 @@ import { useRouter } from "next/navigation";
 import { BookOpen, Pencil, ArrowUpRight } from "lucide-react";
 import { useAccount } from "../stores/account-store";
 import { useReadingTitles } from "../model/reading-titles";
+import { libraryActivityPreview } from "../model/library-activity-preview";
 import { ReaderAvatar } from "./reader-avatar";
 import { EditProfileDialog } from "./edit-profile-dialog";
-import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
+import { useActiveLibrary } from "@/features/library/model/use-active-library";
 import { useAnnotations } from "@/features/annotations/stores/annotations-store";
 import { useCollections } from "@/features/collections/stores/collections-store";
 import { useWorkspace } from "@/app-shell/workspace-store";
@@ -30,7 +31,9 @@ const activityLabels = {
 export function ProfilePage() {
   const { profile } = useAccount();
   const { activeTitle } = useReadingTitles();
-  const { books, activity } = useReadingLists();
+  const { books, activity, kind, label, plural } = useActiveLibrary();
+  const showingActivityPreview = activity.length === 0;
+  const displayedActivity = showingActivityPreview && kind === "books" ? libraryActivityPreview : activity;
   const { annotations } = useAnnotations();
   const { collections } = useCollections();
   const selectBook = useWorkspace((state) => state.selectBook);
@@ -42,10 +45,10 @@ export function ProfilePage() {
     (note) => note.kind === "highlight" && bookIds.has(note.bookId),
   );
   const stats = [
-    { label: "Books", count: books.length, href: "/library" },
+    { label, count: books.length, href: "/library" },
     { label: "Finished", count: books.filter((book) => book.progress >= 100).length, href: "/reading-lists?list=completed" },
     { label: "Highlights", count: highlights.length, href: "/annotations" },
-    { label: "Collections", count: collections.length, href: "/collections" },
+    { label: "Collections", count: collections.filter((collection) => (collection.kind ?? "books") === kind).length, href: "/collections" },
   ];
 
   return (
@@ -132,7 +135,7 @@ export function ProfilePage() {
             ) : (
               <div className="py-6 text-sm text-muted-foreground">
                 <BookOpen className="mb-3 size-5" />
-                <p>No books in progress yet.</p>
+                <p>No {plural} in progress yet.</p>
                 <Link href="/library" className="mt-2 inline-block text-foreground underline underline-offset-4">Find your next read</Link>
               </div>
             )}
@@ -141,7 +144,7 @@ export function ProfilePage() {
             {highlights.length ? (
               <div className="divide-y divide-border/60">
                 {highlights.map((note) => (
-                  <Link key={note.id} href="/annotations" className="block rounded-lg py-4 outline-none hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring">
+                  <Link key={note.id} href="/annotations" className="-mx-3 block rounded-lg px-3 py-4 outline-none hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring">
                     <blockquote className="text-sm leading-6">{note.content}</blockquote>
                     <p className="mt-2 text-xs text-muted-foreground">{books.find((book) => book.id === note.bookId)?.title}</p>
                   </Link>
@@ -152,20 +155,31 @@ export function ProfilePage() {
             )}
           </TabsContent>
           <TabsContent value="Library activity" className="min-h-48 px-5 py-5 sm:px-7">
-            {activity.length ? (
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <span className="text-xs text-muted-foreground">
+                {showingActivityPreview && kind === "books" ? "Sample library activity" : "Recent library activity"}
+              </span>
+              <Link href="/reading-activity" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+                Reading activity <ArrowUpRight className="size-3.5" />
+              </Link>
+            </div>
+            {displayedActivity.length ? (
               <div className="divide-y divide-border/60">
-                {activity.map((event) => (
+                {displayedActivity.map((event) => (
                   <div key={event.id} className="py-4">
                     <p className="text-xs text-muted-foreground">{activityLabels[event.kind]}</p>
                     <p className="mt-1 text-sm font-medium">{event.bookTitle}</p>
                     <time dateTime={event.at} className="mt-1 block text-xs text-muted-foreground">
-                      {new Date(event.at).toLocaleDateString()}
+                      {new Date(event.at).toLocaleString("en-US", {
+                        month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
+                        timeZone: "UTC", timeZoneName: "short",
+                      })}
                     </time>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="py-6 text-sm text-muted-foreground">Books you add or finish will appear here.</p>
+              <p className="py-6 text-sm text-muted-foreground">{label} you add or finish will appear here.</p>
             )}
           </TabsContent>
         </Tabs>

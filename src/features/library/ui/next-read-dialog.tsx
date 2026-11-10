@@ -3,7 +3,7 @@
 import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
 
 import { CheckIcon, PlusIcon, ShuffleIcon } from "lucide-react";
-import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
+import { useActiveLibrary } from "@/features/library/model/use-active-library";
 import { BookCover } from "@/features/home/ui/book-cover";
 import { Button } from "@/shared/ui/button";
 import {
@@ -17,7 +17,7 @@ import {
 } from "@/shared/ui/dialog";
 
 export function NextReadDialog() {
-  const { books, lists, toggleBook } = useReadingLists();
+  const { books, lists, toggleBook, noun, plural } = useActiveLibrary();
   const [open, setOpen] = useLocalUIState(false);
   const [selectedId, setSelectedId] = useLocalUIState<string | null>(null);
   const unread = books.filter((book) => book.progress <= 0);
@@ -55,8 +55,8 @@ export function NextReadDialog() {
         }
         title={
           unread.length === 0
-            ? "Add an unread book to get a suggestion"
-            : "Choose an unread book from your library"
+            ? `Add an unread ${noun} to get a suggestion`
+            : `Choose an unread ${noun} from your library`
         }
       >
         <ShuffleIcon />
@@ -115,7 +115,7 @@ export function NextReadDialog() {
           </>
         ) : (
           <p className="py-6 text-sm text-muted-foreground">
-            No unread books available. Add a book to find your next chapter.
+            No unread {plural} available. Add a {noun} to find your next read.
           </p>
         )}
       </DialogContent>

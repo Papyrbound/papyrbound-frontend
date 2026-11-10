@@ -1,5 +1,9 @@
 // Original fixtures for the visual preview, separate from future imported books.
 export type SampleBook = {
+  kind?: "books" | "comics";
+  format?: "EPUB" | "CBZ";
+  sourceId?: string;
+  sourceName?: string;
   synopsis?: string;
   cover?: string;
   addedLabel?: string;

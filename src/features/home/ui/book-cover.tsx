@@ -15,6 +15,7 @@ export function BookCover({ book }: { book: SampleBook }) {
           fill
           sizes="(max-width: 767px) 45vw, (max-width: 1279px) 25vw, 196px"
           className="object-cover"
+          unoptimized={book.cover.startsWith("data:")}
         />
       </div>
     );

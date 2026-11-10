@@ -12,7 +12,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/shared/ui/sheet";
-import { useReadingLists } from "../stores/reading-lists-store";
+import { useActiveLibrary } from "@/features/library/model/use-active-library";
 import { BookCover } from "@/features/home/ui/book-cover";
 import {
   readingListColors,
@@ -32,7 +32,7 @@ export function ReadingListEditor({
   onClose: () => void;
   onSave: (details: ReadingListDetails) => void;
 }) {
-  const { books } = useReadingLists();
+  const { books, plural, label } = useActiveLibrary();
   const [open, setOpen] = useLocalUIState(true);
   const pendingSave = useRef<ReadingListDetails | null>(null);
   const [name, setName] = useLocalUIState(list?.name ?? "");
@@ -129,7 +129,7 @@ export function ReadingListEditor({
               className="mt-2 h-11"
             />
             <fieldset className="mt-6">
-              <legend>Books</legend>
+              <legend>{label}</legend>
               <div className="relative mt-3">
                 <SearchIcon
                   className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 opacity-60"
@@ -137,7 +137,7 @@ export function ReadingListEditor({
                 />
                 <Input
                   type="search"
-                  aria-label="Search books to add"
+                  aria-label={`Search ${plural} to add`}
                   placeholder="Search by title or author…"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
@@ -182,12 +182,12 @@ export function ReadingListEditor({
                 ))}
                 {visibleBooks.length === 0 && (
                   <p className="py-5 text-center text-sm opacity-70">
-                    No books found. Try another title or author.
+                    No {plural} found. Try another title or author.
                   </p>
                 )}
               </div>
               <p role="status" className="sr-only">
-                {selectedBooks.length} books added.{" "}
+                {selectedBooks.length} {plural} added.{" "}
                 {normalizedQuery
                   ? `${matchingBooks.length} search results.`
                   : ""}
