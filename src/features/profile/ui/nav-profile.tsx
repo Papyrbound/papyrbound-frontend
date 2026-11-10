@@ -19,7 +19,6 @@ import {
   useSidebar,
 } from "@/shared/ui/sidebar";
 import {
-  BookOpenCheckIcon,
   ChevronsUpDownIcon,
   SettingsIcon,
   TrophyIcon,
@@ -89,10 +88,6 @@ export function NavProfile() {
                 <DropdownMenuItem onClick={() => navigate("/reading-titles")}>
                   <TrophyIcon />
                   Reading titles
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/reading-activity")}>
-                  <BookOpenCheckIcon />
-                  Reading activity
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/settings")}>
                   <SettingsIcon />

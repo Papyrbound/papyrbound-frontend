@@ -18,7 +18,7 @@ import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardTitle } from "@/shared/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/ui/tabs";
 
-const sections = ["Reading", "Highlights", "Activity"] as const;
+const sections = ["Reading", "Highlights", "Library activity"] as const;
 
 const activityLabels = {
   added: "Added to the library",
@@ -97,7 +97,7 @@ export function ProfilePage() {
         <Tabs defaultValue="Reading" className="gap-0">
           <TabsList variant="line" aria-label="Profile sections" className="grid w-full grid-cols-3 gap-0 border-y border-border/70 p-0 group-data-horizontal/tabs:h-auto">
             {sections.map((item) => (
-              <TabsTrigger key={item} value={item} className="h-12 rounded-none font-normal data-active:font-medium group-data-horizontal/tabs:after:bottom-0">
+              <TabsTrigger key={item} value={item} className="h-12 rounded-none text-xs font-normal sm:text-sm data-active:font-medium group-data-horizontal/tabs:after:bottom-0">
                 {item}
               </TabsTrigger>
             ))}
@@ -150,7 +150,7 @@ export function ProfilePage() {
               <p className="py-6 text-sm text-muted-foreground">Your saved highlights will appear here.</p>
             )}
           </TabsContent>
-          <TabsContent value="Activity" className="min-h-48 px-5 py-5 sm:px-7">
+          <TabsContent value="Library activity" className="min-h-48 px-5 py-5 sm:px-7">
             {activity.length ? (
               <div className="divide-y divide-border/60">
                 {activity.map((event) => (
