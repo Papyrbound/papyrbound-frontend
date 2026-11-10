@@ -9,7 +9,7 @@ export function isStoredProfileBanner(value: unknown): value is string {
 }
 
 export function isStoredProfilePhoto(value: unknown): value is string {
-  return typeof value === "string" && value.startsWith("data:image/jpeg;base64,") && value.length <= 300_000;
+  return typeof value === "string" && value.startsWith("data:image/jpeg;base64,") && value.length <= 750_000;
 }
 
 export function prepareProfileBanner(file: File): Promise<string> {
@@ -17,7 +17,7 @@ export function prepareProfileBanner(file: File): Promise<string> {
 }
 
 export function prepareProfilePhoto(file: File): Promise<string> {
-  return prepareProfileImage(file, 256, 256, true);
+  return prepareProfileImage(file, 512, 512, true);
 }
 
 async function prepareProfileImage(file: File, width: number, height: number, square = false): Promise<string> {
