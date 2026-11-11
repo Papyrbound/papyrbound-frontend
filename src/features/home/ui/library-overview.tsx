@@ -29,7 +29,7 @@ export function LibraryOverview() {
       <button
         key={book.id}
         onClick={() => selectBook(book.id)}
-        className="flex w-full items-start gap-[19px] rounded-xl text-left outline-none hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring"
+        className="-mx-3 flex w-[calc(100%+1.5rem)] items-start gap-[19px] rounded-xl px-3 py-3 text-left outline-none hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring"
       >
         <span className="block w-[55px] shrink-0">
           <BookCover book={book} />
