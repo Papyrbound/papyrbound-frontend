@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useWorkspace } from "@/app-shell/workspace-store";
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
 import { BookDetailsPanel } from "@/features/library/ui/book-details-panel";
@@ -108,9 +109,18 @@ export function LibraryOverview() {
                 )}
               </section>
               <section className="mt-[44.5px]">
-                <h2 className="mb-[18px] text-2xl font-semibold leading-[33px]">
-                  Finished
-                </h2>
+                <div className="mb-[18px] flex items-center justify-between gap-3">
+                  <h2 className="text-2xl font-semibold leading-[33px]">
+                    Finished
+                  </h2>
+                  <Link
+                    href="/reading-lists?list=completed"
+                    aria-label="View all finished books"
+                    className="shrink-0 rounded-sm text-sm text-muted-foreground outline-none hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    View all
+                  </Link>
+                </div>
                 <div className="space-y-[25.5px]">
                   {finished.slice(0, 2).map((book) => row(book, "finished"))}
                 </div>
