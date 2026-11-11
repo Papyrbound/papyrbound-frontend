@@ -3,6 +3,7 @@ import { useWorkspace } from "@/app-shell/workspace-store";
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
 import { BookGallery } from "./book-gallery";
 import { BookDetailsPanel } from "./book-details-panel";
+import { ShelfStatusBar } from "./shelf-status-bar";
 export function LibraryPage() {
   const { books } = useReadingLists();
   const { filter, sort } = useWorkspace();
@@ -30,10 +31,7 @@ export function LibraryPage() {
             emptyMessage="No books match these filters."
           />
         </div>
-        <footer className="flex h-9 shrink-0 items-center justify-between gap-4 bg-background px-[30px] text-xs text-muted-foreground">
-          <span>Library / All books</span>
-          <span>{visible.length} books</span>
-        </footer>
+        <ShelfStatusBar label="Library / All books" count={visible.length} />
       </main>
       <BookDetailsPanel />
     </div>

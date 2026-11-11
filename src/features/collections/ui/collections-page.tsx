@@ -37,6 +37,7 @@ import { LibraryFilter } from "@/features/library/ui/library-filter";
 import { BookGallery } from "@/features/library/ui/book-gallery";
 
 import { BookDetailsPanel } from "@/features/library/ui/book-details-panel";
+import { ShelfStatusBar } from "@/features/library/ui/shelf-status-bar";
 
 import { Button } from "@/shared/ui/button";
 
@@ -271,6 +272,24 @@ export function CollectionsPage() {
             ).getTime();
       return result * (ui.order === "desc" ? -1 : 1);
     });
+  const collectionBooks = opened
+    ? books
+        .filter((book) => opened.bookIds.includes(book.id))
+        .filter((book) =>
+          filter === "reading"
+            ? book.progress > 0 && book.progress < 100
+            : filter === "new"
+              ? book.progress === 0
+              : filter === "finished"
+                ? book.progress >= 100
+                : true,
+        )
+        .toSorted((a, b) =>
+          sort === "recent"
+            ? books.indexOf(a) - books.indexOf(b)
+            : a.title.localeCompare(b.title) * (sort === "za" ? -1 : 1),
+        )
+    : [];
   function edit(c: Collection) {
     ui.patch({ editor: c });
   }
@@ -333,88 +352,80 @@ export function CollectionsPage() {
   return (
     <>
       <div className="flex h-[calc(100dvh-3.5rem)] min-h-0">
-        <main className="@container min-w-0 flex-1 overflow-y-auto px-5 pt-[34px] pb-8 md:pl-9 md:pr-7">
-          {opened ? (
-            <>
-              <BookGallery
-                books={books
-                  .filter((b) => opened.bookIds.includes(b.id))
-                  .filter((b) =>
-                    filter === "reading"
-                      ? b.progress > 0 && b.progress < 100
-                      : filter === "new"
-                        ? b.progress === 0
-                        : filter === "finished"
-                          ? b.progress >= 100
-                          : true,
-                  )
-                  .toSorted((a, b) =>
-                    sort === "recent"
-                      ? books.indexOf(a) - books.indexOf(b)
-                      : a.title.localeCompare(b.title) * (sort === "za" ? -1 : 1),
-                  )}
-                onAddBooks={() => edit(opened)}
-              />
-            </>
-          ) : (
-            <>
-              <div
-                className={
-                  view === "grid"
-                    ? panelOpen
-                      ? "grid grid-cols-1 gap-x-6 gap-y-8 @min-[448px]:grid-cols-2 @min-[700px]:grid-cols-3 @min-[896px]:grid-cols-4"
-                      : "grid grid-cols-[repeat(auto-fill,minmax(min(100%,212px),212px))] gap-x-24 gap-y-8"
-                    : "space-y-1"
-                }
-              >
-                {visible.map((c) => (
-                  <button
-                    key={c.id}
-                    className={`min-w-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${selected?.id === c.id ? "bg-selected shadow-selection" : "hover:bg-hover"} ${view === "grid" ? "w-full max-w-[212px] rounded-2xl p-4 pb-2" : "flex w-full items-center gap-4 rounded-selection px-3 py-2 pr-6"}`}
-                    onClick={() => {
-                      ui.patch({ selected: c.id });
-                      if (compact)
-                        router.push(`/collections?collection=${c.id}`);
-                    }}
-                    onDoubleClick={() =>
-                      router.push(`/collections?collection=${c.id}`)
-                    }
-                    aria-label={`Select ${c.name}. Double click to open.`}
-                    aria-pressed={selected?.id === c.id}
-                  >
-                    <CollectionStack collection={c} small={view === "list"} />
-                    <span
-                      className={
-                        view === "grid"
-                          ? "mt-4 block max-w-48"
-                          : "min-w-0 flex-1"
+        <main className="flex min-w-0 flex-1 flex-col">
+          <div className="@container min-h-0 flex-1 overflow-y-auto px-5 pt-[34px] pb-8 md:pl-9 md:pr-7">
+            {opened ? (
+              <>
+                <BookGallery
+                  books={collectionBooks}
+                  onAddBooks={() => edit(opened)}
+                />
+              </>
+            ) : (
+              <>
+                <div
+                  className={
+                    view === "grid"
+                      ? panelOpen
+                        ? "grid grid-cols-1 gap-x-6 gap-y-8 @min-[448px]:grid-cols-2 @min-[700px]:grid-cols-3 @min-[896px]:grid-cols-4"
+                        : "grid grid-cols-[repeat(auto-fill,minmax(min(100%,212px),212px))] gap-x-24 gap-y-8"
+                      : "space-y-1"
+                  }
+                >
+                  {visible.map((c) => (
+                    <button
+                      key={c.id}
+                      className={`min-w-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${selected?.id === c.id ? "bg-selected shadow-selection" : "hover:bg-hover"} ${view === "grid" ? "w-full max-w-[212px] rounded-2xl p-4 pb-2" : "flex w-full items-center gap-4 rounded-selection px-3 py-2 pr-6"}`}
+                      onClick={() => {
+                        ui.patch({ selected: c.id });
+                        if (compact)
+                          router.push(`/collections?collection=${c.id}`);
+                      }}
+                      onDoubleClick={() =>
+                        router.push(`/collections?collection=${c.id}`)
                       }
+                      aria-label={`Select ${c.name}. Double click to open.`}
+                      aria-pressed={selected?.id === c.id}
                     >
-                      <span className={`flex items-center gap-2 ${view === "grid" ? "text-lg font-medium leading-7" : "h-6 text-sm font-semibold leading-6"}`}>
-                        <span className="truncate">{c.name}</span>
-                        {c.pinned && (
-                          <Pin className="size-3 text-muted-foreground" />
-                        )}
+                      <CollectionStack collection={c} small={view === "list"} />
+                      <span
+                        className={
+                          view === "grid"
+                            ? "mt-4 block max-w-48"
+                            : "min-w-0 flex-1"
+                        }
+                      >
+                        <span className={`flex items-center gap-2 ${view === "grid" ? "text-lg font-medium leading-7" : "h-6 text-sm font-semibold leading-6"}`}>
+                          <span className="truncate">{c.name}</span>
+                          {c.pinned && (
+                            <Pin className="size-3 text-muted-foreground" />
+                          )}
+                        </span>
+                        <span className={`mt-1 block text-xs text-muted-foreground ${view === "grid" ? "leading-5" : "h-[18px] leading-[18px]"}`}>
+                          {c.bookIds.length} {c.bookIds.length === 1 ? "book" : "books"}
+                        </span>
                       </span>
-                      <span className={`mt-1 block text-xs text-muted-foreground ${view === "grid" ? "leading-5" : "h-[18px] leading-[18px]"}`}>
-                        {c.bookIds.length} {c.bookIds.length === 1 ? "book" : "books"}
-                      </span>
-                    </span>
-                    {view === "list" && (
-                      <span className="hidden shrink-0 text-xs text-muted-foreground sm:block">
-                        Added {date(c.lastBookAddedAt)}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-              {!visible.length && (
-                <p className="py-16 text-center text-muted-foreground">
-                  No collections match. Create a collection or clear the filter.
-                </p>
-              )}
-            </>
-          )}
+                      {view === "list" && (
+                        <span className="hidden shrink-0 text-xs text-muted-foreground sm:block">
+                          Added {date(c.lastBookAddedAt)}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+                {!visible.length && (
+                  <p className="py-16 text-center text-muted-foreground">
+                    No collections match. Create a collection or clear the filter.
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+          <ShelfStatusBar
+            label={opened ? `Collections / ${opened.name}` : "Collections / All collections"}
+            count={opened ? collectionBooks.length : visible.length}
+            unit={opened ? "book" : "collection"}
+          />
         </main>
         {opened ? (
           <BookDetailsPanel />
