@@ -23,11 +23,11 @@ import {
   DialogDescription,
 } from "@/shared/ui/dialog";
 import type { SampleBook } from "../model/sample-books";
-import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
+import { useActiveLibrary } from "@/features/library/model/use-active-library";
 import { BookCover } from "./book-cover";
 
 export function BookSearchDialog() {
-  const { books } = useReadingLists();
+  const { books, plural, noun } = useActiveLibrary();
   const selectBook = useWorkspace((state) => state.selectBook);
   const router = useRouter();
   const [open, setOpen] = useLocalUIState(false);
@@ -81,7 +81,7 @@ export function BookSearchDialog() {
             className="h-9 w-full justify-start gap-2 rounded-lg border-0 bg-white px-3 text-xs text-muted-foreground shadow-none dark:bg-background"
           />
         }
-        aria-label="Search books"
+        aria-label={`Search ${plural}`}
         aria-keyshortcuts="Control+k Meta+k"
       >
         <Search aria-hidden="true" />
@@ -102,8 +102,8 @@ export function BookSearchDialog() {
             Search library
           </DialogTitle>
           <DialogDescription className="sr-only">
-            Find books by title, author, or genre. Use the arrow keys to move
-            through results and Enter to view a book.
+            Find {plural} by title, author, or genre. Use the arrow keys to move
+            through results and Enter to view a {noun}.
           </DialogDescription>
           {!selected && (
             <div className="relative mt-4">
@@ -114,7 +114,7 @@ export function BookSearchDialog() {
               <Input
                 ref={inputRef}
                 type="search"
-                aria-label="Search your books"
+                aria-label={`Search your ${plural}`}
                 placeholder="Title, author, or genre…"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
@@ -193,7 +193,7 @@ export function BookSearchDialog() {
             <div className="flex shrink-0 items-center justify-between border-t border-border px-5 py-3 text-xs text-muted-foreground">
               <span>{normalizedQuery ? "Results" : "Your library"}</span>
               <span role="status">
-                {results.length} {results.length === 1 ? "book" : "books"}
+                {results.length} {results.length === 1 ? noun : plural}
               </span>
             </div>
             <div
@@ -258,7 +258,7 @@ export function BookSearchDialog() {
               {!results.length && (
                 <div className="px-6 py-10 text-center">
                   <Search className="mx-auto mb-3 size-5 text-muted-foreground" />
-                  <p className="text-sm font-medium">No books found</p>
+                  <p className="text-sm font-medium">No {plural} found</p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
                     Try another title, author, or genre.
                   </p>
@@ -269,7 +269,7 @@ export function BookSearchDialog() {
               <span className="flex items-center gap-1.5">
                 <ArrowUp className="size-3" />
                 <ArrowDown className="size-3" />
-                Navigate<span className="ml-2">↵ View book</span>
+                Navigate<span className="ml-2">↵ View {noun}</span>
               </span>
               <span>Esc to close</span>
             </footer>

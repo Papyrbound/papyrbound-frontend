@@ -26,7 +26,7 @@ import {
 
 import { useCollections, type Collection } from "../stores/collections-store";
 
-import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
+import { useActiveLibrary } from "@/features/library/model/use-active-library";
 
 import { useWorkspace } from "@/app-shell/workspace-store";
 
@@ -106,13 +106,14 @@ export function CollectionToolbar() {
   const ui = useCollectionUI();
   const search = useSearchParams();
   const { collections } = useCollections();
-  const opened = collections.find((c) => c.id === search.get("collection"));
+  const { kind, plural } = useActiveLibrary();
+  const opened = collections.find((c) => c.id === search.get("collection") && (c.kind ?? "books") === kind);
   if (opened) return (
     <>
       <LibraryFilter iconOnly />
       <Button variant="secondary" onClick={() => ui.patch({ editor: opened })}>
         <BookPlus />
-        Add books
+        Add {plural}
       </Button>
     </>
   );
@@ -217,7 +218,7 @@ export function CollectionStack({
   small?: boolean;
   panel?: boolean;
 }) {
-  const { books } = useReadingLists();
+  const { books } = useActiveLibrary();
   const covers = collection.bookIds
     .map((id) => books.find((b) => b.id === id))
     .filter((b) => b !== undefined)
@@ -249,8 +250,9 @@ export function CollectionStack({
 
 export function CollectionsPage() {
   const compact = useIsCompactWindow();
-  const { collections, setCollections } = useCollections();
-  const { books, markAsRead } = useReadingLists();
+  const { collections: allCollections, setCollections } = useCollections();
+  const { books, markAsRead, kind, plural, noun, label } = useActiveLibrary();
+  const collections = allCollections.filter((collection) => (collection.kind ?? "books") === kind);
   const { view, panelOpen, filter, sort } = useWorkspace();
   const ui = useCollectionUI();
   const router = useRouter();
@@ -311,7 +313,7 @@ export function CollectionsPage() {
         Open collection
       </Button>
       {[
-        ["Add books", BookPlus, () => edit(selected)],
+        [`Add ${plural}`, BookPlus, () => edit(selected)],
         ["Rename collection", Pencil, () => edit(selected)],
         [
           selected.pinned ? "Unpin collection" : "Pin collection",
@@ -402,7 +404,7 @@ export function CollectionsPage() {
                           )}
                         </span>
                         <span className={`mt-1 block text-xs text-muted-foreground ${view === "grid" ? "leading-5" : "h-[18px] leading-[18px]"}`}>
-                          {c.bookIds.length} {c.bookIds.length === 1 ? "book" : "books"}
+                          {c.bookIds.length} {c.bookIds.length === 1 ? noun : plural}
                         </span>
                       </span>
                       {view === "list" && (
@@ -424,7 +426,7 @@ export function CollectionsPage() {
           <ShelfStatusBar
             label={opened ? `Collections / ${opened.name}` : "Collections / All collections"}
             count={opened ? collectionBooks.length : visible.length}
-            unit={opened ? "book" : "collection"}
+            unit={opened ? noun : "collection"}
           />
         </main>
         {opened ? (
@@ -448,9 +450,9 @@ export function CollectionsPage() {
               <dl className="space-y-1 text-xs">
                 {[
                   ["Created", date(selected.createdAt)],
-                  ["Last book added", date(selected.lastBookAddedAt)],
+                  [`Last ${noun} added`, date(selected.lastBookAddedAt)],
                   ["Location", "My library"],
-                  ["Contents", `${selected.bookIds.length} books`],
+                  ["Contents", `${selected.bookIds.length} ${selected.bookIds.length === 1 ? noun : plural}`],
                 ].map(([k, v]) => (
                   <div
                     key={k}
@@ -481,7 +483,7 @@ export function CollectionsPage() {
             <DialogTitle>
               {ui.editor === "new" ? "New collection" : "Edit collection"}
             </DialogTitle>
-            <DialogDescription>Bring your books together.</DialogDescription>
+            <DialogDescription>Bring your {plural} together.</DialogDescription>
           </DialogHeader>
           {ui.editor && (
             <form
@@ -516,6 +518,7 @@ export function CollectionsPage() {
                         ...cs,
                         {
                           id: crypto.randomUUID(),
+                          kind,
                           name,
                           bookIds,
                           color: "#d9cae9",
@@ -538,7 +541,7 @@ export function CollectionsPage() {
                 />
               </label>
               <fieldset>
-                <legend className="mb-3 text-sm">Books</legend>
+                <legend className="mb-3 text-sm">{label}</legend>
                 <div className="max-h-60 space-y-2 overflow-y-auto">
                   {books.map((b) => (
                     <label
@@ -581,7 +584,7 @@ export function CollectionsPage() {
           <DialogHeader>
             <DialogTitle>Delete collection?</DialogTitle>
             <DialogDescription>
-              Delete {ui.deleting?.name}? Its books will stay in your library.
+              Delete {ui.deleting?.name}? Its {plural} will stay in your library.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

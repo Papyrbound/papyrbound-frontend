@@ -21,7 +21,7 @@ import { useAnnotations } from "../stores/annotations-store";
 
 import { annotationColors } from "../model/annotation";
 
-import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
+import { useActiveLibrary } from "@/features/library/model/use-active-library";
 
 import { useWorkspace } from "@/app-shell/workspace-store";
 
@@ -98,9 +98,10 @@ const useAnnotationUI = create<{
 export function AnnotationsToolbar() {
   const ui = useAnnotationUI();
   const { annotations } = useAnnotations();
-  const { books } = useReadingLists();
+  const { books, plural, noun } = useActiveLibrary();
+  const selectedBook = books.some((book) => book.id === ui.book) ? ui.book : "all";
   const groups = books.filter((b) => annotations.some((a) =>
-    a.bookId === b.id && (ui.book === "all" || a.bookId === ui.book) &&
+    a.bookId === b.id && (selectedBook === "all" || a.bookId === selectedBook) &&
     `${a.content} ${a.note}`.toLowerCase().includes(ui.query.toLowerCase()),
   ));
   return (
@@ -127,18 +128,18 @@ export function AnnotationsToolbar() {
       </Popover>
         <DropdownMenu>
           <DropdownMenuTrigger
-            aria-label="Filter annotations by book"
-            render={<Button variant="secondary" size="icon-sm" title={books.find((b) => b.id === ui.book)?.title ?? "All books"} />}
+            aria-label={`Filter annotations by ${noun}`}
+            render={<Button variant="secondary" size="icon-sm" title={books.find((b) => b.id === ui.book)?.title ?? `All ${plural}`} />}
           >
             <BookOpen />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[272px]">
             <DropdownMenuRadioGroup
-              value={ui.book}
+              value={selectedBook}
               onValueChange={(book) => ui.patch({ book })}
             >
               <DropdownMenuRadioItem value="all">
-                All books
+                All {plural}
               </DropdownMenuRadioItem>
               {books
                 .filter((b) => annotations.some((a) => a.bookId === b.id))
@@ -193,14 +194,15 @@ export function AnnotationsToolbar() {
 
 export function AnnotationsPage() {
   const { annotations, setAnnotations } = useAnnotations();
-  const { books } = useReadingLists();
+  const { books, noun } = useActiveLibrary();
   const { selectBook } = useWorkspace();
   const ui = useAnnotationUI();
   const router = useRouter();
+  const selectedBook = books.some((book) => book.id === ui.book) ? ui.book : "all";
   const visible = annotations
     .filter(
       (a) =>
-        (ui.book === "all" || a.bookId === ui.book) &&
+        (selectedBook === "all" || a.bookId === selectedBook) &&
         `${a.content} ${a.note}`.toLowerCase().includes(ui.query.toLowerCase()),
     )
     .toSorted(
@@ -286,7 +288,7 @@ export function AnnotationsPage() {
                             }}
                           >
                             <BookOpen />
-                            Open book details
+                            Open {noun} details
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={async () => {

@@ -39,7 +39,7 @@ import {
 } from "@/shared/ui/dropdown-menu";
 import { Button } from "@/shared/ui/button";
 import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
-import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
+import { useActiveLibrary } from "@/features/library/model/use-active-library";
 import { ReadingListEditor } from "@/features/reading-lists/ui/reading-list-editor";
 
 const navigation = [
@@ -63,7 +63,7 @@ const shelves = [
 ];
 function Navigation() {
   const labels = useSettingsUI((s) => s.labels);
-  const { lists, createList } = useReadingLists();
+  const { lists, createList } = useActiveLibrary();
   const [creating, setCreating] = useLocalUIState(false);
   const path = usePathname();
   const search = useSearchParams();

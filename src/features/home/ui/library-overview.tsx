@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useWorkspace } from "@/app-shell/workspace-store";
-import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
+import { useActiveLibrary } from "@/features/library/model/use-active-library";
 import { BookDetailsPanel } from "@/features/library/ui/book-details-panel";
 import { BookCover } from "./book-cover";
 import type { SampleBook } from "../model/sample-books";
 
 export function LibraryOverview() {
-  const { books, lists } = useReadingLists();
+  const { books, lists, noun, label } = useActiveLibrary();
   const { selectBook, selectedId, setDialog, panelOpen } = useWorkspace();
   const recent = books.filter((book) => book.progress > 0).slice(0, 4);
   const finished = books.filter((book) => book.progress >= 100);
@@ -92,7 +92,7 @@ export function LibraryOverview() {
           </div>
           {!recent.length && (
             <p className="py-12 text-muted-foreground">
-              Start a book from your library to see it here.
+              Start a {noun} from your library to see it here.
             </p>
           )}
           <div className="mt-[39px] grid gap-12 @min-[750px]:grid-cols-[minmax(0,1.26fr)_minmax(0,1fr)] lg:mr-10">
@@ -104,7 +104,7 @@ export function LibraryOverview() {
                 {next.map((book) => row(book, "next"))}
                 {!next.length && (
                   <p className="text-sm text-muted-foreground">
-                    Your next book is waiting in the library.
+                    Your next {noun} is waiting in the library.
                   </p>
                 )}
               </section>
@@ -115,7 +115,7 @@ export function LibraryOverview() {
                   </h2>
                   <Link
                     href="/reading-lists?list=completed"
-                    aria-label="View all finished books"
+                    aria-label={`View all finished ${noun}s`}
                     className="shrink-0 rounded-sm text-sm text-muted-foreground outline-none hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     View all
@@ -126,7 +126,7 @@ export function LibraryOverview() {
                 </div>
                 {!finished.length && (
                   <p className="text-sm text-muted-foreground">
-                    Books you finish will appear here.
+                    {label} you finish will appear here.
                   </p>
                 )}
               </section>

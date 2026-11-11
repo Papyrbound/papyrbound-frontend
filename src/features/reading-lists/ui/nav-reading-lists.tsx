@@ -34,7 +34,7 @@ import {
   type ReadingListIcon,
   getReadingListUrl,
 } from "@/features/reading-lists/model/reading-list";
-import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
+import { useActiveLibrary } from "@/features/library/model/use-active-library";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { ReadingListEditor } from "./reading-list-editor";
@@ -166,7 +166,7 @@ function ReadingListMenuItem({
 export function NavReadingLists() {
   const { state, isMobile, setOpenMobile } = useSidebar();
   const { lists, createList, updateList, deleteList, togglePinned } =
-    useReadingLists();
+    useActiveLibrary();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();

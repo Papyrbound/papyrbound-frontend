@@ -18,7 +18,7 @@ import {
 
 import { useWorkspace } from "@/app-shell/workspace-store";
 
-import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
+import { useActiveLibrary } from "@/features/library/model/use-active-library";
 
 import { useCollections } from "@/features/collections/stores/collections-store";
 
@@ -84,7 +84,8 @@ export function BookDetailsPanel({
     markAsUnread,
     deleteBook,
     updateBook,
-  } = useReadingLists();
+    noun, kind,
+  } = useActiveLibrary();
 
   const { collections, setCollections } = useCollections();
   const { setAnnotations } = useAnnotations();
@@ -93,7 +94,9 @@ export function BookDetailsPanel({
     useWorkspace();
 
   const mobile = useIsCompactWindow();
-  const book = books.find((b) => b.id === selectedId) ?? fallback ?? books[0];
+  const book = books.find((b) => b.id === selectedId) ?? (fallback && (fallback.kind ?? "books") === kind ? fallback : undefined) ?? books[0];
+  const itemLabel = kind === "comics" ? "Comic" : "Book";
+  const activeCollections = collections.filter((collection) => (collection.kind ?? "books") === kind);
 
   if (!book) return null;
 
@@ -111,7 +114,7 @@ export function BookDetailsPanel({
       </div>
       <div className={reading ? "mt-[26px]" : "mt-6"}>
         <p className="h-5 text-xs leading-5 text-muted-foreground">
-          {reading ? "Currently reading" : "Book"}
+          {reading ? "Currently reading" : itemLabel}
         </p>
         <h2
           className={`${reading ? "mt-2.5" : "mt-2"} text-2xl font-semibold leading-[34px]`}
@@ -142,8 +145,8 @@ export function BookDetailsPanel({
               ["Last read", "Today, 9:41 AM"],
             ]
           : [
-              ["File format", "EPUB"],
-              ["Length", `${book.pages} pages`],
+              ["File format", book.format ?? "EPUB"],
+              ["Length", book.pages ? `${book.pages} pages` : "Not available"],
               ["Progress", `${book.progress}%`],
               ["Last opened", book.progress ? "Today" : "Not opened"],
               ["Location", "On this device"],
@@ -191,7 +194,7 @@ export function BookDetailsPanel({
               onClick={() => setDialog("reader")}
             >
               <List />
-              View chapters
+              {kind === "comics" ? "View pages" : "View chapters"}
             </Button>
             <Button
               variant="ghost"
@@ -262,7 +265,7 @@ export function BookDetailsPanel({
               onClick={() => setDialog("edit")}
             >
               <Pencil />
-              Edit book details
+              Edit {noun} details
             </Button>
             <div
               role="separator"
@@ -274,7 +277,7 @@ export function BookDetailsPanel({
               onClick={() => setDialog("delete")}
             >
               <Trash2 />
-              Delete book
+              Delete {noun}
             </Button>
           </>
         )}
@@ -286,7 +289,7 @@ export function BookDetailsPanel({
     <>
       {panelOpen && (
         <aside
-          aria-label={reading ? "Reading panel" : "Book details"}
+          aria-label={reading ? "Reading panel" : `${itemLabel} details`}
           className={`hidden w-[360px] shrink-0 self-stretch overflow-y-auto bg-card px-6 pb-10 lg:block ${reading ? "pt-16" : "pt-[42px]"}`}
         >
           <div>{body}</div>
@@ -300,7 +303,7 @@ export function BookDetailsPanel({
         <SheetContent className="overflow-y-auto bg-card">
           <SheetHeader>
             <SheetTitle>
-              {reading ? "Reading panel" : "Book details"}
+              {reading ? "Reading panel" : `${itemLabel} details`}
             </SheetTitle>
           </SheetHeader>
           <div className="px-6 pb-8">{body}</div>
@@ -324,7 +327,7 @@ export function BookDetailsPanel({
                 : dialog === "collections"
                   ? "Add to collection"
                   : dialog === "edit"
-                    ? "Edit book details"
+                    ? `Edit ${noun} details`
                     : "Reader preview"}
             </DialogTitle>
             <DialogDescription>
@@ -334,21 +337,21 @@ export function BookDetailsPanel({
 
           {dialog === "synopsis" && (
             <p className="text-sm leading-7">
-              {book.synopsis ?? "No synopsis available for this book."}
+              {book.synopsis ?? `No synopsis available for this ${noun}.`}
             </p>
           )}
 
           {dialog === "reader" && (
             <div className="space-y-4">
               <p className="text-xs text-muted-foreground">
-                Visual preview · EPUB rendering is not connected.
+                {book.sourceId ? `Your ${book.format} file is saved on this device. Reading imported files is coming soon.` : "Visual preview · EPUB rendering is not connected."}
               </p>
-              <h3 className="font-serif text-2xl">Chapter one</h3>
+              {!book.sourceId && <><h3 className="font-serif text-2xl">Chapter one</h3>
               <p className="font-serif text-lg leading-8">
                 The room grew quiet as the afternoon light moved across the
                 floor. She turned the page, and for a moment the rest of the
                 world could wait.
-              </p>
+              </p></>}
               <Button
                 variant="outline"
                 nativeButton={false}
@@ -361,7 +364,7 @@ export function BookDetailsPanel({
 
           {dialog === "collections" && (
             <div className="space-y-2">
-              {collections.map((c) => (
+              {activeCollections.map((c) => (
                 <Button
                   key={c.id}
                   aria-pressed={c.bookIds.includes(book.id)}
@@ -389,7 +392,7 @@ export function BookDetailsPanel({
                   {c.bookIds.includes(book.id) && <Check />}
                 </Button>
               ))}
-              {!collections.length && (
+              {!activeCollections.length && (
                 <p className="text-sm text-muted-foreground">
                   Create a collection from the Collections page first.
                 </p>
@@ -458,7 +461,7 @@ export function BookDetailsPanel({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete book?</AlertDialogTitle>
+            <AlertDialogTitle>Delete {noun}?</AlertDialogTitle>
             <AlertDialogDescription>
               Remove {book.title} from your library? Its annotations and reading
               progress will also be removed.
@@ -482,7 +485,7 @@ export function BookDetailsPanel({
                 if (next) selectBook(next.id);
               }}
             >
-              Delete book
+              Delete {noun}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

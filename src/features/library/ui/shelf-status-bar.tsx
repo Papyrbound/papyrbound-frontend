@@ -5,7 +5,7 @@ export function ShelfStatusBar({
 }: {
   label: string;
   count: number;
-  unit?: "book" | "shelf" | "collection";
+  unit?: "book" | "comic" | "shelf" | "collection";
 }) {
   return (
     <footer className="flex h-9 shrink-0 items-center justify-between gap-4 bg-background px-5 text-xs text-muted-foreground md:px-[30px]">

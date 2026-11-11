@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 
 import Link from "next/link";
 
-import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
+import { useActiveLibrary } from "@/features/library/model/use-active-library";
 import { BookDetailsPanel } from "@/features/library/ui/book-details-panel";
 import { BookGallery } from "@/features/library/ui/book-gallery";
 import { ShelfStatusBar } from "@/features/library/ui/shelf-status-bar";
@@ -14,7 +14,7 @@ import { useWorkspace } from "@/app-shell/workspace-store";
 import { ReadingListEditor } from "./reading-list-editor";
 
 export function ReadingListsPage() {
-  const { books, lists, updateList } = useReadingLists();
+  const { books, lists, updateList, plural, noun, label } = useActiveLibrary();
   const { filter, sort } = useWorkspace();
   const [isEditing, setIsEditing] = useLocalUIState(false);
   const searchParams = useSearchParams();
@@ -49,10 +49,10 @@ export function ReadingListsPage() {
               books={listBooks}
               emptyMessage={
                 selectedList.id === "completed"
-                  ? "Books you mark as read will appear here."
+                  ? `${label} you mark as read will appear here.`
                   : selectedList.isDefault
-                    ? "Add books to this list from the book menus in your library."
-                    : "No books here yet. Choose Add books to build your list."
+                    ? `Add ${plural} to this list from the ${noun} menus in your library.`
+                    : `No ${plural} here yet. Choose Add ${plural} to build your list.`
               }
               listId={selectedList.id}
               onAddBooks={
@@ -75,7 +75,7 @@ export function ReadingListsPage() {
                   <span>{list.name}</span>
                   <span className="ml-auto text-xs text-muted-foreground">
                     {list.bookIds?.length ?? 0}{" "}
-                    {list.bookIds?.length === 1 ? "book" : "books"}
+                    {list.bookIds?.length === 1 ? noun : plural}
                   </span>
                 </Link>
               ))}
@@ -85,7 +85,7 @@ export function ReadingListsPage() {
         <ShelfStatusBar
           label={selectedList ? `Reading lists / ${selectedList.name}` : "Reading lists / All shelves"}
           count={selectedList ? listBooks.length : lists.length}
-          unit={selectedList ? "book" : "shelf"}
+          unit={selectedList ? noun : "shelf"}
         />
         {isEditing && selectedList && (
           <ReadingListEditor

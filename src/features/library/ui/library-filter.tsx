@@ -14,6 +14,7 @@ import {
 import { useWorkspace } from "@/app-shell/workspace-store";
 
 import { Button } from "@/shared/ui/button";
+import { libraryCopy } from "../model/library-kind";
 
 import {
   DropdownMenu,
@@ -27,7 +28,8 @@ import {
 } from "@/shared/ui/dropdown-menu";
 
 export function LibraryFilter({ iconOnly = false }: { iconOnly?: boolean }) {
-  const { filter, setFilter, sort, setSort } = useWorkspace();
+  const { filter, setFilter, sort, setSort, libraryKind } = useWorkspace();
+  const { plural } = libraryCopy[libraryKind];
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -35,8 +37,8 @@ export function LibraryFilter({ iconOnly = false }: { iconOnly?: boolean }) {
           <Button
             variant="secondary"
             size={iconOnly ? "icon-sm" : "default"}
-            aria-label="Filter books"
-            title="Filter books"
+            aria-label={`Filter ${plural}`}
+            title={`Filter ${plural}`}
             className={iconOnly ? "rounded-lg" : ""}
           />
         }
@@ -50,7 +52,7 @@ export function LibraryFilter({ iconOnly = false }: { iconOnly?: boolean }) {
           <DropdownMenuRadioGroup value={filter} onValueChange={setFilter}>
             {(
               [
-                ["all", "All books", Library],
+                ["all", `All ${plural}`, Library],
                 ["reading", "In progress", BookOpen],
                 ["new", "Not started", Bookmark],
                 ["finished", "Finished", CircleCheck],
