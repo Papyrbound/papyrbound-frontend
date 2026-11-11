@@ -39,13 +39,15 @@ export function AddBookDialog() {
         render={
           <Button
             size="sm"
-            className="rounded-lg px-3 text-[13px] sm:w-[136px]"
+            className="w-8 gap-2 rounded-[10px] border-primary-foreground/10 p-0 text-[13px] font-medium shadow-[0_1px_2px_rgb(0_0_0/12%),inset_0_1px_0_rgb(255_255_255/16%)] transition-[background-color,box-shadow] duration-150 hover:bg-primary/90 hover:shadow-[0_2px_5px_rgb(0_0_0/16%)] sm:w-auto sm:pl-1.5 sm:pr-3"
             title="Import books"
           />
         }
         aria-label="Import books"
       >
-        <UploadIcon aria-hidden="true" />
+        <span className="flex size-5 items-center justify-center rounded-md bg-primary-foreground/10" aria-hidden="true">
+          <UploadIcon className="size-3.5" />
+        </span>
         <span className="hidden sm:inline">Import books</span>
       </DialogTrigger>
       <DialogContent initialFocus={titleRef}>
