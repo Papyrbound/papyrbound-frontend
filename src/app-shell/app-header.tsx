@@ -115,7 +115,7 @@ export function AppHeader() {
     pathname === "/collections";
   const hasPanel = gallery || pathname === "/";
   return (
-    <header className="flex h-14 shrink-0 items-center border-b border-border/55 bg-background px-4">
+    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center border-b border-border/55 bg-background px-4">
       <SidebarTrigger className="mr-3 text-muted-foreground md:hidden" />
       <div className="mr-[19px] hidden items-center gap-1 md:flex">
         <Button
