@@ -99,7 +99,7 @@ function date(value?: string) {
         month: "short",
         day: "numeric",
       })
-    : "No books added";
+    : "Nothing added yet";
 }
 
 export function CollectionToolbar() {

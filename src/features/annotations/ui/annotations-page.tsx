@@ -199,9 +199,11 @@ export function AnnotationsPage() {
   const ui = useAnnotationUI();
   const router = useRouter();
   const selectedBook = books.some((book) => book.id === ui.book) ? ui.book : "all";
+  const bookIds = new Set(books.map((book) => book.id));
   const visible = annotations
     .filter(
       (a) =>
+        bookIds.has(a.bookId) &&
         (selectedBook === "all" || a.bookId === selectedBook) &&
         `${a.content} ${a.note}`.toLowerCase().includes(ui.query.toLowerCase()),
     )

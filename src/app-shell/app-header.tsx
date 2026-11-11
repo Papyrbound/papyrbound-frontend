@@ -26,7 +26,7 @@ import {
   BreadcrumbSeparator,
 } from "@/shared/ui/breadcrumb";
 import { useCollections } from "@/features/collections/stores/collections-store";
-import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
+import { useActiveLibrary } from "@/features/library/model/use-active-library";
 
 const routeLabels: Record<string, string> = {
   "/": "Reading Now",
@@ -42,8 +42,9 @@ const routeLabels: Record<string, string> = {
 
 function RouteBreadcrumbs({ pathname }: { pathname: string }) {
   const searchParams = useSearchParams();
-  const { collections } = useCollections();
-  const { books, lists } = useReadingLists();
+  const { collections: allCollections } = useCollections();
+  const { books, lists, kind } = useActiveLibrary();
+  const collections = allCollections.filter((collection) => (collection.kind ?? "books") === kind);
   const segments = pathname.split("/").filter(Boolean);
   const items =
     segments.length === 0
