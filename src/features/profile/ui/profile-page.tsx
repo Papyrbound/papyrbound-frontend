@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { BookOpen, Pencil, ArrowUpRight } from "lucide-react";
 import { useAccount } from "../stores/account-store";
 import { useReadingTitles } from "../model/reading-titles";
+import { libraryActivityPreview } from "../model/library-activity-preview";
 import { ReaderAvatar } from "./reader-avatar";
 import { EditProfileDialog } from "./edit-profile-dialog";
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
@@ -31,6 +32,8 @@ export function ProfilePage() {
   const { profile } = useAccount();
   const { activeTitle } = useReadingTitles();
   const { books, activity } = useReadingLists();
+  const showingActivityPreview = activity.length === 0;
+  const displayedActivity = showingActivityPreview ? libraryActivityPreview : activity;
   const { annotations } = useAnnotations();
   const { collections } = useCollections();
   const selectBook = useWorkspace((state) => state.selectBook);
@@ -152,14 +155,25 @@ export function ProfilePage() {
             )}
           </TabsContent>
           <TabsContent value="Library activity" className="min-h-48 px-5 py-5 sm:px-7">
-            {activity.length ? (
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <span className="text-xs text-muted-foreground">
+                {showingActivityPreview ? "Sample library activity" : "Recent library activity"}
+              </span>
+              <Link href="/reading-activity" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+                Reading activity <ArrowUpRight className="size-3.5" />
+              </Link>
+            </div>
+            {displayedActivity.length ? (
               <div className="divide-y divide-border/60">
-                {activity.map((event) => (
+                {displayedActivity.map((event) => (
                   <div key={event.id} className="py-4">
                     <p className="text-xs text-muted-foreground">{activityLabels[event.kind]}</p>
                     <p className="mt-1 text-sm font-medium">{event.bookTitle}</p>
                     <time dateTime={event.at} className="mt-1 block text-xs text-muted-foreground">
-                      {new Date(event.at).toLocaleDateString()}
+                      {new Date(event.at).toLocaleString("en-US", {
+                        month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
+                        timeZone: "UTC", timeZoneName: "short",
+                      })}
                     </time>
                   </div>
                 ))}
