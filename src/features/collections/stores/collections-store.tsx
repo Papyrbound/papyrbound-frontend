@@ -2,6 +2,7 @@
 import { create } from "zustand";
 import type { Dispatch, SetStateAction, ReactNode } from "react";
 export type Collection = {
+  kind?: "books" | "comics";
   id: string;
   name: string;
   color: string;

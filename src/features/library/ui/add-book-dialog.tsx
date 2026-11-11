@@ -1,105 +1,98 @@
 "use client";
 
-import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
-
 import { useRef } from "react";
-import { UploadIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { LoaderCircle, UploadIcon } from "lucide-react";
+import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
+import { useIsCompactWindow } from "@/shared/hooks/use-mobile";
+import { useWorkspace } from "@/app-shell/workspace-store";
 import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/shared/ui/dialog";
-import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
+import { useActiveLibrary } from "../model/use-active-library";
 
 export function AddBookDialog() {
-  const [open, setOpen] = useLocalUIState(false);
-  const [title, setTitle] = useLocalUIState("");
-  const [author, setAuthor] = useLocalUIState("");
-  const titleRef = useRef<HTMLInputElement>(null);
-  const { addBook } = useReadingLists();
+  const { kind, plural, accept, importBook, importsReady, storageError } = useActiveLibrary();
+  const [busy, setBusy] = useLocalUIState(false);
+  const [result, setResult] = useLocalUIState<{ added: number; duplicates: number; errors: string[] } | null>(null);
+  const input = useRef<HTMLInputElement>(null);
+  const importing = useRef(false);
+  const compact = useIsCompactWindow();
+  const router = useRouter();
+  const label = `Import ${plural}`;
 
-  function changeOpen(next: boolean) {
-    setOpen(next);
-    if (!next) {
-      setTitle("");
-      setAuthor("");
+  async function importFiles(files: File[]) {
+    if (!files.length || importing.current) return;
+    importing.current = true;
+    setBusy(true);
+    const outcome = { added: 0, duplicates: 0, errors: [] as string[] };
+    let lastId: string | undefined;
+    try {
+      const { parseLibraryFile } = await import("../model/import-file");
+      for (const file of files) {
+        try {
+          const book = await parseLibraryFile(file, kind);
+          if (await importBook(book, file)) { outcome.added++; lastId = book.id; }
+          else outcome.duplicates++;
+        } catch (error) {
+          outcome.errors.push(`${file.name}: ${error instanceof Error ? error.message : "Could not import this file."}`);
+        }
+      }
+      if (lastId && useWorkspace.getState().libraryKind === kind) {
+        useWorkspace.setState((state) => ({ selectedId: lastId, filter: "all", sort: "recent", panelOpen: compact ? false : state.panelOpen }));
+        router.push("/library");
+      }
+    } catch {
+      outcome.errors.push("Could not start the importer. Please try again.");
+    } finally {
+      importing.current = false;
+      setBusy(false);
+      setResult(outcome);
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={changeOpen}>
-      <DialogTrigger
-        render={
-          <Button
-            size="sm"
-            className="w-8 gap-2 rounded-[10px] border-primary-foreground/10 p-0 text-[13px] font-medium shadow-[0_1px_2px_rgb(0_0_0/12%),inset_0_1px_0_rgb(255_255_255/16%)] transition-[background-color,box-shadow] duration-150 hover:bg-primary/90 hover:shadow-[0_2px_5px_rgb(0_0_0/16%)] sm:w-auto sm:pl-1.5 sm:pr-3"
-            title="Import books"
-          />
-        }
-        aria-label="Import books"
+    <>
+      <input
+        ref={input}
+        type="file"
+        multiple
+        accept={accept}
+        className="hidden"
+        aria-label={label}
+        onChange={(event) => {
+          const files = Array.from(event.currentTarget.files ?? []);
+          event.currentTarget.value = "";
+          void importFiles(files);
+        }}
+      />
+      <Button
+        size="sm"
+        className="w-8 gap-2 rounded-[10px] border-primary-foreground/10 p-0 text-[13px] font-medium shadow-[0_1px_2px_rgb(0_0_0/12%),inset_0_1px_0_rgb(255_255_255/16%)] transition-[background-color,box-shadow] duration-150 hover:bg-primary/90 hover:shadow-[0_2px_5px_rgb(0_0_0/16%)] sm:w-auto sm:pl-1.5 sm:pr-3"
+        title={busy ? "Importing files…" : label}
+        aria-label={busy ? "Importing files" : label}
+        aria-busy={busy}
+        disabled={busy || !importsReady}
+        onClick={() => input.current?.click()}
       >
         <span className="flex size-5 items-center justify-center rounded-md bg-primary-foreground/10" aria-hidden="true">
-          <UploadIcon className="size-3.5" />
+          {busy ? <LoaderCircle className="size-3.5 animate-spin" /> : <UploadIcon className="size-3.5" />}
         </span>
-        <span className="hidden sm:inline">Import books</span>
-      </DialogTrigger>
-      <DialogContent initialFocus={titleRef}>
-        <DialogHeader>
-          <DialogTitle>Import books</DialogTitle>
-          <DialogDescription>
-            Preview your library by adding a title. EPUB file importing is not
-            connected yet.
-          </DialogDescription>
-        </DialogHeader>
-        <form
-          className="space-y-5"
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (!title.trim() || !author.trim()) return;
-            addBook({ title, author });
-            changeOpen(false);
-          }}
-        >
-          <div className="space-y-2">
-            <label htmlFor="add-book-title">Title</label>
-            <Input
-              ref={titleRef}
-              id="add-book-title"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder="Book title"
-              required
-              maxLength={200}
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="add-book-author">Author</label>
-            <Input
-              id="add-book-author"
-              value={author}
-              onChange={(event) => setAuthor(event.target.value)}
-              placeholder="Author name"
-              required
-              maxLength={200}
-            />
-          </div>
-          <DialogFooter>
-            <DialogClose render={<Button type="button" variant="ghost" />}>
-              Cancel
-            </DialogClose>
-            <Button type="submit" disabled={!title.trim() || !author.trim()}>
-              Add book
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+        <span className="hidden sm:inline">{busy ? "Importing…" : label}</span>
+      </Button>
+      {storageError && <span role="alert" className="max-w-48 text-xs text-destructive">{storageError}</span>}
+      <Dialog open={result !== null} onOpenChange={(open) => { if (!open) setResult(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Import complete</DialogTitle>
+            <DialogDescription>
+              {result?.added ?? 0} {result?.added === 1 ? "file" : "files"} added to your library on this device.
+              {!!result?.duplicates && ` ${result.duplicates} already in your library.`}
+            </DialogDescription>
+          </DialogHeader>
+          {!!result?.errors.length && <ul className="max-h-56 space-y-2 overflow-y-auto text-sm text-destructive">{result.errors.map((error, index) => <li key={index}>{error}</li>)}</ul>}
+          <DialogFooter><DialogClose render={<Button />}>Done</DialogClose></DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

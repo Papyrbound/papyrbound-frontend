@@ -1,6 +1,7 @@
 "use client";
 import { create } from "zustand";
-import { type PropsWithChildren } from "react";
+import { useEffect, type PropsWithChildren } from "react";
+import { deleteImportedFile, loadImportedBooks, saveImportedFile, updateImportedMetadata } from "@/features/library/model/import-storage";
 import {
   defaultReadingLists,
   getReadingListUrl,
@@ -13,12 +14,16 @@ import {
   type SampleBook,
 } from "@/features/home/model/sample-books";
 export type ReadingActivityEvent = {
+  libraryKind?: "books" | "comics";
   id: string;
   bookTitle: string;
   kind: "added" | "completed" | "unread" | "deleted";
   at: string;
 };
 type ReadingListsState = {
+  importsReady: boolean;
+  storageError: string;
+  importBook: (book: SampleBook, file: File) => Promise<boolean>;
   updateBook: (id: string, details: { title: string; author: string }) => void;
   books: SampleBook[];
   activity: ReadingActivityEvent[];
@@ -45,12 +50,14 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
   const recordActivity = (
     bookTitle: string,
     kind: ReadingActivityEvent["kind"],
+    libraryKind: "books" | "comics" = "books",
   ) =>
     set((s) => ({
       activity: [
         {
           id: crypto.randomUUID(),
           bookTitle,
+          libraryKind,
           kind,
           at: new Date().toISOString(),
         },
@@ -95,7 +102,7 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
           : list,
       ),
     );
-    recordActivity(target.title, "completed");
+    recordActivity(target.title, "completed", target.kind);
   };
 
   const markAsUnread = (bookId: string) => {
@@ -119,7 +126,7 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
           : list,
       ),
     );
-    recordActivity(target.title, "unread");
+    recordActivity(target.title, "unread", target.kind);
   };
 
   const deleteBook = (bookId: string) => {
@@ -132,7 +139,7 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
         bookIds: list.bookIds?.filter((id) => id !== bookId),
       })),
     );
-    recordActivity(target.title, "deleted");
+    recordActivity(target.title, "deleted", target.kind);
   };
 
   const createList = (details: ReadingListDetails) => {
@@ -215,6 +222,15 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
   };
 
   return {
+    importsReady: false,
+    storageError: "",
+    importBook: async (book, file) => {
+      if (get().books.some((existing) => existing.id === book.id)) return false;
+      await saveImportedFile(book, file);
+      setBooks((current) => [book, ...current]);
+      recordActivity(book.title, "added", book.kind);
+      return true;
+    },
     updateBook: (id, details) =>
       set((s) => ({
         books: s.books.map((b) => (b.id === id ? { ...b, ...details } : b)),
@@ -244,5 +260,38 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
   };
 });
 export function ReadingListsProvider({ children }: PropsWithChildren) {
+  useEffect(() => {
+    let active = true;
+    let unsubscribe: (() => void) | undefined;
+    const storageFailure = (error: unknown) => useReadingLists.setState({
+      storageError: error instanceof Error ? error.message : "Could not update local library storage.",
+    });
+    loadImportedBooks().then((imported) => {
+      if (!active) return;
+      useReadingLists.setState((state) => ({
+        importsReady: true,
+        books: [...state.books, ...imported.filter((book) => !state.books.some((existing) => existing.id === book.id))],
+        lists: state.lists.map((list) => list.id === "completed" ? {
+          ...list, bookIds: [...new Set([...(list.bookIds ?? []), ...imported.filter((book) => book.progress >= 100).map((book) => book.id)])],
+        } : list),
+      }));
+      unsubscribe = useReadingLists.subscribe((state, previous) => {
+        if (state.books === previous.books) return;
+        for (const book of state.books) {
+          if (book.sourceId && previous.books.find((existing) => existing.id === book.id) !== book) {
+            void updateImportedMetadata(book).catch(storageFailure);
+          }
+        }
+        for (const book of previous.books) {
+          if (book.sourceId && !state.books.some((existing) => existing.id === book.id)) {
+            void deleteImportedFile(book.id).catch(storageFailure);
+          }
+        }
+      });
+    }).catch((error) => {
+      if (active) { storageFailure(error); useReadingLists.setState({ importsReady: true }); }
+    });
+    return () => { active = false; unsubscribe?.(); };
+  }, []);
   return children;
 }

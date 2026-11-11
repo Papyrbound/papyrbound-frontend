@@ -10,12 +10,14 @@ export const readingListColors = [
 ] as const
 
 export type ReadingListDetails = {
+  kind?: "books" | "comics"
   name: string
   color: string
   bookIds: string[]
 }
 
 export type ReadingList = {
+  kind?: "books" | "comics"
   id: string
   name: string
   url: string
