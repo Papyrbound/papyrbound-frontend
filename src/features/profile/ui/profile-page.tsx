@@ -144,7 +144,7 @@ export function ProfilePage() {
             {highlights.length ? (
               <div className="divide-y divide-border/60">
                 {highlights.map((note) => (
-                  <Link key={note.id} href="/annotations" className="block rounded-lg py-4 outline-none hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring">
+                  <Link key={note.id} href="/annotations" className="-mx-3 block rounded-lg px-3 py-4 outline-none hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring">
                     <blockquote className="text-sm leading-6">{note.content}</blockquote>
                     <p className="mt-2 text-xs text-muted-foreground">{books.find((book) => book.id === note.bookId)?.title}</p>
                   </Link>
