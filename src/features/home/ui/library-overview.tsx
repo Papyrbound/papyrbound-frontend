@@ -31,7 +31,7 @@ export function LibraryOverview() {
         onClick={() => selectBook(book.id)}
         className="-mx-3 flex w-[calc(100%+1.5rem)] items-start gap-[19px] rounded-xl px-3 py-3 text-left outline-none hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <span className="block w-[55px] shrink-0">
+        <span className="block w-[55px] shrink-0 [&_.book-cover]:rounded-[4px]">
           <BookCover book={book} />
         </span>
         <span className="min-w-0 pt-2.5">
