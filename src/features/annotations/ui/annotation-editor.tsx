@@ -16,6 +16,7 @@ import {
 } from "@/features/annotations/model/annotation";
 import { type SampleBook } from "@/features/home/model/sample-books";
 import { Button } from "@/shared/ui/button";
+import { TooltipHint } from "@/shared/ui/tooltip";
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
 import {
@@ -261,19 +262,17 @@ export function AnnotationEditor({
               <div className="flex flex-wrap gap-2">
                 {(Object.keys(colors) as Annotation["color"][]).map(
                   (option) => (
-                    <Button
-                      key={option}
+                    <TooltipHint key={option} content={option.charAt(0).toUpperCase() + option.slice(1)}><Button
                       type="button"
                       size="icon-sm"
                       variant="outline"
                       aria-label={option}
-                      title={option.charAt(0).toUpperCase() + option.slice(1)}
                       aria-pressed={color === option}
                       style={{ background: colors[option], color: "#34312f" }}
                       onClick={() => setColor(option)}
                     >
                       {color === option && <CheckIcon />}
-                    </Button>
+                    </Button></TooltipHint>
                   ),
                 )}
               </div>

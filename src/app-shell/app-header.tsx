@@ -13,6 +13,7 @@ import {
 import { useWorkspace } from "./workspace-store";
 import { SidebarTrigger } from "@/shared/ui/sidebar";
 import { Button } from "@/shared/ui/button";
+import { TooltipHint } from "@/shared/ui/tooltip";
 import { LibraryFilter } from "@/features/library/ui/library-filter";
 import { AddBookDialog } from "@/features/library/ui/add-book-dialog";
 import { CollectionToolbar } from "@/features/collections/ui/collections-page";
@@ -86,17 +87,20 @@ function RouteBreadcrumbs({ pathname }: { pathname: string }) {
             {index > 0 && <BreadcrumbSeparator className="shrink-0" />}
             <BreadcrumbItem className="min-w-0">
               {index === items.length - 1 ? (
-                <BreadcrumbPage className="truncate" title={item.label}>
+                <TooltipHint content={item.label}>
+                <BreadcrumbPage className="truncate" tabIndex={0}>
                   {item.label}
                 </BreadcrumbPage>
+                </TooltipHint>
               ) : (
+                <TooltipHint content={item.label}>
                 <BreadcrumbLink
                   render={<Link href={item.href} />}
                   className="truncate"
-                  title={item.label}
                 >
                   {item.label}
                 </BreadcrumbLink>
+                </TooltipHint>
               )}
             </BreadcrumbItem>
           </Fragment>
@@ -119,22 +123,22 @@ export function AppHeader() {
     <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center border-b border-border/55 bg-background px-4">
       <SidebarTrigger className="mr-3 text-muted-foreground md:hidden" />
       <div className="mr-[19px] hidden items-center gap-1 md:flex">
-        <Button
+        <TooltipHint content="Go back"><Button
           size="icon-sm"
           variant="ghost"
           aria-label="Go back"
           onClick={() => router.back()}
         >
           <ChevronLeft className="size-[17px] text-muted-foreground" />
-        </Button>
-        <Button
+        </Button></TooltipHint>
+        <TooltipHint content="Go forward"><Button
           size="icon-sm"
           variant="ghost"
           aria-label="Go forward"
           onClick={() => router.forward()}
         >
           <ChevronRight className="size-[17px] text-muted-foreground" />
-        </Button>
+        </Button></TooltipHint>
       </div>
       <Suspense fallback={<span className="flex-1 text-sm">Papyrbound</span>}>
         <RouteBreadcrumbs pathname={pathname} />
@@ -157,7 +161,7 @@ export function AppHeader() {
             aria-label="Library view"
           >
             {(["grid", "list"] as const).map((v) => (
-              <Button
+              <TooltipHint key={v} content={v === "grid" ? "Grid view" : "List view"}><Button
                 key={v}
                 variant="ghost"
                 size="icon-sm"
@@ -171,12 +175,12 @@ export function AppHeader() {
                 onClick={() => setView(v)}
               >
                 {v === "grid" ? <LayoutGridIcon /> : <ListIcon />}
-              </Button>
+              </Button></TooltipHint>
             ))}
           </div>
         )}
         {hasPanel && (
-          <Button
+          <TooltipHint content={panelOpen ? "Hide details panel" : "Show details panel"}><Button
             variant="outline"
             size="icon-sm"
             className="rounded-lg"
@@ -185,7 +189,7 @@ export function AppHeader() {
             onClick={() => setPanelOpen(!panelOpen)}
           >
             <PanelRightIcon />
-          </Button>
+          </Button></TooltipHint>
         )}
       </div>
     </header>

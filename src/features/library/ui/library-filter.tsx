@@ -14,6 +14,7 @@ import {
 import { useWorkspace } from "@/app-shell/workspace-store";
 
 import { Button } from "@/shared/ui/button";
+import { TooltipHint } from "@/shared/ui/tooltip";
 import { libraryCopy } from "../model/library-kind";
 
 import {
@@ -32,20 +33,19 @@ export function LibraryFilter({ iconOnly = false }: { iconOnly?: boolean }) {
   const { plural } = libraryCopy[libraryKind];
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
+      <TooltipHint content={`Filter ${plural}`}><DropdownMenuTrigger
         render={
           <Button
             variant="secondary"
             size={iconOnly ? "icon-sm" : "default"}
             aria-label={`Filter ${plural}`}
-            title={`Filter ${plural}`}
             className={iconOnly ? "rounded-lg" : ""}
           />
         }
       >
         <ListFilter />
         {!iconOnly && "Filter"}
-      </DropdownMenuTrigger>
+      </DropdownMenuTrigger></TooltipHint>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuGroup>
           <DropdownMenuLabel>Show</DropdownMenuLabel>

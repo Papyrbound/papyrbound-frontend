@@ -16,6 +16,7 @@ import { BookCover } from "@/features/home/ui/book-cover";
 
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
+import { TooltipHint } from "@/shared/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -143,15 +144,13 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
                 </div>
                 <div className={cn("grid grid-flow-col", embedded ? "flex-1 grid-rows-[repeat(7,8px)] auto-cols-fr gap-0.5" : "grid-rows-[repeat(7,12px)] auto-cols-[12px] gap-1")}>
                   {heatmapDays.map((d) => (
-                    <button
-                      key={d.date}
+                    <TooltipHint key={d.date} content={`${d.date}: ${d.minutes ?? 0} minutes read`}><button
                       className={`aspect-square rounded-[3px] outline-none focus-visible:ring-2 focus-visible:ring-ring ${day === d.date ? "ring-1 ring-foreground ring-offset-1 ring-offset-card" : ""} ${d.minutes === null ? "invisible" : d.minutes === 0 ? "bg-border" : d.minutes < 20 ? "bg-neutral-300 dark:bg-neutral-600" : d.minutes < 35 ? "bg-neutral-400" : d.minutes < 50 ? "bg-neutral-500" : "bg-neutral-700 dark:bg-neutral-200"}`}
                       aria-label={`${d.date}: ${d.minutes ?? 0} minutes read`}
                       aria-pressed={day === d.date}
                       disabled={d.minutes === null}
-                      title={`${d.date}: ${d.minutes ?? 0} minutes`}
                       onClick={() => selectDay(new Date(`${d.date}T12:00:00Z`))}
-                    />
+                    /></TooltipHint>
                   ))}
                 </div>
               </div>

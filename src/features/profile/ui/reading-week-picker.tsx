@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Calendar } from "@/shared/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
+import { TooltipHint } from "@/shared/ui/tooltip";
 
 // The activity preview uses UTC dates; the calendar displays local date-only values.
 function calendarDate(date: Date) {
@@ -40,9 +41,13 @@ export function ReadingWeekPicker({
 
   return (
     <div role="group" aria-label="Reading activity week" className="flex max-w-full items-center gap-1.5">
+      <TooltipHint content={start <= earliestDate ? "Your account’s first week" : "Previous week"}>
+      <span className="inline-flex" tabIndex={start <= earliestDate ? 0 : undefined} aria-label={start <= earliestDate ? "Your account’s first week" : undefined}>
       <Button variant="secondary" size="icon-sm" aria-label="Previous preview week" disabled={start <= earliestDate} onClick={onPrevious}>
         <ChevronLeft />
       </Button>
+      </span>
+      </TooltipHint>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
           render={<Button variant="secondary" className="min-w-0 px-3 text-xs sm:text-[13px]" />}
@@ -70,6 +75,8 @@ export function ReadingWeekPicker({
           <p className="border-t px-3 py-2 text-xs text-muted-foreground">Choose a day to view its week.</p>
         </PopoverContent>
       </Popover>
+      <TooltipHint content={end >= latestDate ? "Current week" : "Next week"}>
+      <span className="inline-flex" tabIndex={end >= latestDate ? 0 : undefined} aria-label={end >= latestDate ? "Current week" : undefined}>
       <Button
         variant="secondary"
         size="icon-sm"
@@ -79,6 +86,8 @@ export function ReadingWeekPicker({
       >
         <ChevronRight />
       </Button>
+      </span>
+      </TooltipHint>
     </div>
   );
 }

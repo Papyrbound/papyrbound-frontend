@@ -28,6 +28,7 @@ import { useWorkspace } from "@/app-shell/workspace-store";
 import { BookCover } from "@/features/home/ui/book-cover";
 
 import { Button } from "@/shared/ui/button";
+import { TooltipHint } from "@/shared/ui/tooltip";
 
 import { Input } from "@/shared/ui/input";
 import { Popover, PopoverContent, PopoverTrigger, PopoverTitle } from "@/shared/ui/popover";
@@ -127,12 +128,12 @@ export function AnnotationsToolbar() {
         </PopoverContent>
       </Popover>
         <DropdownMenu>
-          <DropdownMenuTrigger
+          <TooltipHint content={books.find((b) => b.id === ui.book)?.title ?? `All ${plural}`}><DropdownMenuTrigger
             aria-label={`Filter annotations by ${noun}`}
-            render={<Button variant="secondary" size="icon-sm" title={books.find((b) => b.id === ui.book)?.title ?? `All ${plural}`} />}
+            render={<Button variant="secondary" size="icon-sm" />}
           >
             <BookOpen />
-          </DropdownMenuTrigger>
+          </DropdownMenuTrigger></TooltipHint>
           <DropdownMenuContent align="end" className="w-[272px]">
             <DropdownMenuRadioGroup
               value={selectedBook}
@@ -174,11 +175,10 @@ export function AnnotationsToolbar() {
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button
+        <TooltipHint content={ui.expanded.length ? "Collapse all annotations" : "Expand all annotations"}><Button
           variant="ghost"
           size="icon-sm"
           aria-label={ui.expanded.length ? "Collapse all annotations" : "Expand all annotations"}
-          title={ui.expanded.length ? "Collapse all annotations" : "Expand all annotations"}
           className="text-xs text-muted-foreground"
           onClick={() =>
             ui.patch({
@@ -187,7 +187,7 @@ export function AnnotationsToolbar() {
           }
         >
           <ChevronsUpDown />
-        </Button>
+        </Button></TooltipHint>
     </>
   );
 }

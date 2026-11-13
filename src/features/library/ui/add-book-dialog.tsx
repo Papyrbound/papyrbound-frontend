@@ -7,6 +7,7 @@ import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
 import { useIsCompactWindow } from "@/shared/hooks/use-mobile";
 import { useWorkspace } from "@/app-shell/workspace-store";
 import { Button } from "@/shared/ui/button";
+import { TooltipHint } from "@/shared/ui/tooltip";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
 import { useActiveLibrary } from "../model/use-active-library";
 
@@ -65,10 +66,11 @@ export function AddBookDialog() {
           void importFiles(files);
         }}
       />
+      <TooltipHint content={busy ? "Importing files…" : label}>
+      <span className="inline-flex" tabIndex={busy || !importsReady ? 0 : undefined} aria-label={busy || !importsReady ? label : undefined}>
       <Button
         size="sm"
         className="w-8 gap-2 rounded-[10px] border-primary-foreground/10 p-0 text-[13px] font-medium shadow-[0_1px_2px_rgb(0_0_0/12%),inset_0_1px_0_rgb(255_255_255/16%)] transition-[background-color,box-shadow] duration-150 hover:bg-primary/90 hover:shadow-[0_2px_5px_rgb(0_0_0/16%)] sm:w-auto sm:pl-1.5 sm:pr-3"
-        title={busy ? "Importing files…" : label}
         aria-label={busy ? "Importing files" : label}
         aria-busy={busy}
         disabled={busy || !importsReady}
@@ -79,6 +81,8 @@ export function AddBookDialog() {
         </span>
         <span className="hidden sm:inline">{busy ? "Importing…" : label}</span>
       </Button>
+      </span>
+      </TooltipHint>
       {storageError && <span role="alert" className="max-w-48 text-xs text-destructive">{storageError}</span>}
       <Dialog open={result !== null} onOpenChange={(open) => { if (!open) setResult(null); }}>
         <DialogContent>
