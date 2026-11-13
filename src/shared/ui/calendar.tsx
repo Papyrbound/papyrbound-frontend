@@ -5,11 +5,14 @@ import { cn } from "cn"
 import {
   DayPicker,
   getDefaultClassNames,
+  useDayPicker,
   type DayButton,
+  type DropdownProps,
   type Locale,
 } from "react-day-picker"
 
 import { Button, buttonVariants } from "@/shared/ui/button"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
 import { IconChevronLeft, IconChevronRight, IconChevronDown } from "@tabler/icons-react"
 
 function Calendar({
@@ -134,6 +137,8 @@ function Calendar({
         ...classNames,
       }}
       components={{
+        MonthsDropdown: CalendarMonthDropdown,
+        YearsDropdown: CalendarYearDropdown,
         Root: ({ className, rootRef, ...props }) => {
           return (
             <div
@@ -177,6 +182,54 @@ function Calendar({
       }}
       {...props}
     />
+  )
+}
+
+function CalendarMonthDropdown(props: DropdownProps) {
+  return <CalendarDropdown {...props} unit="month" />
+}
+
+function CalendarYearDropdown(props: DropdownProps) {
+  return <CalendarDropdown {...props} unit="year" />
+}
+
+function CalendarDropdown({
+  options = [],
+  value,
+  disabled,
+  id,
+  name,
+  "aria-label": ariaLabel,
+  unit,
+}: DropdownProps & { unit: "month" | "year" }) {
+  const { goToMonth, months } = useDayPicker()
+  return (
+    <Select
+      items={options.map(({ value, label }) => ({ value, label }))}
+      value={Number(value)}
+      disabled={disabled}
+      name={name}
+      onValueChange={(next) => {
+        if (next === null) return
+        const month = months[0].date
+        goToMonth(unit === "month"
+          ? new Date(month.getFullYear(), next, 1)
+          : new Date(next, month.getMonth(), 1))
+      }}
+    >
+      <SelectTrigger id={id} aria-label={ariaLabel} size="sm" className="rounded-md bg-transparent px-2 text-xs">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent alignItemWithTrigger={false} className="max-h-60 min-w-24 rounded-lg">
+        <SelectGroup>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value} disabled={option.disabled} className="rounded-md text-xs">
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
   )
 }
 
