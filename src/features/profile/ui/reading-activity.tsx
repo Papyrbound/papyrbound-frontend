@@ -3,9 +3,10 @@
 import { create } from "zustand";
 import { cn } from "cn";
 
-import { CircleCheck, ChevronLeft, ChevronRight } from "lucide-react";
+import { CircleCheck } from "lucide-react";
 
 import { activityPreview, heatmapDays } from "../model/activity-preview";
+import { ReadingWeekPicker } from "./reading-week-picker";
 
 import { useActiveLibrary } from "@/features/library/model/use-active-library";
 
@@ -49,18 +50,14 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
   const ui = useActivityUI();
   const { day } = ui;
   const anchor = new Date(`${activityPreview.end}T12:00:00Z`);
-  const start = new Date(
-    anchor.getTime() -
-      ((anchor.getUTCDay() + 6) % 7) * 86400000 +
-      ui.week * 7 * 86400000,
-  );
+  const anchorWeekStart = anchor.getTime() - ((anchor.getUTCDay() + 6) % 7) * 86400000;
+  const start = new Date(anchorWeekStart + ui.week * 7 * 86400000);
   const end = new Date(start.getTime() + 6 * 86400000);
   const sessions = activityPreview.sessions.filter(
     (session) =>
       books.some((book) => book.id === session.bookId) && session.date >= start.toISOString().slice(0, 10) &&
       session.date <= end.toISOString().slice(0, 10),
   );
-  const weekLabel = `${start.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })} – ${end.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}`;
   const selected = heatmapDays.find((d) => d.date === day);
   const total = sessions.reduce((sum, s) => sum + s.minutes, 0);
   const finished = books.filter((b) => b.progress >= 100);
@@ -75,26 +72,17 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
             A little reading, a little more often.
           </p>
         </div>}
-        <div className="flex h-10 w-80 max-w-full items-center justify-between rounded-xl border border-soft-border bg-secondary px-1 shadow-soft">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Previous preview week"
-            onClick={() => ui.patch({ week: ui.week - 1 })}
-          >
-            <ChevronLeft />
-          </Button>
-          <span className="text-sm">{weekLabel}</span>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Next preview week"
-            disabled={ui.week === 0}
-            onClick={() => ui.patch({ week: ui.week + 1 })}
-          >
-            <ChevronRight />
-          </Button>
-        </div>
+        <ReadingWeekPicker
+          start={start}
+          end={end}
+          latestDate={anchor}
+          onPrevious={() => ui.patch({ week: ui.week - 1 })}
+          onNext={() => ui.patch({ week: Math.min(0, ui.week + 1) })}
+          onSelect={(date) => {
+            const weekStart = date.getTime() - ((date.getUTCDay() + 6) % 7) * 86400000;
+            ui.patch({ week: Math.min(0, Math.round((weekStart - anchorWeekStart) / (7 * 86400000))), day: date.toISOString().slice(0, 10) });
+          }}
+        />
       </header>
       <div className={cn("mb-8 grid grid-cols-2 gap-6", embedded ? "mt-6" : "mt-11 lg:grid-cols-4")}>
         {[
