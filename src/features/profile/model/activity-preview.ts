@@ -14,18 +14,14 @@ export const activityPreview = {
 export function createHeatmapDays(earliest: Date, latest: Date) {
   const end = startOfActivityWeek(latest).getTime() + 6 * activityDayMs;
   const first = end - 370 * activityDayMs;
+  const earliestKey = activityDateKey(earliest);
+  const latestKey = activityDateKey(latest);
   return Array.from({ length: 371 }, (_, i) => {
-  const date = activityDateKey(new Date(first + i * activityDayMs));
-  const session = activityPreview.sessions.find((s) => s.date === date);
-  const minutes =
-    date < activityDateKey(earliest) || date > activityDateKey(latest)
+    const date = activityDateKey(new Date(first + i * activityDayMs));
+    const session = activityPreview.sessions.find((s) => s.date === date);
+    const minutes = date < earliestKey || date > latestKey
       ? null
-      : (session?.minutes ??
-        (date >= "2026-10-25"
-          ? 0
-          : (i * 17) % 13 < 5
-            ? [10, 20, 35, 45, 60][i % 5]
-            : 0));
-  return { date, minutes };
-});
+      : (session?.minutes ?? (date >= "2026-10-25" ? 0 : (i * 17) % 13 < 5 ? [10, 20, 35, 45, 60][i % 5] : 0));
+    return { date, minutes };
+  });
 }

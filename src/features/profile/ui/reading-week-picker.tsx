@@ -37,7 +37,8 @@ export function ReadingWeekPicker({
   const to = calendarDate(end);
   const latest = calendarDate(latestDate);
   const earliest = calendarDate(earliestDate);
-  const label = `${start.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })} – ${end.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}`;
+  const lastLabel = end.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+  const label = start.getTime() === end.getTime() ? lastLabel : `${start.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })} – ${lastLabel}`;
 
   return (
     <div role="group" aria-label="Reading activity week" className="flex max-w-full items-center gap-1.5">

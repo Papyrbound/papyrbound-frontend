@@ -6,6 +6,7 @@ import { cn } from "cn";
 import { CircleCheck } from "lucide-react";
 
 import { activityPreview, createHeatmapDays } from "../model/activity-preview";
+import { activityStreak } from "../model/activity-streak";
 import { activityBounds, activityDateKey, activityDayMs, clampActivityDate, startOfActivityWeek } from "../model/activity-dates";
 import { useAccount } from "../stores/account-store";
 import { ReadingWeekPicker } from "./reading-week-picker";
@@ -62,6 +63,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
   const end = clampActivityDate(new Date(weekStart.getTime() + 6 * activityDayMs), earliest, latest);
   const day = activityDateKey(clampActivityDate(new Date(`${ui.day}T12:00:00Z`), earliest, latest));
   const heatmapDays = createHeatmapDays(earliest, latest);
+  const streak = activityStreak(heatmapDays, day);
   const months = heatmapDays.filter((_, index) => index % 7 === 0).flatMap((entry, index, weeks) => {
     const date = new Date(`${entry.date}T12:00:00Z`);
     if (index && entry.date.slice(0, 7) === weeks[index - 1].date.slice(0, 7)) return [];
@@ -110,7 +112,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
             String(sessions.reduce((n, s) => n + s.pages, 0)),
             "Pages read this week",
           ],
-          ["4 days", "Preview reading streak"],
+          [`${streak.current} ${streak.current === 1 ? "day" : "days"}`, "Preview reading streak"],
           [String(finished.length), `${label} finished in your library`],
         ].map(([n, l]) => (
           <div key={l} className="min-w-0 border-r border-border pr-4 last:border-0">
@@ -206,17 +208,24 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
             />
           </div>
           <div className="mt-7 flex justify-between">
-            {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
+            {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => {
+              const date = new Date(weekStart.getTime() + i * activityDayMs);
+              const minutes = heatmapDays.find((entry) => entry.date === activityDateKey(date))?.minutes;
+              const reached = (minutes ?? 0) >= ui.goal;
+              const available = date >= earliest && date <= latest;
+              return (
               <span
                 key={i}
-                className={`flex size-10 items-center justify-center rounded-full text-xs ${i >= 2 && i <= 5 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                aria-label={`${activityDateKey(date)}: ${available ? `${minutes ?? 0} minutes read` : "Unavailable"}`}
+                className={cn("flex size-7 items-center justify-center rounded-full text-xs sm:size-10", reached ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground", !available && "opacity-30")}
               >
                 {d}
               </span>
-            ))}
+              );
+            })}
           </div>
           <p className="mt-[26px] text-xs leading-[18px] text-muted-foreground">
-            4-day streak · Personal best: 9 days
+            {streak.current}-day streak · Personal best: {streak.best} {streak.best === 1 ? "day" : "days"}
           </p>
           <Button
             variant="ghost"
