@@ -5,7 +5,9 @@ import { cn } from "cn";
 
 import { CircleCheck } from "lucide-react";
 
-import { activityPreview, heatmapDays } from "../model/activity-preview";
+import { activityPreview, createHeatmapDays } from "../model/activity-preview";
+import { activityBounds, activityDateKey, activityDayMs, clampActivityDate, startOfActivityWeek } from "../model/activity-dates";
+import { useAccount } from "../stores/account-store";
 import { ReadingWeekPicker } from "./reading-week-picker";
 
 import { useActiveLibrary } from "@/features/library/model/use-active-library";
@@ -47,12 +49,30 @@ const useActivityUI = create<{
 
 export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
   const { books, label, plural } = useActiveLibrary();
+  const createdAt = useAccount((state) => state.createdAt);
   const ui = useActivityUI();
-  const { day } = ui;
-  const anchor = new Date(`${activityPreview.end}T12:00:00Z`);
-  const anchorWeekStart = anchor.getTime() - ((anchor.getUTCDay() + 6) % 7) * 86400000;
-  const start = new Date(anchorWeekStart + ui.week * 7 * 86400000);
-  const end = new Date(start.getTime() + 6 * 86400000);
+  if (!createdAt) return <p role="status" className="text-sm text-muted-foreground">Loading reading activity…</p>;
+  const { earliest, latest } = activityBounds(createdAt);
+  const anchorWeekStart = startOfActivityWeek(latest).getTime();
+  const firstWeek = Math.round((startOfActivityWeek(earliest).getTime() - anchorWeekStart) / (7 * activityDayMs));
+  const week = Math.max(firstWeek, Math.min(0, ui.week));
+  const weekStart = new Date(anchorWeekStart + week * 7 * activityDayMs);
+  const start = clampActivityDate(weekStart, earliest, latest);
+  const end = clampActivityDate(new Date(weekStart.getTime() + 6 * activityDayMs), earliest, latest);
+  const day = activityDateKey(clampActivityDate(new Date(`${ui.day}T12:00:00Z`), earliest, latest));
+  const heatmapDays = createHeatmapDays(earliest, latest);
+  const months = heatmapDays.filter((_, index) => index % 7 === 0).flatMap((entry, index, weeks) => {
+    const date = new Date(`${entry.date}T12:00:00Z`);
+    if (index && entry.date.slice(0, 7) === weeks[index - 1].date.slice(0, 7)) return [];
+    return [{ date: entry.date, column: index + 1, label: date.toLocaleDateString("en-US", { month: "short", timeZone: "UTC" }) }];
+  });
+  function selectDay(date: Date) {
+    const bounded = clampActivityDate(date, earliest, latest);
+    ui.patch({ week: Math.round((startOfActivityWeek(bounded).getTime() - anchorWeekStart) / (7 * activityDayMs)), day: activityDateKey(bounded) });
+  }
+  function changeWeek(next: number) {
+    selectDay(new Date(anchorWeekStart + Math.max(firstWeek, Math.min(0, next)) * 7 * activityDayMs));
+  }
   const sessions = activityPreview.sessions.filter(
     (session) =>
       books.some((book) => book.id === session.bookId) && session.date >= start.toISOString().slice(0, 10) &&
@@ -75,13 +95,11 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
         <ReadingWeekPicker
           start={start}
           end={end}
-          latestDate={anchor}
-          onPrevious={() => ui.patch({ week: ui.week - 1 })}
-          onNext={() => ui.patch({ week: Math.min(0, ui.week + 1) })}
-          onSelect={(date) => {
-            const weekStart = date.getTime() - ((date.getUTCDay() + 6) % 7) * 86400000;
-            ui.patch({ week: Math.min(0, Math.round((weekStart - anchorWeekStart) / (7 * 86400000))), day: date.toISOString().slice(0, 10) });
-          }}
+          earliestDate={earliest}
+          latestDate={latest}
+          onPrevious={() => changeWeek(week - 1)}
+          onNext={() => changeWeek(week + 1)}
+          onSelect={selectDay}
         />
       </header>
       <div className={cn("mb-8 grid grid-cols-2 gap-6", embedded ? "mt-6" : "mt-11 lg:grid-cols-4")}>
@@ -112,22 +130,9 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
           </p>
           <div className="mt-[18px] overflow-x-auto">
             <div className={embedded ? "min-w-[580px]" : "min-w-[920px] pl-4 pr-9"}>
-              <div className={cn("mb-2.5 flex h-[18px] justify-between text-[10px] text-muted-foreground", embedded ? "pl-8" : "pl-[72px]")}>
-                {[
-                  "Nov",
-                  "Dec",
-                  "Jan",
-                  "Feb",
-                  "Mar",
-                  "Apr",
-                  "May",
-                  "Jun",
-                  "Jul",
-                  "Aug",
-                  "Sep",
-                  "Oct",
-                ].map((m) => (
-                  <span key={m}>{m}</span>
+              <div className={cn("mb-2.5 grid h-[18px] grid-cols-[repeat(53,minmax(0,1fr))] text-[10px] text-muted-foreground", embedded ? "ml-8 gap-0.5" : "ml-14 gap-1")}>
+                {months.map((month) => (
+                  <span key={month.date} style={{ gridColumn: month.column }}>{month.label}</span>
                 ))}
               </div>
               <div className={cn("flex", embedded ? "gap-2" : "gap-8")}>
@@ -145,7 +150,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
                       aria-pressed={day === d.date}
                       disabled={d.minutes === null}
                       title={`${d.date}: ${d.minutes ?? 0} minutes`}
-                      onClick={() => ui.patch({ day: d.date })}
+                      onClick={() => selectDay(new Date(`${d.date}T12:00:00Z`))}
                     />
                   ))}
                 </div>

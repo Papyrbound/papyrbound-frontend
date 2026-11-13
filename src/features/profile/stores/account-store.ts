@@ -12,11 +12,12 @@ export type Preferences = {
   showDots: boolean;
   reduceMotion: boolean;
 };
-type Account = { version: 1; profile: LocalProfile; preferences: Preferences };
+type Account = { version: 1; createdAt: string | null; profile: LocalProfile; preferences: Preferences };
 const storageKey = "papyrbound-account-v1";
 const changeEvent = "papyrbound-account-change";
 const defaults: Account = {
   version: 1,
+  createdAt: null,
   profile: localProfile,
   preferences: { theme: "system", showDots: true, reduceMotion: false },
 };
@@ -28,14 +29,20 @@ function getSnapshot(): Account {
     const raw = window.localStorage.getItem(storageKey);
     if (raw !== cachedRaw) {
       cachedRaw = raw;
-      cachedAccount = defaults;
+      cachedAccount = { ...defaults, createdAt: new Date().toISOString() };
+      let needsMigration = true;
       if (raw) {
-        const data = JSON.parse(raw);
+        let data;
+        try { data = JSON.parse(raw); } catch { /* Reinitialize malformed storage. */ }
         if (data?.version === 1) {
+          const createdAt = typeof data.createdAt === "string" ? Date.parse(data.createdAt) : NaN;
+          const validCreatedAt = Number.isFinite(createdAt) && createdAt <= Date.now();
+          needsMigration = !validCreatedAt;
           const profile = data.profile;
           const preferences = data.preferences;
           cachedAccount = {
             version: 1,
+            createdAt: validCreatedAt ? new Date(createdAt).toISOString() : cachedAccount.createdAt,
             profile: {
               ...localProfile,
               avatarUrl: isStoredProfilePhoto(profile?.avatarUrl) ? profile.avatarUrl : undefined,
@@ -74,9 +81,15 @@ function getSnapshot(): Account {
           };
         }
       }
+      if (needsMigration) {
+        const migrated = JSON.stringify(cachedAccount);
+        window.localStorage.setItem(storageKey, migrated);
+        cachedRaw = migrated;
+      }
     }
   } catch {
     /* Unavailable or malformed storage falls back to this session. */
+    if (!cachedAccount.createdAt) cachedAccount = { ...cachedAccount, createdAt: new Date().toISOString() };
   }
   return cachedAccount;
 }
@@ -87,7 +100,8 @@ export function hydrateAccount() {
 }
 
 export function updateAccount(update: (current: Account) => Account) {
-  const next = update(getSnapshot());
+  const current = getSnapshot();
+  const next = { ...update(current), createdAt: current.createdAt };
   let persisted = false;
   try {
     const raw = JSON.stringify(next);

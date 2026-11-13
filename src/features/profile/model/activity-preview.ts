@@ -1,4 +1,6 @@
-// Fixed, explicitly labelled preview data. Real session tracking will replace this module.
+import { activityDateKey, activityDayMs, startOfActivityWeek } from "./activity-dates";
+
+// Explicitly labelled preview data. Real session tracking will replace this module.
 export const activityPreview = {
   end: "2026-10-31",
   goal: 20,
@@ -9,13 +11,14 @@ export const activityPreview = {
     { date: "2026-10-28", bookId: "wild", minutes: 25, pages: 23 },
   ],
 };
-export const heatmapDays = Array.from({ length: 371 }, (_, i) => {
-  const date = new Date(Date.UTC(2025, 10, 2) + i * 86400000)
-    .toISOString()
-    .slice(0, 10);
+export function createHeatmapDays(earliest: Date, latest: Date) {
+  const end = startOfActivityWeek(latest).getTime() + 6 * activityDayMs;
+  const first = end - 370 * activityDayMs;
+  return Array.from({ length: 371 }, (_, i) => {
+  const date = activityDateKey(new Date(first + i * activityDayMs));
   const session = activityPreview.sessions.find((s) => s.date === date);
   const minutes =
-    date > activityPreview.end
+    date < activityDateKey(earliest) || date > activityDateKey(latest)
       ? null
       : (session?.minutes ??
         (date >= "2026-10-25"
@@ -25,3 +28,4 @@ export const heatmapDays = Array.from({ length: 371 }, (_, i) => {
             : 0));
   return { date, minutes };
 });
+}

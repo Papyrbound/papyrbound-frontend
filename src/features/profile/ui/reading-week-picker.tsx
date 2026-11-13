@@ -15,6 +15,7 @@ function calendarDate(date: Date) {
 type ReadingWeekPickerProps = {
   start: Date;
   end: Date;
+  earliestDate: Date;
   latestDate: Date;
   onPrevious: () => void;
   onNext: () => void;
@@ -24,6 +25,7 @@ type ReadingWeekPickerProps = {
 export function ReadingWeekPicker({
   start,
   end,
+  earliestDate,
   latestDate,
   onPrevious,
   onNext,
@@ -33,11 +35,12 @@ export function ReadingWeekPicker({
   const from = calendarDate(start);
   const to = calendarDate(end);
   const latest = calendarDate(latestDate);
+  const earliest = calendarDate(earliestDate);
   const label = `${start.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })} – ${end.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}`;
 
   return (
     <div role="group" aria-label="Reading activity week" className="flex max-w-full items-center gap-1.5">
-      <Button variant="secondary" size="icon-sm" aria-label="Previous preview week" onClick={onPrevious}>
+      <Button variant="secondary" size="icon-sm" aria-label="Previous preview week" disabled={start <= earliestDate} onClick={onPrevious}>
         <ChevronLeft />
       </Button>
       <Popover open={open} onOpenChange={setOpen}>
@@ -55,10 +58,11 @@ export function ReadingWeekPicker({
             defaultMonth={from}
             weekStartsOn={1}
             captionLayout="dropdown"
+            startMonth={earliest}
             endMonth={latest}
-            disabled={{ after: latest }}
+            disabled={[{ before: earliest }, { after: latest }]}
             onSelect={(_range, date, modifiers) => {
-              if (modifiers.disabled) return;
+              if (modifiers.disabled || date < earliest || date > latest) return;
               onSelect(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12)));
               setOpen(false);
             }}
