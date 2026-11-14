@@ -5,13 +5,15 @@ import { cn } from "cn"
 import type { ReactElement, ReactNode } from "react"
 
 function TooltipProvider({
-  delay = 0,
+  delay = 600,
+  timeout = 0,
   ...props
 }: TooltipPrimitive.Provider.Props) {
   return (
     <TooltipPrimitive.Provider
       data-slot="tooltip-provider"
       delay={delay}
+      timeout={timeout}
       {...props}
     />
   )
