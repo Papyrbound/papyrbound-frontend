@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "test": "node --import tsx --test src/features/library/model/*.test.ts src/features/profile/model/*.test.ts src/features/profile/stores/*.test.ts",
+    "test": "node --import tsx --test src/features/library/model/*.test.ts src/features/profile/model/*.test.ts src/features/profile/stores/*.test.ts src/features/annotations/model/*.test.ts",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

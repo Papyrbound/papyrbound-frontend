@@ -41,18 +41,20 @@ export function AnnotationEditor({
   defaultBookId,
   onSave,
   onClose,
+  noun = "book",
 }: {
   annotation?: Annotation;
   books: SampleBook[];
   defaultBookId: string;
   onSave: (details: AnnotationDetails) => void;
   onClose: () => void;
+  noun?: "book" | "comic";
 }) {
   const [bookId, setBookId] = useLocalUIState(
     annotation?.bookId ?? defaultBookId,
   );
   const [kind, setKind] = useLocalUIState<Annotation["kind"]>(
-    annotation?.kind ?? "highlight",
+    annotation?.kind ?? "note",
   );
   const [content, setContent] = useLocalUIState(annotation?.content ?? "");
   const [note, setNote] = useLocalUIState(annotation?.note ?? "");
@@ -88,12 +90,12 @@ export function AnnotationEditor({
               ? "Highlight options"
               : annotation
                 ? "Edit note"
-                : "New annotation"}
+                : kind === "note" ? "New note" : "New highlight"}
           </DialogTitle>
           <DialogDescription>
             {isSavedHighlight
               ? "Add your own thoughts or change the color. The original passage stays unchanged."
-              : "Keep a passage or a thought close to its book."}
+              : `Keep a passage or a thought close to its ${noun}.`}
           </DialogDescription>
         </DialogHeader>
         <form
@@ -132,7 +134,7 @@ export function AnnotationEditor({
           ) : (
             <div className="space-y-2">
               <span id="annotation-book-label" className="text-sm">
-                Book
+                {noun === "comic" ? "Comic" : "Book"}
               </span>
               <DropdownMenu>
                 <DropdownMenuTrigger
@@ -145,7 +147,7 @@ export function AnnotationEditor({
                   aria-labelledby="annotation-book-label annotation-book-name"
                 >
                   <span id="annotation-book-name" className="truncate">
-                    {selectedBook?.title ?? "Choose a book"}
+                    {selectedBook?.title ?? `Choose a ${noun}`}
                   </span>
                   <ChevronDownIcon />
                 </DropdownMenuTrigger>

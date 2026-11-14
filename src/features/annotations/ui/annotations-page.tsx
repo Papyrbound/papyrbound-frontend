@@ -15,11 +15,18 @@ import {
   StickyNote,
   Check,
   ChevronsUpDown,
+  NotebookPen,
+  Download,
+  Pencil,
 } from "lucide-react";
 
 import { useAnnotations } from "../stores/annotations-store";
 
 import { annotationColors } from "../model/annotation";
+import type { Annotation } from "../model/annotation";
+import { annotationDate, annotationsMarkdown, downloadAnnotations, visibleAnnotations } from "../model/annotation-view";
+import { AnnotationEditor } from "./annotation-editor";
+import { Card, CardContent } from "@/shared/ui/card";
 
 import { useActiveLibrary } from "@/features/library/model/use-active-library";
 
@@ -56,6 +63,7 @@ import {
   DropdownMenuSub,
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
+  DropdownMenuSeparator,
 } from "@/shared/ui/dropdown-menu";
 
 import {
@@ -76,6 +84,7 @@ const useAnnotationUI = create<{
   expanded: string[];
   deleting: string | null;
   message: string;
+  editing: Annotation | "new" | null;
   patch: (
     v: Partial<{
       query: string;
@@ -84,6 +93,7 @@ const useAnnotationUI = create<{
       expanded: string[];
       deleting: string | null;
       message: string;
+      editing: Annotation | "new" | null;
     }>,
   ) => void;
 }>((set) => ({
@@ -93,18 +103,17 @@ const useAnnotationUI = create<{
   expanded: ["quiet"],
   deleting: null,
   message: "",
+  editing: null,
   patch: (v) => set(v),
 }));
 
 export function AnnotationsToolbar() {
   const ui = useAnnotationUI();
   const { annotations } = useAnnotations();
-  const { books, plural, noun } = useActiveLibrary();
+  const { books, plural, noun, kind } = useActiveLibrary();
   const selectedBook = books.some((book) => book.id === ui.book) ? ui.book : "all";
-  const groups = books.filter((b) => annotations.some((a) =>
-    a.bookId === b.id && (selectedBook === "all" || a.bookId === selectedBook) &&
-    `${a.content} ${a.note}`.toLowerCase().includes(ui.query.toLowerCase()),
-  ));
+  const visible = visibleAnnotations(annotations, books, ui.book, ui.query, ui.sort);
+  const groups = books.filter((book) => visible.some((item) => item.bookId === book.id));
   return (
     <>
       <Popover>
@@ -154,7 +163,7 @@ export function AnnotationsToolbar() {
         </DropdownMenu>
         <DropdownMenu>
           <DropdownMenuTrigger
-            render={<Button variant="secondary" size="icon-sm" aria-label="Sort annotations" />}
+            render={<Button variant="secondary" size="icon-sm" aria-label="Annotation view and export options" />}
           >
             <ListFilter />
           </DropdownMenuTrigger>
@@ -173,20 +182,27 @@ export function AnnotationsToolbar() {
                 </DropdownMenuRadioItem>
               </DropdownMenuRadioGroup>
             </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => ui.patch({ expanded: groups.every((book) => ui.expanded.includes(book.id)) ? [] : groups.map((book) => book.id) })}>
+              <ChevronsUpDown />
+              {groups.length && groups.every((book) => ui.expanded.includes(book.id)) ? "Collapse all" : "Expand all"}
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled={!visible.length} onClick={() => {
+              downloadAnnotations(annotationsMarkdown(visible, books), kind);
+              ui.patch({ message: "Annotations exported as Markdown." });
+            }}>
+              <Download /> Export visible annotations
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <TooltipHint content={ui.expanded.length ? "Collapse all annotations" : "Expand all annotations"}><Button
-          variant="ghost"
+        <TooltipHint content="New note"><Button
+          variant="secondary"
           size="icon-sm"
-          aria-label={ui.expanded.length ? "Collapse all annotations" : "Expand all annotations"}
-          className="text-xs text-muted-foreground"
-          onClick={() =>
-            ui.patch({
-              expanded: ui.expanded.length ? [] : groups.map((b) => b.id),
-            })
-          }
+          aria-label="New note"
+          disabled={!books.length}
+          onClick={() => ui.patch({ editing: "new" })}
         >
-          <ChevronsUpDown />
+          <NotebookPen />
         </Button></TooltipHint>
     </>
   );
@@ -194,24 +210,12 @@ export function AnnotationsToolbar() {
 
 export function AnnotationsPage() {
   const { annotations, setAnnotations } = useAnnotations();
-  const { books, noun } = useActiveLibrary();
+  const { books, noun, plural } = useActiveLibrary();
   const { selectBook } = useWorkspace();
   const ui = useAnnotationUI();
   const router = useRouter();
   const selectedBook = books.some((book) => book.id === ui.book) ? ui.book : "all";
-  const bookIds = new Set(books.map((book) => book.id));
-  const visible = annotations
-    .filter(
-      (a) =>
-        bookIds.has(a.bookId) &&
-        (selectedBook === "all" || a.bookId === selectedBook) &&
-        `${a.content} ${a.note}`.toLowerCase().includes(ui.query.toLowerCase()),
-    )
-    .toSorted(
-      (a, b) =>
-        (new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) *
-        (ui.sort === "newest" ? 1 : -1),
-    );
+  const visible = visibleAnnotations(annotations, books, ui.book, ui.query, ui.sort);
   const groups = books.filter((b) => visible.some((a) => a.bookId === b.id));
   const expanded = ui.expanded;
 
@@ -263,11 +267,7 @@ export function AnnotationsPage() {
                           <span className="ml-auto inline-flex shrink-0 items-center gap-2">
                           <TraceDescription className="text-xs">
                         <time dateTime={a.createdAt}>
-                          {a.createdLabel ??
-                            new Date(a.createdAt).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                            })}
+                          {annotationDate(a.createdAt)}
                         </time>
                           </TraceDescription>
                       <DropdownMenu>
@@ -283,6 +283,9 @@ export function AnnotationsPage() {
                           <MoreHorizontal />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-[272px]">
+                          <DropdownMenuItem onClick={() => ui.patch({ editing: a })}>
+                            <Pencil /> {a.kind === "highlight" ? "Edit highlight note" : "Edit note"}
+                          </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => {
                               selectBook(book.id);
@@ -382,13 +385,41 @@ export function AnnotationsPage() {
         ))}
       </Trace>
       {!groups.length && (
-        <p className="py-16 text-center text-muted-foreground">
-          No annotations match your search.
-        </p>
+        <Card className="mx-auto my-8 max-w-md border border-dashed border-border bg-transparent shadow-none ring-0">
+          <CardContent className="py-6 text-center">
+            <NotebookPen className="mx-auto mb-4 size-7 text-muted-foreground" />
+            <h2 className="text-base font-medium">{ui.query.trim() || selectedBook !== "all" ? "No matching annotations" : "Your thoughts belong here"}</h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              {ui.query.trim() || selectedBook !== "all" ? "Try another search or clear the filters." : `Save notes alongside your ${plural}, then find or export them here.`}
+            </p>
+            {ui.query.trim() || selectedBook !== "all" ? (
+              <Button className="mt-5" variant="secondary" onClick={() => ui.patch({ query: "", book: "all" })}>Clear filters</Button>
+            ) : books.length ? (
+              <Button className="mt-5" variant="secondary" onClick={() => ui.patch({ editing: "new" })}><NotebookPen /> Add your first note</Button>
+            ) : <p className="mt-4 text-xs text-muted-foreground">Import a {noun} to get started.</p>}
+          </CardContent>
+        </Card>
       )}
       <p className="sr-only" role="status">
         {ui.message}
       </p>
+      {ui.editing && books.length > 0 && (
+        <AnnotationEditor
+          key={ui.editing === "new" ? "new" : ui.editing.id}
+          annotation={ui.editing === "new" ? undefined : ui.editing}
+          books={books}
+          noun={noun}
+          defaultBookId={selectedBook !== "all" ? selectedBook : books[0].id}
+          onClose={() => ui.patch({ editing: null })}
+          onSave={(details) => {
+            const editing = ui.editing;
+            setAnnotations((items) => editing && editing !== "new"
+              ? items.map((item) => item.id === editing.id ? { ...item, ...details } : item)
+              : [{ ...details, id: crypto.randomUUID(), createdAt: new Date().toISOString(), starred: false }, ...items]);
+            ui.patch({ editing: null, query: "", book: details.bookId, expanded: [...new Set([...ui.expanded, details.bookId])] });
+          }}
+        />
+      )}
 
       <AlertDialog
         open={!!ui.deleting}
