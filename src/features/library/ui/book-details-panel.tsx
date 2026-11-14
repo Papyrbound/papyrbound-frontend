@@ -72,9 +72,11 @@ import type { SampleBook } from "@/features/home/model/sample-books";
 export function BookDetailsPanel({
   reading = false,
   fallback,
+  scope,
 }: {
   reading?: boolean;
   fallback?: SampleBook;
+  scope?: SampleBook[];
 }) {
   const {
     books,
@@ -90,11 +92,13 @@ export function BookDetailsPanel({
   const { collections, setCollections } = useCollections();
   const { setAnnotations } = useAnnotations();
 
-  const { selectedId, panelOpen, setPanelOpen, dialog, setDialog, selectBook } =
+  const { selectedId, panelOpen, setPanelOpen, dialog, setDialog } =
     useWorkspace();
 
   const mobile = useIsCompactWindow();
-  const book = books.find((b) => b.id === selectedId) ?? (fallback && (fallback.kind ?? "books") === kind ? fallback : undefined) ?? books[0];
+  const candidates = scope ?? books;
+  const book = candidates.find((b) => b.id === selectedId) ??
+    (fallback && candidates.some((item) => item.id === fallback.id) ? fallback : undefined) ?? candidates[0];
   const itemLabel = kind === "comics" ? "Comic" : "Book";
   const activeCollections = collections.filter((collection) => (collection.kind ?? "books") === kind);
 
@@ -297,7 +301,7 @@ export function BookDetailsPanel({
       )}
 
       <Sheet
-        open={mobile && panelOpen && selectedId !== null}
+        open={mobile && panelOpen && dialog === null && candidates.some((item) => item.id === selectedId)}
         onOpenChange={setPanelOpen}
       >
         <SheetContent className="overflow-y-auto bg-card">
@@ -481,8 +485,8 @@ export function BookDetailsPanel({
                 );
                 setAnnotations((a) => a.filter((n) => n.bookId !== book.id));
                 setDialog(null);
-                const next = books.find((b) => b.id !== book.id);
-                if (next) selectBook(next.id);
+                const next = candidates.find((b) => b.id !== book.id);
+                useWorkspace.setState({ selectedId: next?.id ?? null, panelOpen: mobile ? false : panelOpen });
               }}
             >
               Delete {noun}

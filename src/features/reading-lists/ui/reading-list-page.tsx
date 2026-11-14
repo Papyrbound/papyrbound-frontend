@@ -12,6 +12,7 @@ import { BookGallery } from "@/features/library/ui/book-gallery";
 import { ShelfStatusBar } from "@/features/library/ui/shelf-status-bar";
 import { useWorkspace } from "@/app-shell/workspace-store";
 import { ReadingListEditor } from "./reading-list-editor";
+import { orderBooks } from "@/features/library/model/book-order";
 
 export function ReadingListsPage() {
   const { books, lists, updateList, plural, noun, label } = useActiveLibrary();
@@ -20,7 +21,7 @@ export function ReadingListsPage() {
   const searchParams = useSearchParams();
   const selectedListId = searchParams.get("list");
   const selectedList = lists.find((list) => list.id === selectedListId);
-  const listBooks = books
+  const listBooks = orderBooks(books
     .filter((book) => selectedList?.bookIds?.includes(book.id))
     .filter((book) =>
       filter === "reading"
@@ -30,12 +31,7 @@ export function ReadingListsPage() {
           : filter === "finished"
             ? book.progress >= 100
             : true,
-    )
-    .toSorted((a, b) =>
-      sort === "recent"
-        ? books.indexOf(a) - books.indexOf(b)
-        : a.title.localeCompare(b.title) * (sort === "za" ? -1 : 1),
-    );
+    ), sort);
 
   return (
     <div className="flex h-[calc(100dvh-3.5rem)] min-h-0">
@@ -98,7 +94,7 @@ export function ReadingListsPage() {
           />
         )}
       </section>
-      <BookDetailsPanel />
+      <BookDetailsPanel scope={selectedList ? listBooks : []} />
     </div>
   );
 }

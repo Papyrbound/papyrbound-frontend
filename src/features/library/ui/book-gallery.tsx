@@ -19,6 +19,7 @@ import { BookCover } from "@/features/home/ui/book-cover";
 import type { SampleBook } from "@/features/home/model/sample-books";
 
 import { Button } from "@/shared/ui/button";
+import { useIsCompactWindow } from "@/shared/hooks/use-mobile";
 
 import {
   ContextMenu,
@@ -41,13 +42,13 @@ export function BookGallery({
 }) {
   const { view, selectedId, selectBook, setDialog, panelOpen } = useWorkspace();
   const {
-    books: libraryBooks,
     toggleBook,
     markAsRead,
     markAsUnread,
     noun, plural,
   } = useActiveLibrary();
-  const activeId = selectedId ?? libraryBooks[0]?.id;
+  const compact = useIsCompactWindow();
+  const activeId = books.find((book) => book.id === selectedId)?.id ?? books[0]?.id;
 
   if (!books.length)
     return (
@@ -77,7 +78,7 @@ export function BookGallery({
         <ContextMenu
           key={book.id}
           onOpenChange={(open) => {
-            if (open) selectBook(book.id);
+            if (open) useWorkspace.setState({ selectedId: book.id, ...(compact ? { panelOpen: false } : {}) });
           }}
         >
           <ContextMenuTrigger

@@ -38,6 +38,7 @@ import { BookGallery } from "@/features/library/ui/book-gallery";
 
 import { BookDetailsPanel } from "@/features/library/ui/book-details-panel";
 import { ShelfStatusBar } from "@/features/library/ui/shelf-status-bar";
+import { orderBooks } from "@/features/library/model/book-order";
 
 import { Button } from "@/shared/ui/button";
 
@@ -258,8 +259,6 @@ export function CollectionsPage() {
   const router = useRouter();
   const search = useSearchParams();
   const opened = collections.find((c) => c.id === search.get("collection"));
-  const selected =
-    collections.find((c) => c.id === ui.selected) ?? collections[0];
   const visible = collections
     .filter((c) => !ui.pinned || c.pinned)
     .toSorted((a, b) => {
@@ -275,7 +274,7 @@ export function CollectionsPage() {
       return result * (ui.order === "desc" ? -1 : 1);
     });
   const collectionBooks = opened
-    ? books
+    ? orderBooks(books
         .filter((book) => opened.bookIds.includes(book.id))
         .filter((book) =>
           filter === "reading"
@@ -285,13 +284,9 @@ export function CollectionsPage() {
               : filter === "finished"
                 ? book.progress >= 100
                 : true,
-        )
-        .toSorted((a, b) =>
-          sort === "recent"
-            ? books.indexOf(a) - books.indexOf(b)
-            : a.title.localeCompare(b.title) * (sort === "za" ? -1 : 1),
-        )
+        ), sort)
     : [];
+  const selected = visible.find((c) => c.id === ui.selected) ?? visible[0];
   function edit(c: Collection) {
     ui.patch({ editor: c });
   }
@@ -380,13 +375,16 @@ export function CollectionsPage() {
                       className={`min-w-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${selected?.id === c.id ? "bg-selected shadow-selection" : "hover:bg-hover"} ${view === "grid" ? "w-full max-w-[212px] rounded-2xl p-4 pb-2" : "flex w-full items-center gap-4 rounded-selection px-3 py-2 pr-6"}`}
                       onClick={() => {
                         ui.patch({ selected: c.id });
-                        if (compact)
+                        if (compact || !panelOpen)
                           router.push(`/collections?collection=${c.id}`);
                       }}
                       onDoubleClick={() =>
                         router.push(`/collections?collection=${c.id}`)
                       }
-                      aria-label={`Select ${c.name}. Double click to open.`}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") { event.preventDefault(); router.push(`/collections?collection=${c.id}`); }
+                      }}
+                      aria-label={`Select ${c.name}. Press Enter or double click to open.`}
                       aria-pressed={selected?.id === c.id}
                     >
                       <CollectionStack collection={c} small={view === "list"} />
@@ -430,7 +428,7 @@ export function CollectionsPage() {
           />
         </main>
         {opened ? (
-          <BookDetailsPanel />
+          <BookDetailsPanel scope={collectionBooks} />
         ) : (
           panelOpen &&
           selected && (

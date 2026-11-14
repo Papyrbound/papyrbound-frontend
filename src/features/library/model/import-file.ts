@@ -74,7 +74,7 @@ export async function parseLibraryFile(file: File, kind: LibraryKind): Promise<S
     format: kind === "books" ? "EPUB" : "CBZ",
     title: file.name.replace(/\.[^.]+$/, ""), author: "Unknown author",
     genre: kind === "books" ? "Uncategorized" : "Comics",
-    pages: 0, progress: 0, addedLabel: "Added today",
+    pages: 0, progress: 0, addedLabel: "Added today", addedAt: new Date().toISOString(),
     paper: "#d9cae9", ink: "#494059", tone: "var(--content-lilac)", art: "orbit",
   };
 

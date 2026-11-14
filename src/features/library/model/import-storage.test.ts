@@ -41,3 +41,23 @@ test("importing the same file twice adds one item and records the right library 
   assert.equal((await loadImportedBooks()).filter((item) => item.id === book.id).length, 1);
   await deleteImportedFile(book.id);
 });
+
+test("concurrent imports of the same file create one item and one activity event", async () => {
+  const book = { ...useReadingLists.getState().books[0], id: "concurrent-import", sourceId: "concurrent-import", title: "Concurrent import" };
+  const file = new File(["bytes"], "same.epub");
+  assert.deepEqual(await Promise.all([useReadingLists.getState().importBook(book, file), useReadingLists.getState().importBook(book, file)]), [true, false]);
+  assert.equal(useReadingLists.getState().books.filter((item) => item.id === book.id).length, 1);
+  assert.equal(useReadingLists.getState().activity.filter((event) => event.bookTitle === book.title && event.kind === "added").length, 1);
+  await deleteImportedFile(book.id);
+});
+
+test("finished and unread actions keep progress and shelf membership consistent", () => {
+  const state = useReadingLists.getState();
+  state.toggleBook("want-to-read", "quiet");
+  state.markAsRead("quiet");
+  assert.equal(useReadingLists.getState().books.find((book) => book.id === "quiet")?.progress, 100);
+  assert.equal(useReadingLists.getState().lists.find((list) => list.id === "want-to-read")?.bookIds?.includes("quiet"), false);
+  state.toggleBook("completed", "quiet");
+  assert.equal(useReadingLists.getState().books.find((book) => book.id === "quiet")?.progress, 0);
+  assert.equal(useReadingLists.getState().lists.find((list) => list.id === "completed")?.bookIds?.includes("quiet"), false);
+});

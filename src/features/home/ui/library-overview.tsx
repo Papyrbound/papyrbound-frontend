@@ -6,24 +6,16 @@ import { useActiveLibrary } from "@/features/library/model/use-active-library";
 import { BookDetailsPanel } from "@/features/library/ui/book-details-panel";
 import { BookCover } from "./book-cover";
 import type { SampleBook } from "../model/sample-books";
+import { orderBooks, nextUnreadBook } from "@/features/library/model/book-order";
 
 export function LibraryOverview() {
   const { books, lists, noun, label } = useActiveLibrary();
   const { selectBook, selectedId, setDialog, panelOpen } = useWorkspace();
   const recent = books.filter((book) => book.progress > 0).slice(0, 4);
   const finished = books.filter((book) => book.progress >= 100);
-  const next = books
-    .filter(
-      (book) =>
-        lists
-          .find((list) => list.id === "want-to-read")
-          ?.bookIds?.includes(book.id) || book.progress === 0,
-    )
-    .slice(0, 1);
-  const added = [...books]
-    .sort((a, b) => books.indexOf(b) - books.indexOf(a))
-    .filter((book) => book.addedLabel)
-    .slice(0, 3);
+  const queued = nextUnreadBook(books, lists.find((list) => list.id === "want-to-read")?.bookIds);
+  const next = queued ? [queued] : [];
+  const added = orderBooks(books).slice(0, 3);
 
   function row(book: SampleBook, kind: "next" | "finished" | "added") {
     return (

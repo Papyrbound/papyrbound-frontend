@@ -4,10 +4,11 @@ import { useActiveLibrary } from "@/features/library/model/use-active-library";
 import { BookGallery } from "./book-gallery";
 import { BookDetailsPanel } from "./book-details-panel";
 import { ShelfStatusBar } from "./shelf-status-bar";
+import { orderBooks } from "../model/book-order";
 export function LibraryPage() {
   const { books, plural, noun } = useActiveLibrary();
   const { filter, sort } = useWorkspace();
-  const visible = books
+  const visible = orderBooks(books
     .filter((b) =>
       filter === "reading"
         ? b.progress > 0 && b.progress < 100
@@ -16,12 +17,7 @@ export function LibraryPage() {
           : filter === "finished"
             ? b.progress >= 100
             : true,
-    )
-    .toSorted((a, b) =>
-      sort === "recent"
-        ? books.indexOf(a) - books.indexOf(b)
-        : a.title.localeCompare(b.title) * (sort === "za" ? -1 : 1),
-    );
+    ), sort);
   return (
     <div className="flex h-[calc(100dvh-3.5rem)] min-h-0">
       <main className="flex min-w-0 flex-1 flex-col" aria-label="Library">
@@ -33,7 +29,7 @@ export function LibraryPage() {
         </div>
         <ShelfStatusBar label={`Library / All ${plural}`} count={visible.length} unit={noun} />
       </main>
-      <BookDetailsPanel />
+      <BookDetailsPanel scope={visible} />
     </div>
   );
 }
