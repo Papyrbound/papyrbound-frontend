@@ -31,6 +31,7 @@ import {
 export function LibraryFilter({ iconOnly = false }: { iconOnly?: boolean }) {
   const { filter, setFilter, sort, setSort, libraryKind } = useWorkspace();
   const { plural } = libraryCopy[libraryKind];
+  const active = filter !== "all" || sort !== "recent";
   return (
     <DropdownMenu>
       <TooltipHint content={`Filter ${plural}`}><DropdownMenuTrigger
@@ -38,8 +39,8 @@ export function LibraryFilter({ iconOnly = false }: { iconOnly?: boolean }) {
           <Button
             variant="secondary"
             size={iconOnly ? "icon-sm" : "default"}
-            aria-label={`Filter ${plural}`}
-            className={iconOnly ? "rounded-lg" : ""}
+            aria-label={`Filter ${plural}${active ? ", active filters" : ""}`}
+            className={`${iconOnly ? "rounded-lg" : ""} ${active ? "bg-selected text-foreground ring-1 ring-foreground/20" : ""}`}
           />
         }
       >

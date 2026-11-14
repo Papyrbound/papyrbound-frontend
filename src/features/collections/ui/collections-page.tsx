@@ -43,6 +43,7 @@ import { orderBooks } from "@/features/library/model/book-order";
 import { Button } from "@/shared/ui/button";
 
 import { Input } from "@/shared/ui/input";
+import { Card, CardContent } from "@/shared/ui/card";
 
 import { Checkbox } from "@/shared/ui/checkbox";
 
@@ -254,7 +255,7 @@ export function CollectionsPage() {
   const { collections: allCollections, setCollections } = useCollections();
   const { books, markAsRead, kind, plural, noun, label } = useActiveLibrary();
   const collections = allCollections.filter((collection) => (collection.kind ?? "books") === kind);
-  const { view, panelOpen, filter, sort } = useWorkspace();
+  const { view, panelOpen, filter, sort, setFilter } = useWorkspace();
   const ui = useCollectionUI();
   const router = useRouter();
   const search = useSearchParams();
@@ -355,7 +356,9 @@ export function CollectionsPage() {
               <>
                 <BookGallery
                   books={collectionBooks}
-                  onAddBooks={() => edit(opened)}
+                  onAddBooks={filter !== "all" && books.some((book) => opened.bookIds.includes(book.id)) ? undefined : () => edit(opened)}
+                  emptyTitle={filter !== "all" ? `No matching ${plural}` : undefined}
+                  emptyAction={filter !== "all" && books.some((book) => opened.bookIds.includes(book.id)) ? <Button variant="secondary" onClick={() => setFilter("all")}>Clear filters</Button> : undefined}
                 />
               </>
             ) : (
@@ -414,9 +417,14 @@ export function CollectionsPage() {
                   ))}
                 </div>
                 {!visible.length && (
-                  <p className="py-16 text-center text-muted-foreground">
-                    No collections match. Create a collection or clear the filter.
-                  </p>
+                  <Card className="mx-auto my-8 max-w-md border border-dashed border-border bg-transparent shadow-none ring-0"><CardContent className="py-7 text-center">
+                    <Folder className="mx-auto mb-4 size-7 text-muted-foreground" />
+                    <h2 className="text-base font-medium">{ui.pinned ? "No pinned collections" : "Make room for a collection"}</h2>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{ui.pinned ? "Pin a collection to keep it close, or show all collections." : `Bring your ${plural} together by theme, mood, or whatever you like.`}</p>
+                    <Button className="mt-5" variant="secondary" onClick={() => ui.pinned ? ui.patch({ pinned: false }) : ui.patch({ editor: "new" })}>
+                      {ui.pinned ? "Show all collections" : "New collection"}
+                    </Button>
+                  </CardContent></Card>
                 )}
               </>
             )}
@@ -425,6 +433,7 @@ export function CollectionsPage() {
             label={opened ? `Collections / ${opened.name}` : "Collections / All collections"}
             count={opened ? collectionBooks.length : visible.length}
             unit={opened ? noun : "collection"}
+            total={opened ? books.filter((book) => opened.bookIds.includes(book.id)).length : collections.length}
           />
         </main>
         {opened ? (

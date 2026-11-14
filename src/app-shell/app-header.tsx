@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, Suspense } from "react";
+import { Fragment, Suspense, useEffect } from "react";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -14,6 +14,7 @@ import { useWorkspace } from "./workspace-store";
 import { SidebarTrigger } from "@/shared/ui/sidebar";
 import { Button } from "@/shared/ui/button";
 import { TooltipHint } from "@/shared/ui/tooltip";
+import { useIsCompactWindow } from "@/shared/hooks/use-mobile";
 import { LibraryFilter } from "@/features/library/ui/library-filter";
 import { AddBookDialog } from "@/features/library/ui/add-book-dialog";
 import { CollectionToolbar } from "@/features/collections/ui/collections-page";
@@ -113,6 +114,8 @@ function RouteBreadcrumbs({ pathname }: { pathname: string }) {
 export function AppHeader() {
   const pathname = usePathname();
   const router = useRouter();
+  const compact = useIsCompactWindow();
+  useEffect(() => { useWorkspace.setState({ dialog: null }); }, [pathname]);
   const { view, setView, panelOpen, setPanelOpen } = useWorkspace();
   const gallery =
     pathname === "/library" ||
@@ -122,7 +125,7 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center border-b border-border/55 bg-background px-4">
       <SidebarTrigger className="mr-3 text-muted-foreground md:hidden" />
-      <div className="mr-[19px] hidden items-center gap-1 md:flex">
+      <div className="mr-3 hidden items-center gap-1 md:flex">
         <TooltipHint content="Go back"><Button
           size="icon-sm"
           variant="ghost"
@@ -143,7 +146,7 @@ export function AppHeader() {
       <Suspense fallback={<span className="flex-1 text-sm">Papyrbound</span>}>
         <RouteBreadcrumbs pathname={pathname} />
       </Suspense>
-      <div className="ml-auto flex items-center gap-3">
+      <div className="ml-auto flex shrink-0 items-center gap-2">
         {pathname === "/annotations" && <AnnotationsToolbar />}
         {(pathname === "/library" || pathname === "/reading-lists") && (
           <LibraryFilter iconOnly />
@@ -153,7 +156,7 @@ export function AppHeader() {
             <CollectionToolbar />
           </Suspense>
         )}
-        <AddBookDialog />
+        <AddBookDialog compact={compact} />
         {gallery && (
           <div
             className="flex h-8 w-[72px] items-center justify-center gap-1 rounded-lg border border-soft-border bg-secondary p-1 shadow-soft"

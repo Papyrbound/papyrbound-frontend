@@ -40,7 +40,7 @@ const useActivityUI = create<{
     }>,
   ) => void;
 }>((set) => ({
-  day: activityPreview.end,
+  day: "",
   week: 0,
   editing: false,
   patch: (value) => set(value),
@@ -59,10 +59,11 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
   const weekStart = new Date(anchorWeekStart + week * 7 * activityDayMs);
   const start = clampActivityDate(weekStart, earliest, latest);
   const end = clampActivityDate(new Date(weekStart.getTime() + 6 * activityDayMs), earliest, latest);
-  const day = activityDateKey(clampActivityDate(new Date(`${ui.day}T12:00:00Z`), earliest, latest));
+  const day = activityDateKey(clampActivityDate(new Date(`${ui.day || activityDateKey(latest)}T12:00:00Z`), earliest, latest));
   const heatmapDays = createHeatmapDays(earliest, latest);
+  const chartDays = embedded ? heatmapDays.slice(-182) : heatmapDays;
   const streak = activityStreak(heatmapDays, day);
-  const months = heatmapDays.filter((_, index) => index % 7 === 0).flatMap((entry, index, weeks) => {
+  const months = chartDays.filter((_, index) => index % 7 === 0).flatMap((entry, index, weeks) => {
     const date = new Date(`${entry.date}T12:00:00Z`);
     if (index && entry.date.slice(0, 7) === weeks[index - 1].date.slice(0, 7)) return [];
     return [{ date: entry.date, column: index + 1, label: date.toLocaleDateString("en-US", { month: "short", timeZone: "UTC" }) }];
@@ -127,11 +128,11 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
             Reading consistency
           </h2>
           <p className="mt-1 text-xs leading-[18px] text-muted-foreground">
-            Last 12 months
+            {embedded ? "Last 26 weeks" : "Last 12 months"}
           </p>
           <div className="mt-[18px] overflow-x-auto">
-            <div className={embedded ? "min-w-[580px]" : "min-w-[920px] pl-4 pr-9"}>
-              <div className={cn("mb-2.5 grid h-[18px] grid-cols-[repeat(53,minmax(0,1fr))] text-[10px] text-muted-foreground", embedded ? "ml-8 gap-0.5" : "ml-14 gap-1")}>
+            <div className={embedded ? "min-w-[260px]" : "min-w-[920px] pl-4 pr-9"}>
+              <div style={{ gridTemplateColumns: `repeat(${chartDays.length / 7}, minmax(0, 1fr))` }} className={cn("mb-2.5 grid h-[18px] text-[10px] text-muted-foreground", embedded ? "ml-8 gap-0.5" : "ml-14 gap-1")}>
                 {months.map((month) => (
                   <span key={month.date} style={{ gridColumn: month.column }}>{month.label}</span>
                 ))}
@@ -142,8 +143,8 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
                   <span>Wed</span>
                   <span>Fri</span>
                 </div>
-                <div className={cn("grid grid-flow-col", embedded ? "flex-1 grid-rows-[repeat(7,8px)] auto-cols-fr gap-0.5" : "grid-rows-[repeat(7,12px)] auto-cols-[12px] gap-1")}>
-                  {heatmapDays.map((d) => (
+                <div className={cn("grid grid-flow-col", embedded ? "aspect-[26/7] flex-1 grid-rows-7 auto-cols-fr gap-0.5" : "grid-rows-[repeat(7,12px)] auto-cols-[12px] gap-1")}>
+                  {chartDays.map((d) => (
                     <TooltipHint key={d.date} content={`${d.date}: ${d.minutes ?? 0} minutes read`}><button
                       className={`aspect-square rounded-[3px] outline-none focus-visible:ring-2 focus-visible:ring-ring ${day === d.date ? "ring-1 ring-foreground ring-offset-1 ring-offset-card" : ""} ${d.minutes === null ? "invisible" : d.minutes === 0 ? "bg-border" : d.minutes < 20 ? "bg-neutral-300 dark:bg-neutral-600" : d.minutes < 35 ? "bg-neutral-400" : d.minutes < 50 ? "bg-neutral-500" : "bg-neutral-700 dark:bg-neutral-200"}`}
                       aria-label={`${d.date}: ${d.minutes ?? 0} minutes read`}
@@ -158,7 +159,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
           </div>
           <div className="mt-[26px] flex flex-wrap items-center justify-between gap-3 text-xs leading-[18px]">
             <span>
-              {heatmapDays.filter((d) => !!d.minutes).length} reading days
+              {chartDays.filter((d) => !!d.minutes).length} reading days
             </span>
             <span className="flex items-center gap-1 text-muted-foreground">
               Less

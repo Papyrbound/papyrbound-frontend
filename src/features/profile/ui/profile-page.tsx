@@ -27,7 +27,7 @@ export function ProfilePage() {
   const { books, kind, label, plural } = useActiveLibrary();
   const { annotations } = useAnnotations();
   const { collections } = useCollections();
-  const selectBook = useWorkspace((state) => state.selectBook);
+  const selectBook = useWorkspace((state) => state.revealBook);
   const [editing, setEditing] = useLocalUIState(false);
   const router = useRouter();
   const reading = books.filter((book) => book.progress > 0 && book.progress < 100);
@@ -75,9 +75,9 @@ export function ProfilePage() {
           {profile.bio ? (
             <p className="mt-4 max-w-xl whitespace-pre-wrap break-words text-sm leading-6">{profile.bio}</p>
           ) : (
-            <Button variant="link" className="mt-4 h-auto justify-start p-0 text-sm text-muted-foreground" onClick={() => setEditing(true)}>
+            <div className="mt-4"><Button variant="link" className="h-auto justify-start p-0 text-sm text-muted-foreground" onClick={() => setEditing(true)}>
               Add a little about yourself
-            </Button>
+            </Button></div>
           )}
           <div className="mt-6 flex flex-wrap gap-x-6 gap-y-3">
             {stats.map((stat) => (

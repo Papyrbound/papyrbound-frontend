@@ -283,7 +283,7 @@ export function ReadingListsProvider({ children }: PropsWithChildren) {
     let active = true;
     let unsubscribe: (() => void) | undefined;
     const storageFailure = (error: unknown) => useReadingLists.setState({
-      storageError: error instanceof Error ? error.message : "Could not update local library storage.",
+      storageError: error instanceof Error ? error.message : typeof error === "string" ? error : "Could not update local library storage.",
     });
     const saved = readDeviceValue("papyrbound-library-v1", isLibrarySnapshot, storageFailure);
     if (saved) useReadingLists.setState({

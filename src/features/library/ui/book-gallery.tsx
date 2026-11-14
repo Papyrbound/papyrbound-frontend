@@ -20,6 +20,8 @@ import type { SampleBook } from "@/features/home/model/sample-books";
 
 import { Button } from "@/shared/ui/button";
 import { useIsCompactWindow } from "@/shared/hooks/use-mobile";
+import type { ReactNode } from "react";
+import { Card, CardContent } from "@/shared/ui/card";
 
 import {
   ContextMenu,
@@ -34,11 +36,15 @@ export function BookGallery({
   onAddBooks,
   emptyMessage,
   listId,
+  emptyTitle,
+  emptyAction,
 }: {
   books: SampleBook[];
   onAddBooks?: () => void;
   emptyMessage?: string;
   listId?: string;
+  emptyTitle?: string;
+  emptyAction?: ReactNode;
 }) {
   const { view, selectedId, selectBook, setDialog, panelOpen } = useWorkspace();
   const {
@@ -52,16 +58,20 @@ export function BookGallery({
 
   if (!books.length)
     return (
-      <div className="py-20 text-center">
-        <BookOpen className="mx-auto mb-4 size-8 text-muted-foreground" />
-        <p className="text-muted-foreground">{emptyMessage ?? `No ${plural} here yet.`}</p>
+      <Card className="mx-auto my-8 max-w-md border border-dashed border-border bg-transparent shadow-none ring-0">
+      <CardContent className="py-7 text-center">
+        <BookOpen className="mx-auto mb-4 size-7 text-muted-foreground" />
+        <h2 className="text-base font-medium">{emptyTitle ?? `No ${plural} here yet`}</h2>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">{emptyMessage ?? `Build a place for your next read.`}</p>
+        {emptyAction && <div className="mt-5 flex justify-center">{emptyAction}</div>}
         {onAddBooks && (
           <Button className="mt-5" onClick={onAddBooks}>
             <Plus />
             Add {plural}
           </Button>
         )}
-      </div>
+      </CardContent>
+      </Card>
     );
 
   return (

@@ -211,7 +211,7 @@ export function AnnotationsToolbar() {
 export function AnnotationsPage() {
   const { annotations, setAnnotations } = useAnnotations();
   const { books, noun, plural } = useActiveLibrary();
-  const { selectBook } = useWorkspace();
+  const selectBook = useWorkspace((state) => state.revealBook);
   const ui = useAnnotationUI();
   const router = useRouter();
   const selectedBook = books.some((book) => book.id === ui.book) ? ui.book : "all";

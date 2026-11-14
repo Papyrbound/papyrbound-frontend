@@ -12,15 +12,7 @@ import { Switch } from "@/shared/ui/switch";
 
 import type { ReactNode } from "react";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
-
-import { ChevronDown } from "lucide-react";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 
 function Choice({
   label,
@@ -34,29 +26,12 @@ function Choice({
   onChange: (value: string) => void;
 }) {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            variant="outline"
-            className="h-8 w-40 justify-between text-[13px] sm:w-60"
-          />
-        }
-        aria-label={label}
-      >
-        {value}
-        <ChevronDown className="size-3" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuRadioGroup value={value} onValueChange={onChange}>
-          {options.map((o) => (
-            <DropdownMenuRadioItem key={o} value={o}>
-              {o}
-            </DropdownMenuRadioItem>
-          ))}
-        </DropdownMenuRadioGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Select items={options.map((option) => ({ label: option, value: option }))} value={value} onValueChange={(next) => { if (next) onChange(next); }}>
+      <SelectTrigger aria-label={label} className="w-40 rounded-lg text-[13px] sm:w-60"><SelectValue /></SelectTrigger>
+      <SelectContent alignItemWithTrigger={false}><SelectGroup>
+        {options.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}
+      </SelectGroup></SelectContent>
+    </Select>
   );
 }
 
@@ -212,7 +187,7 @@ export function SettingsPage() {
               Changes apply to this preview. EPUB reading is not connected yet.
             </p>
           </section>
-          <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-muted-foreground">
             <span>
               {profile.name} · Profile and appearance saved on this device.
             </span>
@@ -228,7 +203,7 @@ export function SettingsPage() {
             </label>
           </div>
         </div>
-        <section className="pt-1 xl:sticky xl:top-6">
+        <section className="pt-1 xl:sticky xl:top-20">
           <h2 className="text-base font-semibold leading-7">Reading preview</h2>
           <p className="mb-[18px] mt-3 text-[13px] leading-[22px] text-muted-foreground">
             Your default reading appearance.

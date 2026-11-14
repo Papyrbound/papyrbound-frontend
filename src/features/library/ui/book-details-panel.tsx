@@ -212,7 +212,7 @@ export function BookDetailsPanel({
               variant="ghost"
               className={menuActionClass}
               nativeButton={false}
-              render={<Link href="/annotations" />}
+              render={<Link href="/annotations" onClick={() => setDialog(null)} />}
             >
               <Highlighter />
               Annotations
@@ -359,7 +359,7 @@ export function BookDetailsPanel({
               <Button
                 variant="outline"
                 nativeButton={false}
-                render={<Link href="/annotations" />}
+                render={<Link href="/annotations" onClick={() => setDialog(null)} />}
               >
                 View saved annotations
               </Button>

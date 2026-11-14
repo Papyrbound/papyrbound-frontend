@@ -13,14 +13,16 @@ import { ShelfStatusBar } from "@/features/library/ui/shelf-status-bar";
 import { useWorkspace } from "@/app-shell/workspace-store";
 import { ReadingListEditor } from "./reading-list-editor";
 import { orderBooks } from "@/features/library/model/book-order";
+import { Button } from "@/shared/ui/button";
 
 export function ReadingListsPage() {
   const { books, lists, updateList, plural, noun, label } = useActiveLibrary();
-  const { filter, sort } = useWorkspace();
+  const { filter, sort, setFilter } = useWorkspace();
   const [isEditing, setIsEditing] = useLocalUIState(false);
   const searchParams = useSearchParams();
   const selectedListId = searchParams.get("list");
   const selectedList = lists.find((list) => list.id === selectedListId);
+  const total = books.filter((book) => selectedList?.bookIds?.includes(book.id)).length;
   const listBooks = orderBooks(books
     .filter((book) => selectedList?.bookIds?.includes(book.id))
     .filter((book) =>
@@ -44,15 +46,17 @@ export function ReadingListsPage() {
             <BookGallery
               books={listBooks}
               emptyMessage={
-                selectedList.id === "completed"
+                total > 0 ? "Try another filter to see the rest of this shelf." : selectedList.id === "completed"
                   ? `${label} you mark as read will appear here.`
                   : selectedList.isDefault
                     ? `Add ${plural} to this list from the ${noun} menus in your library.`
                     : `No ${plural} here yet. Choose Add ${plural} to build your list.`
               }
+              emptyTitle={total > 0 ? `No matching ${plural}` : undefined}
+              emptyAction={total > 0 ? <Button variant="secondary" onClick={() => setFilter("all")}>Clear filters</Button> : undefined}
               listId={selectedList.id}
               onAddBooks={
-                selectedList.isDefault ? undefined : () => setIsEditing(true)
+                selectedList.isDefault || total > 0 ? undefined : () => setIsEditing(true)
               }
             />
           ) : (
@@ -82,6 +86,7 @@ export function ReadingListsPage() {
           label={selectedList ? `Reading lists / ${selectedList.name}` : "Reading lists / All shelves"}
           count={selectedList ? listBooks.length : lists.length}
           unit={selectedList ? noun : "shelf"}
+          total={selectedList ? total : undefined}
         />
         {isEditing && selectedList && (
           <ReadingListEditor

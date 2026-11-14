@@ -31,6 +31,16 @@ test("switching library clears stale selection and dialogs", () => {
   assert.equal(useWorkspace.getState().query, "");
 });
 
+test("revealing a search result clears filters and stale dialogs", () => {
+  useWorkspace.setState({ filter: "finished", query: "a query", dialog: "reader", panelOpen: false });
+  useWorkspace.getState().revealBook("night");
+  assert.equal(useWorkspace.getState().selectedId, "night");
+  assert.equal(useWorkspace.getState().filter, "all");
+  assert.equal(useWorkspace.getState().query, "");
+  assert.equal(useWorkspace.getState().dialog, null);
+  assert.equal(useWorkspace.getState().panelOpen, true);
+});
+
 test("importing the same file twice adds one item and records the right library context", async () => {
   const book: SampleBook = { id: "duplicate-check", sourceId: "duplicate-check", kind: "comics", format: "CBZ", title: "A duplicate check", author: "Artist", genre: "Comics", pages: 1, progress: 0, paper: "#fff", ink: "#000", tone: "#ddd", art: "orbit" };
   const file = new File(["archive"], "example.cbz");

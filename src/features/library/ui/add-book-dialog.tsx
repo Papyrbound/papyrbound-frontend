@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { useRouter } from "next/navigation";
-import { LoaderCircle, UploadIcon } from "lucide-react";
+import { AlertCircle, LoaderCircle, UploadIcon } from "lucide-react";
 import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
 import { useIsCompactWindow } from "@/shared/hooks/use-mobile";
 import { useWorkspace } from "@/app-shell/workspace-store";
@@ -10,14 +10,16 @@ import { Button } from "@/shared/ui/button";
 import { TooltipHint } from "@/shared/ui/tooltip";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
 import { useActiveLibrary } from "../model/use-active-library";
+import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from "@/shared/ui/popover";
+import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
 
-export function AddBookDialog() {
+export function AddBookDialog({ compact = false }: { compact?: boolean }) {
   const { kind, plural, accept, importBook, importsReady, storageError } = useActiveLibrary();
   const [busy, setBusy] = useLocalUIState(false);
   const [result, setResult] = useLocalUIState<{ added: number; duplicates: number; errors: string[] } | null>(null);
   const input = useRef<HTMLInputElement>(null);
   const importing = useRef(false);
-  const compact = useIsCompactWindow();
+  const compactWindow = useIsCompactWindow();
   const router = useRouter();
   const label = `Import ${plural}`;
 
@@ -39,7 +41,7 @@ export function AddBookDialog() {
         }
       }
       if (lastId && useWorkspace.getState().libraryKind === kind) {
-        useWorkspace.setState((state) => ({ selectedId: lastId, filter: "all", sort: "recent", panelOpen: compact ? false : state.panelOpen }));
+        useWorkspace.setState((state) => ({ selectedId: lastId, filter: "all", sort: "recent", panelOpen: compactWindow ? false : state.panelOpen }));
         router.push("/library");
       }
     } catch {
@@ -70,7 +72,7 @@ export function AddBookDialog() {
       <span className="inline-flex" tabIndex={busy || !importsReady ? 0 : undefined} aria-label={busy || !importsReady ? label : undefined}>
       <Button
         size="sm"
-        className="w-8 gap-2 rounded-[10px] border-primary-foreground/10 p-0 text-[13px] font-medium shadow-[0_1px_2px_rgb(0_0_0/12%),inset_0_1px_0_rgb(255_255_255/16%)] transition-[background-color,box-shadow] duration-150 hover:bg-primary/90 hover:shadow-[0_2px_5px_rgb(0_0_0/16%)] sm:w-auto sm:pl-1.5 sm:pr-3"
+        className={`gap-2 rounded-[10px] border-primary-foreground/10 text-[13px] font-medium shadow-[0_1px_2px_rgb(0_0_0/12%),inset_0_1px_0_rgb(255_255_255/16%)] transition-[background-color,box-shadow] duration-150 hover:bg-primary/90 hover:shadow-[0_2px_5px_rgb(0_0_0/16%)] ${compact ? "w-8 p-0" : "w-auto pl-1.5 pr-3"}`}
         aria-label={busy ? "Importing files" : label}
         aria-busy={busy}
         disabled={busy || !importsReady}
@@ -79,15 +81,25 @@ export function AddBookDialog() {
         <span className="flex size-5 items-center justify-center rounded-md bg-primary-foreground/10" aria-hidden="true">
           {busy ? <LoaderCircle className="size-3.5 animate-spin" /> : <UploadIcon className="size-3.5" />}
         </span>
-        <span className="hidden sm:inline">{busy ? "Importing…" : label}</span>
+        {!compact && <span>{busy ? "Importing…" : label}</span>}
       </Button>
       </span>
       </TooltipHint>
-      {storageError && <span role="alert" className="max-w-48 text-xs text-destructive">{storageError}</span>}
+      {storageError && <Popover>
+        <span role="alert" className="sr-only">{storageError}</span>
+        <TooltipHint content="Changes could not be saved on this device">
+          <PopoverTrigger aria-label="Device storage problem" render={<Button variant="destructive" size="icon-sm" />}><AlertCircle /></PopoverTrigger>
+        </TooltipHint>
+        <PopoverContent align="end" className="w-72">
+          <PopoverTitle>Device storage</PopoverTitle>
+          <p className="text-sm leading-6 text-muted-foreground">{storageError}</p>
+          <Button variant="secondary" onClick={() => useReadingLists.setState({ storageError: "" })}>Dismiss</Button>
+        </PopoverContent>
+      </Popover>}
       <Dialog open={result !== null} onOpenChange={(open) => { if (!open) setResult(null); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Import complete</DialogTitle>
+            <DialogTitle>{result && result.added === 0 && result.errors.length > 0 ? "Import needs attention" : "Import complete"}</DialogTitle>
             <DialogDescription>
               {result?.added ?? 0} {result?.added === 1 ? "file" : "files"} added to your library on this device.
               {!!result?.duplicates && ` ${result.duplicates} already in your library.`}
