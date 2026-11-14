@@ -11,6 +11,7 @@ export type Preferences = {
   theme: "system" | "light" | "dark";
   showDots: boolean;
   reduceMotion: boolean;
+  readingGoal: number;
 };
 type Account = { version: 1; createdAt: string | null; profile: LocalProfile; preferences: Preferences };
 const storageKey = "papyrbound-account-v1";
@@ -19,7 +20,7 @@ const defaults: Account = {
   version: 1,
   createdAt: null,
   profile: localProfile,
-  preferences: { theme: "system", showDots: true, reduceMotion: false },
+  preferences: { theme: "system", showDots: true, reduceMotion: false, readingGoal: 20 },
 };
 let cachedRaw: string | null | undefined;
 let cachedAccount = defaults;
@@ -77,6 +78,7 @@ function getSnapshot(): Account {
                   ? preferences.showDots
                   : true,
               reduceMotion: preferences?.reduceMotion === true,
+              readingGoal: Number.isInteger(preferences?.readingGoal) && preferences.readingGoal >= 1 && preferences.readingGoal <= 300 ? preferences.readingGoal : 20,
             },
           };
         }

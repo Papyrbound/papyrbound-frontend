@@ -1,6 +1,8 @@
 "use client";
 
-import { useSettingsUI } from "../stores/settings-ui-store";
+import { useSettingsUI, startSettingsPersistence } from "../stores/settings-ui-store";
+import { startWorkspacePersistence } from "@/app-shell/workspace-store";
+import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
 import { useEffect, type PropsWithChildren } from "react";
 import {
   useAccount,
@@ -10,6 +12,11 @@ import {
 export function AppearanceProvider({ children }: PropsWithChildren) {
   const { preferences } = useAccount();
   const interfaceSize = useSettingsUI((s) => s.interfaceSize);
+  useEffect(() => {
+    const settings = startSettingsPersistence();
+    const workspace = startWorkspacePersistence((storageError) => useReadingLists.setState({ storageError }));
+    return () => { settings(); workspace(); };
+  }, []);
   useEffect(() => {
     document.documentElement.style.fontSize =
       interfaceSize === "Large"

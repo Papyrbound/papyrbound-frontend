@@ -8,7 +8,7 @@ import { CircleCheck } from "lucide-react";
 import { activityPreview, createHeatmapDays } from "../model/activity-preview";
 import { activityStreak } from "../model/activity-streak";
 import { activityBounds, activityDateKey, activityDayMs, clampActivityDate, startOfActivityWeek } from "../model/activity-dates";
-import { useAccount } from "../stores/account-store";
+import { useAccount, updatePreferences } from "../stores/account-store";
 import { ReadingWeekPicker } from "./reading-week-picker";
 
 import { useActiveLibrary } from "@/features/library/model/use-active-library";
@@ -31,20 +31,17 @@ import {
 const useActivityUI = create<{
   day: string;
   week: number;
-  goal: number;
   editing: boolean;
   patch: (
     value: Partial<{
       day: string;
       week: number;
-      goal: number;
       editing: boolean;
     }>,
   ) => void;
 }>((set) => ({
   day: activityPreview.end,
   week: 0,
-  goal: activityPreview.goal,
   editing: false,
   patch: (value) => set(value),
 }));
@@ -52,6 +49,7 @@ const useActivityUI = create<{
 export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
   const { books, label, plural } = useActiveLibrary();
   const createdAt = useAccount((state) => state.createdAt);
+  const goal = useAccount((state) => state.preferences.readingGoal);
   const ui = useActivityUI();
   if (!createdAt) return <p role="status" className="text-sm text-muted-foreground">Loading reading activity…</p>;
   const { earliest, latest } = activityBounds(createdAt);
@@ -191,11 +189,11 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
           <p className="mt-[26px] text-[44px] font-medium leading-[60px]">
             {selected?.minutes ?? 0}{" "}
             <span className="ml-14 text-lg font-normal text-muted-foreground">
-              / {ui.goal} min
+              / {goal} min
             </span>
           </p>
           <p className="mt-1 text-xs leading-[18px]">
-            {(selected?.minutes ?? 0) >= ui.goal
+            {(selected?.minutes ?? 0) >= goal
               ? "Goal reached on this preview day"
               : "Keep reading to reach your goal"}
           </p>
@@ -203,7 +201,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
             <div
               className="h-full rounded-full bg-primary"
               style={{
-                width: `${Math.min(100, ((selected?.minutes ?? 0) / ui.goal) * 100)}%`,
+                width: `${Math.min(100, ((selected?.minutes ?? 0) / goal) * 100)}%`,
               }}
             />
           </div>
@@ -211,7 +209,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
             {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => {
               const date = new Date(weekStart.getTime() + i * activityDayMs);
               const minutes = heatmapDays.find((entry) => entry.date === activityDateKey(date))?.minutes;
-              const reached = (minutes ?? 0) >= ui.goal;
+              const reached = (minutes ?? 0) >= goal;
               const available = date >= earliest && date <= latest;
               return (
               <span
@@ -317,8 +315,10 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
               const value = Number(
                 new FormData(event.currentTarget).get("goal"),
               );
-              if (value >= 1 && value <= 300)
-                ui.patch({ goal: value, editing: false });
+              if (Number.isInteger(value) && value >= 1 && value <= 300) {
+                updatePreferences({ readingGoal: value });
+                ui.patch({ editing: false });
+              }
             }}
           >
             <label className="space-y-2 text-sm">
@@ -328,7 +328,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
                 type="number"
                 min={1}
                 max={300}
-                defaultValue={ui.goal}
+                defaultValue={goal}
                 required
               />
             </label>

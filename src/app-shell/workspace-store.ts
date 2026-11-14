@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import { isRecord, readDeviceValue, subscribeDeviceState } from "@/shared/lib/device-storage";
 
 type View = "grid" | "list";
 type WorkspaceState = {
@@ -31,7 +32,7 @@ export const useWorkspace = create<WorkspaceState>((set) => ({
   filter: "all",
   sort: "recent",
   dialog: null,
-  setLibraryKind: (libraryKind) => set({ libraryKind, selectedId: null, dialog: null, query: "" }),
+  setLibraryKind: (libraryKind) => set((state) => state.libraryKind === libraryKind ? {} : { libraryKind, selectedId: null, dialog: null, query: "" }),
   selectBook: (selectedId) => set({ selectedId, panelOpen: true }),
   setPanelOpen: (panelOpen) => set({ panelOpen }),
   setView: (view) => set({ view }),
@@ -40,3 +41,11 @@ export const useWorkspace = create<WorkspaceState>((set) => ({
   setSort: (sort) => set({ sort }),
   setDialog: (dialog) => set({ dialog }),
 }));
+
+export function startWorkspacePersistence(onError: (message: string) => void) {
+  const select = ({ libraryKind, view, panelOpen }: WorkspaceState) => ({ libraryKind, view, panelOpen });
+  const saved = readDeviceValue("papyrbound-workspace-v1", (value): value is ReturnType<typeof select> => isRecord(value) &&
+    (value.libraryKind === "books" || value.libraryKind === "comics") && (value.view === "grid" || value.view === "list") && typeof value.panelOpen === "boolean", onError);
+  if (saved) useWorkspace.setState(saved);
+  return subscribeDeviceState(useWorkspace, "papyrbound-workspace-v1", select, onError);
+}

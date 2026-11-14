@@ -2,6 +2,8 @@
 import { create } from "zustand";
 import { useEffect, type PropsWithChildren } from "react";
 import { deleteImportedFile, loadImportedBooks, saveImportedFile, updateImportedMetadata } from "@/features/library/model/import-storage";
+import { isLibrarySnapshot, librarySnapshot, restoreBookOrder } from "@/features/library/model/library-snapshot";
+import { readDeviceValue, subscribeDeviceState } from "@/shared/lib/device-storage";
 import {
   defaultReadingLists,
   getReadingListUrl,
@@ -266,16 +268,26 @@ export function ReadingListsProvider({ children }: PropsWithChildren) {
     const storageFailure = (error: unknown) => useReadingLists.setState({
       storageError: error instanceof Error ? error.message : "Could not update local library storage.",
     });
+    const saved = readDeviceValue("papyrbound-library-v1", isLibrarySnapshot, storageFailure);
+    if (saved) useReadingLists.setState({
+      books: [...saved.books, ...useReadingLists.getState().books.filter((book) => book.sourceId)],
+      lists: [
+        ...defaultReadingLists.map((list) => ({ ...list, bookIds: saved.lists.find((item) => item.id === list.id)?.bookIds ?? [] })),
+        ...saved.lists.filter((list) => !defaultReadingLists.some((item) => item.id === list.id)).map((list) => ({ ...list, isDefault: false, url: getReadingListUrl(list.id) })),
+      ],
+      activity: saved.activity,
+    });
     loadImportedBooks().then((imported) => {
       if (!active) return;
       useReadingLists.setState((state) => ({
         importsReady: true,
-        books: [...state.books, ...imported.filter((book) => !state.books.some((existing) => existing.id === book.id))],
+        books: restoreBookOrder([...state.books, ...imported.filter((book) => !state.books.some((existing) => existing.id === book.id))], saved?.order ?? []),
         lists: state.lists.map((list) => list.id === "completed" ? {
           ...list, bookIds: [...new Set([...(list.bookIds ?? []), ...imported.filter((book) => book.progress >= 100).map((book) => book.id)])],
         } : list),
       }));
-      unsubscribe = useReadingLists.subscribe((state, previous) => {
+      const saveSnapshot = subscribeDeviceState(useReadingLists, "papyrbound-library-v1", librarySnapshot, storageFailure);
+      const saveFiles = useReadingLists.subscribe((state, previous) => {
         if (state.books === previous.books) return;
         for (const book of state.books) {
           if (book.sourceId && previous.books.find((existing) => existing.id === book.id) !== book) {
@@ -288,8 +300,13 @@ export function ReadingListsProvider({ children }: PropsWithChildren) {
           }
         }
       });
+      unsubscribe = () => { saveSnapshot(); saveFiles(); };
     }).catch((error) => {
-      if (active) { storageFailure(error); useReadingLists.setState({ importsReady: true }); }
+      if (active) {
+        storageFailure(error);
+        useReadingLists.setState({ importsReady: true });
+        unsubscribe = subscribeDeviceState(useReadingLists, "papyrbound-library-v1", librarySnapshot, storageFailure);
+      }
     });
     return () => { active = false; unsubscribe?.(); };
   }, []);

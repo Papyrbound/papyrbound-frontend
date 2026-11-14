@@ -20,9 +20,10 @@ test("new accounts persist creation time across hydration and preference changes
   const createdAt = useAccount.getState().createdAt;
   assert.ok(createdAt && Date.parse(createdAt) >= before && Date.parse(createdAt) <= Date.now());
   hydrateAccount();
-  updatePreferences({ theme: "dark" });
+  updatePreferences({ theme: "dark", readingGoal: 35 });
   assert.equal(useAccount.getState().createdAt, createdAt);
   assert.equal(JSON.parse(storage.get("papyrbound-account-v1")!).createdAt, createdAt);
+  assert.equal(JSON.parse(storage.get("papyrbound-account-v1")!).preferences.readingGoal, 35);
 });
 
 test("migration preserves an existing creation date and local profile", () => {
