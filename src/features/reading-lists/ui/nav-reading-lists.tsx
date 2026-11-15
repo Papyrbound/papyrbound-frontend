@@ -36,6 +36,7 @@ import {
 } from "@/features/reading-lists/model/reading-list";
 import { useActiveLibrary } from "@/features/library/model/use-active-library";
 import { Button } from "@/shared/ui/button";
+import { TooltipHint } from "@/shared/ui/tooltip";
 import { Input } from "@/shared/ui/input";
 import { ReadingListEditor } from "./reading-list-editor";
 import {
@@ -231,13 +232,12 @@ export function NavReadingLists() {
               aria-hidden="true"
             />
           </button>
-          <Button
+          <TooltipHint content="View all reading lists"><Button
             nativeButton={false}
             variant="ghost"
             size="icon-xs"
             className="list-heading-action"
             aria-label="View all reading lists"
-            title="View all reading lists"
             render={
               <Link
                 href="/reading-lists"
@@ -246,7 +246,7 @@ export function NavReadingLists() {
             }
           >
             <ArrowUpRightIcon />
-          </Button>
+          </Button></TooltipHint>
         </div>
       )}
 

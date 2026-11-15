@@ -28,7 +28,7 @@ import { BookCover } from "./book-cover";
 
 export function BookSearchDialog() {
   const { books, plural, noun } = useActiveLibrary();
-  const selectBook = useWorkspace((state) => state.selectBook);
+  const selectBook = useWorkspace((state) => state.revealBook);
   const router = useRouter();
   const [open, setOpen] = useLocalUIState(false);
   const [query, setQuery] = useLocalUIState("");
@@ -161,7 +161,7 @@ export function BookSearchDialog() {
                   {selected.author}
                 </p>
                 <p className="mt-3 text-xs leading-5 text-muted-foreground">
-                  {selected.genre} · {selected.pages} pages
+                  {selected.genre} · {selected.pages > 0 ? `${selected.pages} pages` : "Page count unavailable"}
                   <br />
                   {selected.progress
                     ? `${selected.progress}% read`

@@ -84,7 +84,7 @@ function Navigation() {
             >
               <Icon
                 className="size-4 text-current"
-                strokeWidth={1.5}
+                strokeWidth={1.75}
               />
               <span>{label}</span>
             </SidebarMenuButton>
@@ -107,6 +107,7 @@ function Navigation() {
           <Button
             variant="ghost"
             size="icon-xs"
+            className="text-muted-foreground hover:text-foreground focus-visible:text-foreground"
             aria-label="Create reading list"
             onClick={() => setCreating(true)}
           >
@@ -148,14 +149,14 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
             render={
               <Button
                 variant="secondary"
-                className="-mt-1 h-10 w-full justify-start gap-2.5 rounded-xl border border-soft-border bg-popover px-3 text-[13px] font-normal shadow-sm hover:bg-popover/80"
+                className="-mt-1 h-10 w-full justify-start gap-2.5 rounded-xl border border-soft-border bg-popover px-3 text-[13px] font-normal shadow-sm hover:bg-popover/80 [&>svg]:opacity-55 [&>svg]:transition-opacity hover:[&>svg]:opacity-100 focus-visible:[&>svg]:opacity-100 aria-expanded:[&>svg]:opacity-100"
               />
             }
           >
             {libraryKind === "books" ? (
-              <BookCopy aria-hidden="true" strokeWidth={1.5} />
+              <BookCopy aria-hidden="true" strokeWidth={1.75} />
             ) : (
-              <PanelsTopLeft aria-hidden="true" strokeWidth={1.5} />
+              <PanelsTopLeft aria-hidden="true" strokeWidth={1.75} />
             )}
             {libraryKind === "books" ? "Books" : "Comics"}
             <ChevronsUpDown
@@ -178,7 +179,7 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
                 <BookCopy
                   aria-hidden="true"
                   className="text-current"
-                  strokeWidth={1.5}
+                  strokeWidth={1.75}
                 />
                 Books
               </DropdownMenuRadioItem>
@@ -186,7 +187,7 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
                 <PanelsTopLeft
                   aria-hidden="true"
                   className="text-current"
-                  strokeWidth={1.5}
+                  strokeWidth={1.75}
                 />
                 Comics
               </DropdownMenuRadioItem>

@@ -136,8 +136,9 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
             <div className="min-w-0 self-end sm:self-center">
               <p className="truncate text-base font-medium">{name.trim() || "Your name"}</p>
               <div className="mt-2 flex flex-wrap gap-2">
-                <Button type="button" variant="secondary" size="xs" disabled={processingPhoto} onClick={() => photoInput.current?.click()}>
-                  <Camera />{processingPhoto ? "Preparing photo" : avatarUrl ? "Change photo" : "Upload photo"}
+                <Button type="button" variant="secondary" size="xs" className="gap-1.5 px-3 py-0 leading-none" disabled={processingPhoto} onClick={() => photoInput.current?.click()}>
+                  <Camera className="size-3.5" />
+                  <span>{processingPhoto ? "Preparing photo" : avatarUrl ? "Change photo" : "Upload photo"}</span>
                 </Button>
                 {avatarUrl && <Button type="button" variant="ghost" size="xs" disabled={processingPhoto} onClick={() => { setAvatarUrl(undefined); setPhotoError(""); }}>Remove photo</Button>}
               </div>

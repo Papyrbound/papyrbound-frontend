@@ -1,6 +1,8 @@
 "use client";
 import { create } from "zustand";
-import type { Dispatch, SetStateAction, ReactNode } from "react";
+import { useEffect, type Dispatch, type SetStateAction, type ReactNode } from "react";
+import { isRecord, readDeviceValue, subscribeDeviceState } from "@/shared/lib/device-storage";
+import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
 export type Collection = {
   kind?: "books" | "comics";
   id: string;
@@ -62,5 +64,13 @@ export const useCollections = create<{
     })),
 }));
 export function CollectionsProvider({ children }: { children: ReactNode }) {
+  useEffect(() => {
+    const report = (storageError: string) => useReadingLists.setState({ storageError });
+    const saved = readDeviceValue("papyrbound-collections-v1", (value): value is Collection[] => Array.isArray(value) && value.every((item) =>
+      isRecord(item) && typeof item.id === "string" && typeof item.name === "string" && typeof item.color === "string" &&
+      typeof item.pinned === "boolean" && Array.isArray(item.bookIds) && item.bookIds.every((id) => typeof id === "string")), report);
+    if (saved) useCollections.setState({ collections: saved });
+    return subscribeDeviceState(useCollections, "papyrbound-collections-v1", (state) => state.collections, report);
+  }, []);
   return children;
 }

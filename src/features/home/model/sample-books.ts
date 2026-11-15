@@ -7,6 +7,7 @@ export type SampleBook = {
   synopsis?: string;
   cover?: string;
   addedLabel?: string;
+  addedAt?: string;
   lastOpenedLabel?: string;
   completedLabel?: string;
   id: string;
@@ -24,6 +25,7 @@ export type SampleBook = {
 export const sampleBooks: SampleBook[] = [
   {
     id: "quiet",
+    addedAt: "2026-10-28T12:00:00Z",
     addedLabel: "Added 3 days ago",
     cover: "/covers/crimson-vow.png",
     synopsis:
@@ -40,6 +42,7 @@ export const sampleBooks: SampleBook[] = [
   },
   {
     id: "wild",
+    addedAt: "2026-10-27T12:00:00Z",
     cover: "/covers/one-night-only.png",
     title: "One Night Only",
     author: "Jenna Jinks",
@@ -54,6 +57,7 @@ export const sampleBooks: SampleBook[] = [
   },
   {
     id: "sun",
+    addedAt: "2026-10-30T12:00:00Z",
     addedLabel: "Added yesterday",
     cover: "/covers/the-midnight-labyrinth.png",
     synopsis:
@@ -70,6 +74,7 @@ export const sampleBooks: SampleBook[] = [
   },
   {
     id: "atlas",
+    addedAt: "2026-10-26T12:00:00Z",
     cover: "/covers/where-shadows-bloom.png",
     title: "Where Shadows Bloom",
     completedLabel: "3 days ago",
@@ -84,6 +89,7 @@ export const sampleBooks: SampleBook[] = [
   },
   {
     id: "night",
+    addedAt: "2026-10-31T12:00:00Z",
     addedLabel: "Added today",
     cover: "/covers/light-door.png",
     title: "Light Door",

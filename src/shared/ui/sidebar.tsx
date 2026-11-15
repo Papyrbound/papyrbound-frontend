@@ -18,7 +18,7 @@ import {
   SheetTitle,
 } from "@/shared/ui/sheet";
 import { Skeleton } from "@/shared/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipHint } from "@/shared/ui/tooltip";
 import { IconLayoutSidebar } from "@tabler/icons-react";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
@@ -277,13 +277,12 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
   const { toggleSidebar } = useSidebar();
 
   return (
-    <button
+    <TooltipHint content="Toggle sidebar"><button
       data-sidebar="rail"
       data-slot="sidebar-rail"
       aria-label="Toggle Sidebar"
       tabIndex={-1}
       onClick={toggleSidebar}
-      title="Toggle Sidebar"
       className={cn(
         "absolute inset-y-0 z-20 hidden w-4 transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:start-1/2 after:w-[2px] hover:after:bg-sidebar-border sm:flex ltr:-translate-x-1/2 rtl:-translate-x-1/2",
         "in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize",
@@ -294,7 +293,7 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
         className,
       )}
       {...props}
-    />
+    /></TooltipHint>
   );
 }
 
@@ -513,7 +512,11 @@ function SidebarMenuButton({
     defaultTagName: "button",
     props: mergeProps<"button">(
       {
-        className: cn(sidebarMenuButtonVariants({ variant, size }), className),
+        className: cn(
+          sidebarMenuButtonVariants({ variant, size }),
+          "[&>svg]:opacity-55 [&>svg]:transition-opacity hover:[&>svg]:opacity-100 focus-visible:[&>svg]:opacity-100 data-active:[&>svg]:opacity-100 data-open:[&>svg]:opacity-100 aria-expanded:[&>svg]:opacity-100",
+          className,
+        ),
       },
       props,
     ),
