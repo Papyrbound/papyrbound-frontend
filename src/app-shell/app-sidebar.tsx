@@ -84,7 +84,7 @@ function Navigation() {
             >
               <Icon
                 className="size-4 text-current"
-                strokeWidth={1.5}
+                strokeWidth={1.75}
               />
               <span>{label}</span>
             </SidebarMenuButton>
@@ -154,9 +154,9 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
             }
           >
             {libraryKind === "books" ? (
-              <BookCopy aria-hidden="true" strokeWidth={1.5} />
+              <BookCopy aria-hidden="true" strokeWidth={1.75} />
             ) : (
-              <PanelsTopLeft aria-hidden="true" strokeWidth={1.5} />
+              <PanelsTopLeft aria-hidden="true" strokeWidth={1.75} />
             )}
             {libraryKind === "books" ? "Books" : "Comics"}
             <ChevronsUpDown
@@ -179,7 +179,7 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
                 <BookCopy
                   aria-hidden="true"
                   className="text-current"
-                  strokeWidth={1.5}
+                  strokeWidth={1.75}
                 />
                 Books
               </DropdownMenuRadioItem>
@@ -187,7 +187,7 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
                 <PanelsTopLeft
                   aria-hidden="true"
                   className="text-current"
-                  strokeWidth={1.5}
+                  strokeWidth={1.75}
                 />
                 Comics
               </DropdownMenuRadioItem>
