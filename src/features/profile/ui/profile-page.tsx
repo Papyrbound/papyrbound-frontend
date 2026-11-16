@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BookOpen, Pencil, ArrowUpRight } from "lucide-react";
+import { BookOpen, Pencil } from "lucide-react";
 import { useAccount } from "../stores/account-store";
 import { useReadingTitles } from "../model/reading-titles";
 import { ReadingActivity } from "./reading-activity";
@@ -100,9 +100,6 @@ export function ProfilePage() {
           <TabsContent value="Reading" className="min-h-48 px-5 py-5 sm:px-7">
             <div className="mb-4 flex items-center justify-between gap-3">
               <h2 className="text-sm font-medium">Currently reading</h2>
-              <Link href="/reading-activity" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-                Reading activity <ArrowUpRight className="size-3.5" />
-              </Link>
             </div>
             {reading.length ? (
               <div className="divide-y divide-border/60">
