@@ -59,7 +59,7 @@ export function NavProfile() {
               <ChevronsUpDownIcon className="ml-auto size-4 group-data-[collapsible=icon]:hidden" />
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-[272px]"
+              className="w-56 max-w-[calc(100vw-1rem)]"
               side={isMobile ? "top" : "right"}
               align="end"
               sideOffset={8}
@@ -70,9 +70,9 @@ export function NavProfile() {
                   aria-label="Open profile"
                   onClick={() => navigate("/profile")}
                 >
-                  <div className="flex items-center gap-3 px-2 py-2">
+                  <div className="flex min-w-0 w-full items-center gap-3 px-2 py-2">
                     <ReaderAvatar seed={profile.avatarSeed} src={profile.avatarUrl} />
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">
                         {profile.name}
                       </p>

@@ -132,7 +132,7 @@ export function BookGallery({
               )}
             </button>
           </ContextMenuTrigger>
-          <ContextMenuContent className="w-[272px]">
+          <ContextMenuContent className="w-56 max-w-[calc(100vw-1rem)]">
             <ContextMenuItem
               onClick={() => {
                 selectBook(book.id);
