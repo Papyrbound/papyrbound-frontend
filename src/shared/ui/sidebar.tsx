@@ -512,7 +512,11 @@ function SidebarMenuButton({
     defaultTagName: "button",
     props: mergeProps<"button">(
       {
-        className: cn(sidebarMenuButtonVariants({ variant, size }), className),
+        className: cn(
+          sidebarMenuButtonVariants({ variant, size }),
+          "[&>svg]:opacity-55 [&>svg]:transition-opacity hover:[&>svg]:opacity-100 focus-visible:[&>svg]:opacity-100 data-active:[&>svg]:opacity-100 data-open:[&>svg]:opacity-100 aria-expanded:[&>svg]:opacity-100",
+          className,
+        ),
       },
       props,
     ),
