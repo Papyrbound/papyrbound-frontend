@@ -22,7 +22,9 @@ import { useActiveLibrary } from "@/features/library/model/use-active-library";
 
 import { useCollections } from "@/features/collections/stores/collections-store";
 
-import { useAnnotations } from "@/features/annotations/stores/annotations-store";
+import { removeBooks } from "../model/undo-actions";
+import { offerUndo, reportActionError } from "@/shared/lib/undo-toast";
+import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
 
 import { BookCover } from "@/features/home/ui/book-cover";
 
@@ -84,13 +86,12 @@ export function BookDetailsPanel({
     toggleBook,
     markAsRead,
     markAsUnread,
-    deleteBook,
     updateBook,
     noun, kind,
   } = useActiveLibrary();
 
   const { collections, setCollections } = useCollections();
-  const { setAnnotations } = useAnnotations();
+  const [deleting, setDeleting] = useLocalUIState(false);
 
   const { selectedId, panelOpen, setPanelOpen, dialog, setDialog } =
     useWorkspace();
@@ -468,28 +469,27 @@ export function BookDetailsPanel({
             <AlertDialogTitle>Delete {noun}?</AlertDialogTitle>
             <AlertDialogDescription>
               Remove {book.title} from your library? Its annotations and reading
-              progress will also be removed.
+              progress will also be removed. You can undo this for 15 seconds.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
-              onClick={() => {
-                deleteBook(book.id);
-                setCollections((cs) =>
-                  cs.map((c) => ({
-                    ...c,
-                    bookIds: c.bookIds.filter((id) => id !== book.id),
-                  })),
-                );
-                setAnnotations((a) => a.filter((n) => n.bookId !== book.id));
-                setDialog(null);
-                const next = candidates.find((b) => b.id !== book.id);
-                useWorkspace.setState({ selectedId: next?.id ?? null, panelOpen: mobile ? false : panelOpen });
+              disabled={deleting}
+              onClick={async () => {
+                if (deleting) return;
+                setDeleting(true);
+                try {
+                  offerUndo(await removeBooks([book.id]));
+                  setDialog(null);
+                  const next = candidates.find((b) => b.id !== book.id);
+                  useWorkspace.setState({ selectedId: next?.id ?? null, panelOpen: mobile ? false : panelOpen });
+                } catch (error) { reportActionError(error); }
+                finally { setDeleting(false); }
               }}
             >
-              Delete {noun}
+              {deleting ? "Deleting…" : `Delete ${noun}`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1,4 +1,6 @@
 "use client";
+import { removeAnnotation } from "@/features/library/model/undo-actions";
+import { offerUndo, reportActionError } from "@/shared/lib/undo-toast";
 
 import { create } from "zustand";
 
@@ -439,9 +441,9 @@ export function AnnotationsPage() {
             <AlertDialogAction
               variant="destructive"
               onClick={() => {
-                setAnnotations((items) =>
-                  items.filter((a) => a.id !== ui.deleting),
-                );
+                if (!ui.deleting) return;
+                try { offerUndo(removeAnnotation(ui.deleting)); }
+                catch (error) { reportActionError(error); return; }
                 ui.patch({ deleting: null });
               }}
             >

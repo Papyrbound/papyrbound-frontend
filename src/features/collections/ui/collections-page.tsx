@@ -1,4 +1,6 @@
 "use client";
+import { removeCollection } from "@/features/library/model/undo-actions";
+import { offerUndo, reportActionError } from "@/shared/lib/undo-toast";
 
 import { create } from "zustand";
 import { useIsCompactWindow } from "@/shared/hooks/use-mobile";
@@ -601,9 +603,9 @@ export function CollectionsPage() {
             <Button
               variant="destructive"
               onClick={() => {
-                setCollections((cs) =>
-                  cs.filter((c) => c.id !== ui.deleting?.id),
-                );
+                if (!ui.deleting) return;
+                try { offerUndo(removeCollection(ui.deleting.id)); }
+                catch (error) { reportActionError(error); return; }
                 ui.patch({ deleting: null, selected: null });
               }}
             >
