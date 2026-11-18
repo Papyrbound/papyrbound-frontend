@@ -34,7 +34,6 @@ type ReadingListsState = {
   markAsUnread: (bookId: string) => void;
   deleteBook: (bookId: string) => void;
   lists: ReadingList[];
-  createList: (details: ReadingListDetails) => string | undefined;
   updateList: (id: string, details: ReadingListDetails) => void;
   deleteList: (id: string) => void;
   togglePinned: (id: string) => void;
@@ -147,33 +146,6 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
     recordActivity(target.title, "deleted", target.kind);
   };
 
-  const createList = (details: ReadingListDetails) => {
-    const trimmedName = details.name.trim();
-    if (!trimmedName) return;
-    const id = crypto.randomUUID();
-    setLists((current) => {
-      const nextSortOrder =
-        current.reduce(
-          (highest, list) => Math.max(highest, list.sortOrder),
-          -1,
-        ) + 1;
-
-      return [
-        ...current,
-        {
-          ...details,
-          id,
-          name: trimmedName,
-          url: getReadingListUrl(id),
-          icon: "tag",
-          isPinned: false,
-          sortOrder: nextSortOrder,
-        },
-      ];
-    });
-    return id;
-  };
-
   const updateList = (id: string, details: ReadingListDetails) => {
     if (!details.name.trim()) return;
     setLists((current) =>
@@ -271,7 +243,6 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
     markAsRead,
     markAsUnread,
     deleteBook,
-    createList,
     updateList,
     deleteList,
     togglePinned,

@@ -13,7 +13,6 @@ import {
   Folder,
   Bookmark,
   CircleCheck,
-  Plus,
   Tag,
 } from "lucide-react";
 import { useSettingsUI } from "@/features/profile/stores/settings-ui-store";
@@ -38,9 +37,7 @@ import {
   DropdownMenuRadioItem,
 } from "@/shared/ui/dropdown-menu";
 import { Button } from "@/shared/ui/button";
-import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
 import { useActiveLibrary } from "@/features/library/model/use-active-library";
-import { ReadingListEditor } from "@/features/reading-lists/ui/reading-list-editor";
 
 const navigation = [
   { label: "Reading Now", href: "/", icon: BookOpen },
@@ -63,8 +60,7 @@ const shelves = [
 ];
 function Navigation() {
   const labels = useSettingsUI((s) => s.labels);
-  const { lists, createList } = useActiveLibrary();
-  const [creating, setCreating] = useLocalUIState(false);
+  const { lists } = useActiveLibrary();
   const path = usePathname();
   const search = useSearchParams();
   const { setOpenMobile } = useSidebar();
@@ -104,15 +100,6 @@ function Navigation() {
           >
             Shelves
           </Link>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            className="text-muted-foreground hover:text-foreground focus-visible:text-foreground"
-            aria-label="Create reading list"
-            onClick={() => setCreating(true)}
-          >
-            <Plus />
-          </Button>
         </div>
         {links([
           ...shelves,
@@ -121,15 +108,6 @@ function Navigation() {
             .map((list) => ({ label: list.name, href: list.url, icon: Tag })),
         ])}
       </div>
-      {creating && (
-        <ReadingListEditor
-          onClose={() => setCreating(false)}
-          onSave={(details) => {
-            createList(details);
-            setCreating(false);
-          }}
-        />
-      )}
     </>
   );
 }
