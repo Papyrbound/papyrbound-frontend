@@ -1,6 +1,6 @@
 import type { SampleBook } from "@/features/home/model/sample-books";
 
-type StoredImport = { id: string; book: SampleBook; file: Blob };
+export type StoredImport = { id: string; book: SampleBook; file: Blob };
 const DATABASE = "papyrbound-imports";
 let pending: Promise<unknown> = Promise.resolve();
 
@@ -28,7 +28,8 @@ async function transact<T>(mode: IDBTransactionMode, operation: (store: IDBObjec
       transaction.oncomplete = () => resolve(value);
       transaction.onerror = () => reject(new Error("Could not save the local library. Check available disk space."));
       transaction.onabort = () => reject(new Error("The local library update was interrupted."));
-      operation(transaction.objectStore("files"), (result) => { value = result; });
+      try { operation(transaction.objectStore("files"), (result) => { value = result; }); }
+      catch (error) { transaction.abort(); reject(error); }
     });
   } finally {
     db.close();
@@ -66,5 +67,25 @@ export function getImportedFile(id: string) {
   return queue(() => transact<Blob | undefined>("readonly", (store, result) => {
     const request = store.get(id);
     request.onsuccess = () => result((request.result as StoredImport | undefined)?.file);
+  }));
+}
+
+/** Returns files and metadata together, after all queued library writes finish. */
+export function loadStoredImports() {
+  return queue(() => transact<StoredImport[]>("readonly", (store, result) => {
+    const request = store.getAll();
+    request.onsuccess = () => result(request.result as StoredImport[]);
+  }));
+}
+
+/** The synchronous metadata commit runs before the file transaction can commit. */
+export function replaceImportedFiles(records: StoredImport[], commitMetadata: () => void) {
+  return queue(() => transact<void>("readwrite", (store) => {
+    let lastRequest: IDBRequest = store.clear();
+    for (const record of records) lastRequest = store.put(record);
+    lastRequest.onsuccess = () => {
+      try { commitMetadata(); }
+      catch { store.transaction.abort(); }
+    };
   }));
 }

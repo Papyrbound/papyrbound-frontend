@@ -1,6 +1,7 @@
 "use client";
 
 import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
+import { BackupRestoreDialog } from "./backup-restore-dialog";
 import { KeyboardShortcutsDialog } from "./keyboard-shortcuts-dialog";
 import { useRouter } from "next/navigation";
 import { useAccount } from "@/features/profile/stores/account-store";
@@ -21,6 +22,7 @@ import {
   useSidebar,
 } from "@/shared/ui/sidebar";
 import {
+  ArchiveRestoreIcon,
   KeyboardIcon,
   ChevronsUpDownIcon,
   SettingsIcon,
@@ -28,6 +30,7 @@ import {
 } from "lucide-react";
 
 export function NavProfile() {
+  const [backupOpen, setBackupOpen] = useLocalUIState(false);
   const [shortcutsOpen, setShortcutsOpen] = useLocalUIState(false);
   const { profile } = useAccount();
   const { activeTitle } = useReadingTitles();
@@ -93,6 +96,10 @@ export function NavProfile() {
                   <TrophyIcon />
                   Reading titles
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setBackupOpen(true)}>
+                  <ArchiveRestoreIcon />
+                  Back up &amp; restore
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setShortcutsOpen(true)}>
                   <KeyboardIcon />
                   Keyboard shortcuts
@@ -106,6 +113,7 @@ export function NavProfile() {
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
+      {backupOpen && <BackupRestoreDialog onClose={() => setBackupOpen(false)} />}
       {shortcutsOpen && <KeyboardShortcutsDialog onClose={() => setShortcutsOpen(false)} />}
     </>
   );
