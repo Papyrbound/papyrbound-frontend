@@ -1,5 +1,7 @@
 "use client";
 
+import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
+import { KeyboardShortcutsDialog } from "./keyboard-shortcuts-dialog";
 import { useRouter } from "next/navigation";
 import { useAccount } from "@/features/profile/stores/account-store";
 import { useReadingTitles } from "@/features/profile/model/reading-titles";
@@ -19,12 +21,14 @@ import {
   useSidebar,
 } from "@/shared/ui/sidebar";
 import {
+  KeyboardIcon,
   ChevronsUpDownIcon,
   SettingsIcon,
   TrophyIcon,
 } from "lucide-react";
 
 export function NavProfile() {
+  const [shortcutsOpen, setShortcutsOpen] = useLocalUIState(false);
   const { profile } = useAccount();
   const { activeTitle } = useReadingTitles();
   const { isMobile, setOpenMobile } = useSidebar();
@@ -89,6 +93,10 @@ export function NavProfile() {
                   <TrophyIcon />
                   Reading titles
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShortcutsOpen(true)}>
+                  <KeyboardIcon />
+                  Keyboard shortcuts
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/settings")}>
                   <SettingsIcon />
                   Settings
@@ -98,6 +106,7 @@ export function NavProfile() {
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
+      {shortcutsOpen && <KeyboardShortcutsDialog onClose={() => setShortcutsOpen(false)} />}
     </>
   );
 }
