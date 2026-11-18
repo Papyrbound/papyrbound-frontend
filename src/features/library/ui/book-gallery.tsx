@@ -22,6 +22,9 @@ import { Button } from "@/shared/ui/button";
 import { useIsCompactWindow } from "@/shared/hooks/use-mobile";
 import type { ReactNode } from "react";
 import { Card, CardContent } from "@/shared/ui/card";
+import { useEffect } from "react";
+import { Checkbox } from "@/shared/ui/checkbox";
+import { BulkSelectionToolbar } from "./bulk-selection-toolbar";
 
 import {
   ContextMenu,
@@ -46,7 +49,7 @@ export function BookGallery({
   emptyTitle?: string;
   emptyAction?: ReactNode;
 }) {
-  const { view, selectedId, selectBook, setDialog, panelOpen } = useWorkspace();
+  const { view, selectedId, selectBook, setDialog, panelOpen, selectionMode, selectedIds, toggleSelection } = useWorkspace();
   const {
     toggleBook,
     markAsRead,
@@ -55,10 +58,15 @@ export function BookGallery({
   } = useActiveLibrary();
   const compact = useIsCompactWindow();
   const activeId = books.find((book) => book.id === selectedId)?.id ?? books[0]?.id;
+  useEffect(() => {
+    const visible = new Set(books.map((book) => book.id));
+    if (selectedIds.some((id) => !visible.has(id))) useWorkspace.setState({ selectedIds: selectedIds.filter((id) => visible.has(id)) });
+  }, [books, selectedIds]);
+  const selectionBar = selectionMode && <BulkSelectionToolbar books={books} />;
 
   if (!books.length)
     return (
-      <Card className="mx-auto my-8 max-w-md border border-dashed border-border bg-transparent shadow-none ring-0">
+      <>{selectionBar}<Card className="mx-auto my-8 max-w-md border border-dashed border-border bg-transparent shadow-none ring-0">
       <CardContent className="py-7 text-center">
         <BookOpen className="mx-auto mb-4 size-7 text-muted-foreground" />
         <h2 className="text-base font-medium">{emptyTitle ?? `No ${plural} here yet`}</h2>
@@ -71,11 +79,11 @@ export function BookGallery({
           </Button>
         )}
       </CardContent>
-      </Card>
+      </Card></>
     );
 
   return (
-    <div
+    <>{selectionBar}<div
       className={
         view === "grid"
           ? panelOpen
@@ -93,17 +101,22 @@ export function BookGallery({
         >
           <ContextMenuTrigger
             render={<article />}
-            className={`group relative min-w-0 rounded-selection ${activeId === book.id ? "bg-selected shadow-selection" : "hover:bg-hover"} ${view === "list" ? "flex items-center pr-3" : "w-full max-w-[196.8px] px-3 pt-3 pb-2.5"}`}
+            className={`group relative min-w-0 rounded-selection ${(selectionMode ? selectedIds.includes(book.id) : activeId === book.id) ? "bg-selected shadow-selection" : "hover:bg-hover"} ${view === "list" ? "flex items-center pr-3" : "w-full max-w-[196.8px] px-3 pt-3 pb-2.5"}`}
           >
+            {selectionMode && <Checkbox className={view === "list" ? "ml-3" : "absolute left-4 top-4 z-10 border border-foreground/20 bg-card shadow-sm"} aria-label={`Select ${book.title}`} checked={selectedIds.includes(book.id)} onCheckedChange={() => toggleSelection(book.id)} />}
             <button
               className={`min-w-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${view === "list" ? "flex flex-1 items-center gap-4 rounded-xl px-3 py-2" : "block w-full"}`}
-              onClick={() => selectBook(book.id)}
+              onClick={(event) => {
+                if (selectionMode || event.ctrlKey || event.metaKey) { toggleSelection(book.id); return; }
+                selectBook(book.id);
+              }}
               onDoubleClick={() => {
+                if (selectionMode) return;
                 selectBook(book.id);
                 setDialog("reader");
               }}
-              aria-label={`View ${book.title}`}
-              aria-pressed={activeId === book.id}
+              aria-label={`${selectionMode ? "Select" : "View"} ${book.title}`}
+              aria-pressed={selectionMode ? selectedIds.includes(book.id) : activeId === book.id}
             >
               <span
                 className={`block shrink-0 ${view === "list" ? "w-8 [&_.cover-type]:hidden [&_.cover-credit]:hidden" : "w-full"}`}
@@ -193,6 +206,6 @@ export function BookGallery({
           </ContextMenuContent>
         </ContextMenu>
       ))}
-    </div>
+    </div></>
   );
 }

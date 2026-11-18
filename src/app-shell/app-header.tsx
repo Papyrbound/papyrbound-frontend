@@ -16,6 +16,7 @@ import { Button } from "@/shared/ui/button";
 import { TooltipHint } from "@/shared/ui/tooltip";
 import { useIsCompactWindow } from "@/shared/hooks/use-mobile";
 import { LibraryFilter } from "@/features/library/ui/library-filter";
+import { SelectionToggle } from "@/features/library/ui/bulk-selection-toolbar";
 import { AddBookDialog } from "@/features/library/ui/add-book-dialog";
 import { CollectionToolbar } from "@/features/collections/ui/collections-page";
 import { AnnotationsToolbar } from "@/features/annotations/ui/annotations-page";
@@ -147,6 +148,7 @@ export function AppHeader() {
         <RouteBreadcrumbs pathname={pathname} />
       </Suspense>
       <div className="ml-auto flex shrink-0 items-center gap-2">
+        <Suspense><SelectionToggle /></Suspense>
         {pathname === "/annotations" && <AnnotationsToolbar />}
         {(pathname === "/library" || pathname === "/reading-lists") && (
           <LibraryFilter iconOnly />

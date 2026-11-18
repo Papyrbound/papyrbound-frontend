@@ -111,10 +111,10 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
 
   const markAsUnread = (bookId: string) => {
     const target = get().books.find((book) => book.id === bookId);
-    if (!target || target.progress < 100) return;
+    if (!target || target.progress === 0) return;
     setBooks((current) =>
       current.map((book) =>
-        book.id === bookId && book.progress >= 100
+        book.id === bookId && book.progress > 0
           ? {
               ...book,
               progress: 0,

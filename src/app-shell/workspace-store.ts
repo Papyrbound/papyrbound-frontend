@@ -9,6 +9,8 @@ type WorkspaceState = {
   selectedId: string | null;
   panelOpen: boolean;
   view: View;
+  selectionMode: boolean;
+  selectedIds: string[];
   query: string;
   filter: string;
   sort: string;
@@ -18,6 +20,8 @@ type WorkspaceState = {
   revealBook: (id: string) => void;
   setPanelOpen: (open: boolean) => void;
   setView: (view: View) => void;
+  setSelectionMode: (enabled: boolean) => void;
+  toggleSelection: (id: string) => void;
   setQuery: (query: string) => void;
   setFilter: (filter: string) => void;
   setSort: (sort: string) => void;
@@ -29,15 +33,19 @@ export const useWorkspace = create<WorkspaceState>((set) => ({
   selectedId: null,
   panelOpen: true,
   view: "grid",
+  selectionMode: false,
+  selectedIds: [],
   query: "",
   filter: "all",
   sort: "recent",
   dialog: null,
-  setLibraryKind: (libraryKind) => set((state) => state.libraryKind === libraryKind ? {} : { libraryKind, selectedId: null, dialog: null, query: "" }),
+  setLibraryKind: (libraryKind) => set((state) => state.libraryKind === libraryKind ? {} : { libraryKind, selectedId: null, dialog: null, query: "", selectionMode: false, selectedIds: [] }),
   selectBook: (selectedId) => set({ selectedId, panelOpen: true }),
-  revealBook: (selectedId) => set({ selectedId, panelOpen: true, filter: "all", query: "", dialog: null }),
+  revealBook: (selectedId) => set({ selectedId, panelOpen: true, filter: "all", query: "", dialog: null, selectionMode: false, selectedIds: [] }),
   setPanelOpen: (panelOpen) => set({ panelOpen }),
   setView: (view) => set({ view }),
+  setSelectionMode: (selectionMode) => set({ selectionMode, selectedIds: [] }),
+  toggleSelection: (id) => set((state) => ({ selectionMode: true, selectedIds: state.selectedIds.includes(id) ? state.selectedIds.filter((item) => item !== id) : [...state.selectedIds, id] })),
   setQuery: (query) => set({ query }),
   setFilter: (filter) => set({ filter }),
   setSort: (sort) => set({ sort }),
