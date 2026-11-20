@@ -10,6 +10,7 @@ export type SampleBook = {
   addedAt?: string;
   lastOpenedLabel?: string;
   completedLabel?: string;
+  lastReadAt?: string;
   id: string;
   title: string;
   author: string;

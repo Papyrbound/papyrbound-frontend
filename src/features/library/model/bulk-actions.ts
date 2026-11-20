@@ -54,6 +54,10 @@ export function applyBulkAction(bookIds: string[], action: BulkAction): Undoable
         return { ...list, bookIds: [...next] };
       }),
       activity: current.activity.filter((event) => !events.has(event.id)),
+      reading: {
+        ...current.reading,
+        positions: { ...Object.fromEntries(Object.entries(before.reading.positions).filter(([id]) => ids.has(id) && !current.reading.positions[id])), ...current.reading.positions },
+      },
     })),
   };
 }

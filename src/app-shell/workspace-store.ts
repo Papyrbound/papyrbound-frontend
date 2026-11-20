@@ -7,6 +7,7 @@ type View = "grid" | "list";
 type WorkspaceState = {
   libraryKind: "books" | "comics";
   selectedId: string | null;
+  readerId: string | null;
   panelOpen: boolean;
   view: View;
   selectionMode: boolean;
@@ -17,6 +18,7 @@ type WorkspaceState = {
   dialog: "synopsis" | "collections" | "delete" | "edit" | "reader" | null;
   setLibraryKind: (kind: WorkspaceState["libraryKind"]) => void;
   selectBook: (id: string) => void;
+  openReader: (id: string) => void;
   revealBook: (id: string) => void;
   setPanelOpen: (open: boolean) => void;
   setView: (view: View) => void;
@@ -31,6 +33,7 @@ type WorkspaceState = {
 export const useWorkspace = create<WorkspaceState>((set) => ({
   libraryKind: "books",
   selectedId: null,
+  readerId: null,
   panelOpen: true,
   view: "grid",
   selectionMode: false,
@@ -41,6 +44,7 @@ export const useWorkspace = create<WorkspaceState>((set) => ({
   dialog: null,
   setLibraryKind: (libraryKind) => set((state) => state.libraryKind === libraryKind ? {} : { libraryKind, selectedId: null, dialog: null, query: "", selectionMode: false, selectedIds: [] }),
   selectBook: (selectedId) => set({ selectedId, panelOpen: true }),
+  openReader: (readerId) => set({ readerId, selectedId: readerId, dialog: "reader", selectionMode: false, selectedIds: [] }),
   revealBook: (selectedId) => set({ selectedId, panelOpen: true, filter: "all", query: "", dialog: null, selectionMode: false, selectedIds: [] }),
   setPanelOpen: (panelOpen) => set({ panelOpen }),
   setView: (view) => set({ view }),

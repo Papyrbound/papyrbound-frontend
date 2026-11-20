@@ -184,7 +184,7 @@ export function SettingsPage() {
               />
             </SettingsRow>
             <p className="h-[52px] pt-3.5 text-xs leading-[18px] text-muted-foreground">
-              Changes apply to this preview. EPUB reading is not connected yet.
+              These defaults apply to your EPUB reader.
             </p>
           </section>
           <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-muted-foreground">

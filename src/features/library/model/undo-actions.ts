@@ -46,6 +46,10 @@ export async function removeBooks(bookIds: string[]): Promise<UndoableAction> {
         books: restoreRemoved(current.books, previous.books, ids, (book) => book.id),
         lists: current.lists.map((list) => ({ ...list, bookIds: restoreRemoved(list.bookIds ?? [], previous.lists.find((item) => item.id === list.id)?.bookIds ?? [], ids, (id) => id) })),
         activity: current.activity.filter((event) => !deletionIds.has(event.id)),
+        reading: {
+          positions: { ...Object.fromEntries(Object.entries(previous.reading.positions).filter(([id]) => ids.has(id))), ...current.reading.positions },
+          sessions: [...current.reading.sessions, ...previous.reading.sessions.filter((session) => ids.has(session.bookId) && !current.reading.sessions.some((item) => item.id === session.id))],
+        },
       }));
       useCollections.getState().setCollections((items) => items.map((item) => ({ ...item, bookIds: restoreRemoved(item.bookIds, collections.find((entry) => entry.id === item.id)?.bookIds ?? [], ids, (id) => id) })));
       const noteIds = new Set(annotations.filter((item) => ids.has(item.bookId)).map((item) => item.id));

@@ -49,7 +49,7 @@ export function BookGallery({
   emptyTitle?: string;
   emptyAction?: ReactNode;
 }) {
-  const { view, selectedId, selectBook, setDialog, panelOpen, selectionMode, selectedIds, toggleSelection } = useWorkspace();
+  const { view, selectedId, selectBook, setDialog, panelOpen, selectionMode, selectedIds, toggleSelection, openReader } = useWorkspace();
   const {
     toggleBook,
     markAsRead,
@@ -113,7 +113,7 @@ export function BookGallery({
               onDoubleClick={() => {
                 if (selectionMode) return;
                 selectBook(book.id);
-                setDialog("reader");
+                openReader(book.id);
               }}
               aria-label={`${selectionMode ? "Select" : "View"} ${book.title}`}
               aria-pressed={selectionMode ? selectedIds.includes(book.id) : activeId === book.id}
@@ -149,7 +149,7 @@ export function BookGallery({
             <ContextMenuItem
               onClick={() => {
                 selectBook(book.id);
-                setDialog("reader");
+                openReader(book.id);
               }}
             >
               <BookOpen />

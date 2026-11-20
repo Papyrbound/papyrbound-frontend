@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { activityBounds, activityDateKey, activityDay, clampActivityDate, startOfActivityWeek } from "./activity-dates";
-import { createHeatmapDays } from "./activity-preview";
+import { createHeatmapDays } from "./activity-data";
 import { activityStreak } from "./activity-streak";
 
 test("account dates bound the calendar, including partial first and last weeks", () => {

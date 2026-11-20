@@ -30,12 +30,19 @@ test("undo restores an imported file byte-for-byte after its persisted deletion"
   const file = new File([new Uint8Array([0, 255, 1, 42])], "original.epub");
   await saveImportedFile(book, file);
   useReadingLists.setState((state) => ({ books: [...state.books, book] }));
+  useReadingLists.getState().savePosition(book.id, { index: 1, total: 3, offset: 0.5, progress: 50 });
+  useReadingLists.getState().recordReading(book.id, "undo-session", "2026-11-19", 60, 2);
+  const reading = useReadingLists.getState().reading;
+  const progress = useReadingLists.getState().books.find((item) => item.id === book.id)!.progress;
   const action = await removeBooks([book.id]);
+  assert.equal(useReadingLists.getState().reading.positions[book.id], undefined);
+  assert.equal(useReadingLists.getState().reading.sessions.some((session) => session.bookId === book.id), false);
   await deleteImportedFile(book.id);
   assert.equal(await getImportedFile(book.id), undefined);
   await action.undo();
   assert.deepEqual(new Uint8Array(await (await getImportedFile(book.id))!.arrayBuffer()), new Uint8Array(await file.arrayBuffer()));
-  assert.equal(useReadingLists.getState().books.find((item) => item.id === book.id)?.progress, book.progress);
+  assert.equal(useReadingLists.getState().books.find((item) => item.id === book.id)?.progress, progress);
+  assert.deepEqual(useReadingLists.getState().reading, reading);
 });
 
 test("missing original files prevent deletion before any store changes", async () => {

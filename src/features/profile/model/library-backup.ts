@@ -40,7 +40,7 @@ function validBook(value: unknown): value is SampleBook {
   return isLibrarySnapshot({ books: [book], lists: [], activity: [], order: [] }) &&
     Boolean(book.id) && Number.isInteger(book.pages) && Number(book.pages) >= 0 && libraryKind(book.kind) &&
     (book.format === undefined || book.format === "EPUB" || book.format === "CBZ") &&
-    optionalStrings(value, ["sourceId", "sourceName", "synopsis", "cover", "addedLabel", "addedAt", "lastOpenedLabel", "completedLabel"]);
+    optionalStrings(value, ["sourceId", "sourceName", "synopsis", "cover", "addedLabel", "addedAt", "lastOpenedLabel", "completedLabel", "lastReadAt"]);
 }
 
 function validManifest(value: unknown): value is BackupManifest {

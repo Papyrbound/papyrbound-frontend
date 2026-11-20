@@ -10,7 +10,7 @@ import { orderBooks, nextUnreadBook } from "@/features/library/model/book-order"
 
 export function LibraryOverview() {
   const { books, lists, noun, label } = useActiveLibrary();
-  const { selectBook, selectedId, setDialog } = useWorkspace();
+  const { selectBook, selectedId, openReader } = useWorkspace();
   const recent = books.filter((book) => book.progress > 0).slice(0, 4);
   const finished = books.filter((book) => book.progress >= 100);
   const queued = nextUnreadBook(books, lists.find((list) => list.id === "want-to-read")?.bookIds);
@@ -63,7 +63,7 @@ export function LibraryOverview() {
                 onClick={() => selectBook(book.id)}
                 onDoubleClick={() => {
                   selectBook(book.id);
-                  setDialog("reader");
+                  openReader(book.id);
                 }}
                 aria-label={`Continue reading ${book.title}`}
               >

@@ -4,6 +4,7 @@ import { useEffect, type PropsWithChildren } from "react";
 import { deleteImportedFile, loadImportedBooks, saveImportedFile, updateImportedMetadata } from "@/features/library/model/import-storage";
 import { isLibrarySnapshot, librarySnapshot, restoreBookOrder } from "@/features/library/model/library-snapshot";
 import { readDeviceValue, subscribeDeviceState } from "@/shared/lib/device-storage";
+import type { ReadingData, ReadingPosition } from "@/features/reader/model/reading-state";
 import {
   defaultReadingLists,
   getReadingListUrl,
@@ -29,6 +30,9 @@ type ReadingListsState = {
   updateBook: (id: string, details: { title: string; author: string }) => void;
   books: SampleBook[];
   activity: ReadingActivityEvent[];
+  reading: ReadingData;
+  savePosition: (bookId: string, position: Omit<ReadingPosition, "updatedAt">) => void;
+  recordReading: (bookId: string, sessionId: string, date: string, seconds: number, pages: number) => void;
   addBook: (details: { title: string; author: string }) => void;
   markAsRead: (bookId: string) => void;
   markAsUnread: (bookId: string) => void;
@@ -131,6 +135,7 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
       ),
     );
     recordActivity(target.title, "unread", target.kind);
+    set((state) => ({ reading: { ...state.reading, positions: Object.fromEntries(Object.entries(state.reading.positions).filter(([id]) => id !== bookId)) } }));
   };
 
   const deleteBook = (bookId: string) => {
@@ -144,6 +149,10 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
       })),
     );
     recordActivity(target.title, "deleted", target.kind);
+    set((state) => ({ reading: {
+      positions: Object.fromEntries(Object.entries(state.reading.positions).filter(([id]) => id !== bookId)),
+      sessions: state.reading.sessions.filter((session) => session.bookId !== bookId),
+    } }));
   };
 
   const updateList = (id: string, details: ReadingListDetails) => {
@@ -239,6 +248,30 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
             : ["quiet", "sun", "night"],
     })),
     activity: [],
+    reading: { positions: {}, sessions: [] },
+    savePosition: (bookId, position) => {
+      const book = get().books.find((item) => item.id === bookId);
+      if (!book?.sourceId || !Number.isInteger(position.index) || position.index < 0 || position.index >= position.total ||
+        !Number.isInteger(position.total) || !Number.isFinite(position.offset) || !Number.isFinite(position.progress)) return;
+      const progress = Math.max(0, Math.min(100, position.progress));
+      if (progress >= 100 && book.progress < 100) markAsRead(bookId);
+      const updatedAt = new Date().toISOString();
+      set((state) => ({
+        books: state.books.map((item) => item.id === bookId ? { ...item, progress: Math.max(item.progress, progress), lastReadAt: updatedAt } : item),
+        lists: progress > 0 ? state.lists.map((list) => list.id === "want-to-read" ? { ...list, bookIds: list.bookIds?.filter((id) => id !== bookId) } : list) : state.lists,
+        reading: { ...state.reading, positions: { ...state.reading.positions, [bookId]: { ...position, offset: Math.max(0, Math.min(1, position.offset)), progress, updatedAt } } },
+      }));
+    },
+    recordReading: (bookId, sessionId, date, seconds, pages) => {
+      const book = get().books.find((item) => item.id === bookId);
+      if (!book?.sourceId || !Number.isFinite(seconds) || seconds < 0 || !Number.isInteger(pages) || pages < 0 || (!seconds && !pages)) return;
+      const id = `${sessionId}:${date}`;
+      set((state) => {
+        const existing = state.reading.sessions.find((session) => session.id === id);
+        const session = { id, bookId, kind: book.kind ?? "books" as const, date, seconds: (existing?.seconds ?? 0) + seconds, pages: (existing?.pages ?? 0) + pages, updatedAt: new Date().toISOString() };
+        return { reading: { ...state.reading, sessions: [session, ...state.reading.sessions.filter((item) => item.id !== id)].slice(0, 10_000) } };
+      });
+    },
     addBook,
     markAsRead,
     markAsUnread,
@@ -264,6 +297,7 @@ export function ReadingListsProvider({ children }: PropsWithChildren) {
         ...saved.lists.filter((list) => !defaultReadingLists.some((item) => item.id === list.id)).map((list) => ({ ...list, isDefault: false, url: getReadingListUrl(list.id) })),
       ],
       activity: saved.activity,
+      reading: saved.reading ?? { positions: {}, sessions: [] },
     });
     loadImportedBooks().then((imported) => {
       if (!active) return;

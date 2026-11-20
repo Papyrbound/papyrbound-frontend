@@ -8,7 +8,7 @@ import { Calendar } from "@/shared/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import { TooltipHint } from "@/shared/ui/tooltip";
 
-// The activity preview uses UTC dates; the calendar displays local date-only values.
+// Activity bounds use UTC dates; the calendar displays local date-only values.
 function calendarDate(date: Date) {
   return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
 }
@@ -44,7 +44,7 @@ export function ReadingWeekPicker({
     <div role="group" aria-label="Reading activity week" className="flex max-w-full items-center gap-1.5">
       <TooltipHint content={start <= earliestDate ? "Your account’s first week" : "Previous week"}>
       <span className="inline-flex" tabIndex={start <= earliestDate ? 0 : undefined} aria-label={start <= earliestDate ? "Your account’s first week" : undefined}>
-      <Button variant="secondary" size="icon-sm" aria-label="Previous preview week" disabled={start <= earliestDate} onClick={onPrevious}>
+      <Button variant="secondary" size="icon-sm" aria-label="Previous reading week" disabled={start <= earliestDate} onClick={onPrevious}>
         <ChevronLeft />
       </Button>
       </span>
@@ -81,7 +81,7 @@ export function ReadingWeekPicker({
       <Button
         variant="secondary"
         size="icon-sm"
-        aria-label="Next preview week"
+        aria-label="Next reading week"
         disabled={end >= latestDate}
         onClick={onNext}
       >

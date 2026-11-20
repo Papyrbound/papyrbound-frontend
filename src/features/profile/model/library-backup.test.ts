@@ -11,7 +11,10 @@ import { createBackup, readBackup, restoreBackup, type BackupData } from "./libr
 
 const data: BackupData = {
   account: { version: 1, createdAt: "2026-01-01T12:00:00Z", profile: { ...localProfile, avatarUrl: "data:image/jpeg;base64,cGhvdG8=", banner: "data:image/jpeg;base64,YmFubmVy" }, preferences: { theme: "dark", reduceMotion: true, showDots: true, readingGoal: 30 } },
-  library: { books: sampleBooks.slice(0, 2), lists: defaultReadingLists.map((list) => ({ ...list, bookIds: ["epub", "comic"] })), activity: [], order: ["comic", "quiet", "epub", "wild"] },
+  library: { books: sampleBooks.slice(0, 2), lists: defaultReadingLists.map((list) => ({ ...list, bookIds: ["epub", "comic"] })), activity: [], order: ["comic", "quiet", "epub", "wild"], reading: {
+    positions: { epub: { index: 1, total: 2, offset: 0.4, progress: 70, updatedAt: "2026-11-19T12:00:00Z" } },
+    sessions: [{ id: "reading-session", bookId: "comic", kind: "comics", date: "2026-11-19", seconds: 120, pages: 3, updatedAt: "2026-11-19T12:00:00Z" }],
+  } },
   collections: [{ id: "collection", name: "My collection", color: "#abcdef", pinned: true, bookIds: ["epub"] }],
   annotations: [sampleAnnotations[0]],
   settings: { page: "Dark", font: "Literata", spacing: "Spacious", interfaceSize: "Default", labels: true, resume: true },
@@ -76,6 +79,7 @@ test("restore replaces files and known app keys while preserving empty data and 
   assert.deepEqual(JSON.parse(device.getItem("papyrbound-collections-v1")!).data, []);
   assert.deepEqual(JSON.parse(device.getItem("papyrbound-annotations-v1")!).data, []);
   assert.equal(JSON.parse(device.getItem("papyrbound-workspace-v1")!).data.libraryKind, "comics");
+  assert.deepEqual(JSON.parse(device.getItem("papyrbound-library-v1")!).data.reading, data.library.reading);
   assert.equal(device.getItem("unrelated-key"), "leave alone");
 });
 

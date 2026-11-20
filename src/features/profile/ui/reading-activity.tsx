@@ -5,7 +5,8 @@ import { cn } from "cn";
 
 import { CircleCheck } from "lucide-react";
 
-import { activityPreview, createHeatmapDays } from "../model/activity-preview";
+import { createHeatmapDays } from "../model/activity-data";
+import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
 import { activityStreak } from "../model/activity-streak";
 import { activityBounds, activityDateKey, activityDayMs, clampActivityDate, startOfActivityWeek } from "../model/activity-dates";
 import { useAccount, updatePreferences } from "../stores/account-store";
@@ -47,7 +48,8 @@ const useActivityUI = create<{
 }));
 
 export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
-  const { books, label, plural } = useActiveLibrary();
+  const { books, label, plural, kind } = useActiveLibrary();
+  const recorded = useReadingLists((state) => state.reading.sessions);
   const createdAt = useAccount((state) => state.createdAt);
   const goal = useAccount((state) => state.preferences.readingGoal);
   const ui = useActivityUI();
@@ -60,7 +62,8 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
   const start = clampActivityDate(weekStart, earliest, latest);
   const end = clampActivityDate(new Date(weekStart.getTime() + 6 * activityDayMs), earliest, latest);
   const day = activityDateKey(clampActivityDate(new Date(`${ui.day || activityDateKey(latest)}T12:00:00Z`), earliest, latest));
-  const heatmapDays = createHeatmapDays(earliest, latest);
+  const activeSessions = recorded.filter((session) => session.kind === kind && books.some((book) => book.id === session.bookId));
+  const heatmapDays = createHeatmapDays(earliest, latest, activeSessions);
   const chartDays = embedded ? heatmapDays.slice(-182) : heatmapDays;
   const streak = activityStreak(heatmapDays, day);
   const months = chartDays.filter((_, index) => index % 7 === 0).flatMap((entry, index, weeks) => {
@@ -75,13 +78,13 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
   function changeWeek(next: number) {
     selectDay(new Date(anchorWeekStart + Math.max(firstWeek, Math.min(0, next)) * 7 * activityDayMs));
   }
-  const sessions = activityPreview.sessions.filter(
+  const sessions = activeSessions.filter(
     (session) =>
       books.some((book) => book.id === session.bookId) && session.date >= start.toISOString().slice(0, 10) &&
       session.date <= end.toISOString().slice(0, 10),
-  );
+  ).map((session) => ({ ...session, minutes: Math.floor(session.seconds / 60) }));
   const selected = heatmapDays.find((d) => d.date === day);
-  const total = sessions.reduce((sum, s) => sum + s.minutes, 0);
+  const total = Math.floor(sessions.reduce((sum, s) => sum + s.seconds, 0) / 60);
   const finished = books.filter((b) => b.progress >= 100);
   return (
     <div>
@@ -106,12 +109,12 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
       </header>
       <div className={cn("mb-8 grid grid-cols-2 gap-6", embedded ? "mt-6" : "mt-11 lg:grid-cols-4")}>
         {[
-          [`${Math.floor(total / 60)}h ${total % 60}m`, "Time read this week"],
+          [total === 0 && sessions.some((session) => session.seconds > 0) ? "<1 min" : `${Math.floor(total / 60)}h ${total % 60}m`, "Time read this week"],
           [
             String(sessions.reduce((n, s) => n + s.pages, 0)),
             "Pages read this week",
           ],
-          [`${streak.current} ${streak.current === 1 ? "day" : "days"}`, "Preview reading streak"],
+          [`${streak.current} ${streak.current === 1 ? "day" : "days"}`, "Reading streak"],
           [String(finished.length), `${label} finished in your library`],
         ].map(([n, l]) => (
           <div key={l} className="min-w-0 border-r border-border pr-4 last:border-0">
@@ -195,7 +198,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
           </p>
           <p className="mt-1 text-xs leading-[18px]">
             {(selected?.minutes ?? 0) >= goal
-              ? "Goal reached on this preview day"
+              ? "Daily goal reached"
               : "Keep reading to reach your goal"}
           </p>
           <div className="mt-6 h-1.5 overflow-hidden rounded-full bg-muted">
@@ -246,7 +249,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
               const book = books.find((b) => b.id === s.bookId);
               if (!book) return null;
               return (
-                <div key={s.date} className="flex items-center gap-4 py-2">
+                <div key={s.id} className="flex items-center gap-4 py-2">
                   <span className="w-7 shrink-0 [&_.book-cover]:rounded-sm [&_.cover-type]:hidden [&_.cover-credit]:hidden">
                     <BookCover book={book} />
                   </span>
@@ -258,15 +261,15 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
                       {s.date}
                     </p>
                   </div>
-                  <span className="text-sm">{s.minutes} min</span>
+                  <span className="text-sm">{s.minutes || "<1"} min</span>
                   <span className="text-xs text-muted-foreground">
-                    {s.pages} pages
+                    {s.pages} {s.pages === 1 ? "page" : "pages"}
                   </span>
                 </div>
               );
             })}
           </div>
-          {!sessions.length && <p className="text-sm text-muted-foreground">No reading sessions in this preview week.</p>}
+          {!sessions.length && <p className="text-sm text-muted-foreground">No reading sessions this week. Open an imported book or comic to start.</p>}
         </section>
         <section>
           <h2 className="mb-5 text-xl font-semibold leading-7">
@@ -296,7 +299,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
         </section>
       </div>
       <p className="mt-8 text-xs text-muted-foreground">
-        Sample activity · Reading sessions are not tracked yet.
+        Time is recorded while the reader is active and pauses after two minutes without interaction. EPUB page counts are estimates.
       </p>
       <Dialog
         open={ui.editing}
@@ -306,7 +309,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
           <DialogHeader>
             <DialogTitle>Daily reading goal</DialogTitle>
             <DialogDescription>
-              Set a goal for the visual preview.
+              Choose how many minutes you want to read each day.
             </DialogDescription>
           </DialogHeader>
           <form

@@ -2,8 +2,9 @@ import type { SampleBook } from "@/features/home/model/sample-books";
 import type { ReadingList } from "@/features/reading-lists/model/reading-list";
 import type { ReadingActivityEvent } from "@/features/reading-lists/stores/reading-lists-store";
 import { isRecord } from "@/shared/lib/device-storage";
+import { isReadingData, type ReadingData } from "@/features/reader/model/reading-state";
 
-export type LibrarySnapshot = { books: SampleBook[]; lists: ReadingList[]; activity: ReadingActivityEvent[]; order: string[] };
+export type LibrarySnapshot = { books: SampleBook[]; lists: ReadingList[]; activity: ReadingActivityEvent[]; order: string[]; reading?: ReadingData };
 
 export function isLibrarySnapshot(value: unknown): value is LibrarySnapshot {
   return isRecord(value) && Array.isArray(value.books) && value.books.every((book) =>
@@ -16,11 +17,12 @@ export function isLibrarySnapshot(value: unknown): value is LibrarySnapshot {
       typeof list.name === "string" && typeof list.sortOrder === "number" && Array.isArray(list.bookIds) && list.bookIds.every((id) => typeof id === "string")) &&
     Array.isArray(value.activity) && value.activity.every((event) => isRecord(event) && typeof event.id === "string" &&
       typeof event.bookTitle === "string" && typeof event.at === "string" && ["added", "completed", "unread", "deleted"].includes(String(event.kind))) &&
-    Array.isArray(value.order) && value.order.every((id) => typeof id === "string");
+    Array.isArray(value.order) && value.order.every((id) => typeof id === "string") &&
+    (value.reading === undefined || isReadingData(value.reading));
 }
 
-export function librarySnapshot(state: { books: SampleBook[]; lists: ReadingList[]; activity: ReadingActivityEvent[] }): LibrarySnapshot {
-  return { books: state.books.filter((book) => !book.sourceId), lists: state.lists, activity: state.activity, order: state.books.map((book) => book.id) };
+export function librarySnapshot(state: { books: SampleBook[]; lists: ReadingList[]; activity: ReadingActivityEvent[]; reading?: ReadingData }): LibrarySnapshot {
+  return { books: state.books.filter((book) => !book.sourceId), lists: state.lists, activity: state.activity, order: state.books.map((book) => book.id), ...(state.reading ? { reading: state.reading } : {}) };
 }
 
 export function restoreBookOrder(books: SampleBook[], order: string[]) {

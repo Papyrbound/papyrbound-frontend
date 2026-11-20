@@ -93,7 +93,7 @@ export function BookDetailsPanel({
   const { collections, setCollections } = useCollections();
   const [deleting, setDeleting] = useLocalUIState(false);
 
-  const { selectedId, panelOpen, setPanelOpen, dialog, setDialog } =
+  const { selectedId, panelOpen, setPanelOpen, dialog, setDialog, openReader } =
     useWorkspace();
 
   const mobile = useIsCompactWindow();
@@ -141,19 +141,19 @@ export function BookDetailsPanel({
           ? [
               [
                 "Current chapter",
-                `Chapter ${Math.max(1, Math.floor((book.progress / 100) * 18))} of 18`,
+                book.sourceId ? "Saved in reader" : "Sample title",
               ],
               [
                 "Pages read",
                 `${Math.round((book.pages * book.progress) / 100)} of ${book.pages}`,
               ],
-              ["Last read", "Today, 9:41 AM"],
+              ["Last read", book.lastReadAt ? new Date(book.lastReadAt).toLocaleDateString() : "Not opened"],
             ]
           : [
               ["File format", book.format ?? "EPUB"],
               ["Length", book.pages ? `${book.pages} pages` : "Not available"],
               ["Progress", `${book.progress}%`],
-              ["Last opened", book.progress ? "Today" : "Not opened"],
+              ["Last opened", book.lastReadAt ? new Date(book.lastReadAt).toLocaleDateString() : "Not opened"],
               ["Location", "On this device"],
             ]
         ).map(([k, v]) => (
@@ -186,7 +186,7 @@ export function BookDetailsPanel({
         <Button
           variant="ghost"
           className={menuActionClass}
-          onClick={() => setDialog("reader")}
+          onClick={() => openReader(book.id)}
         >
           <BookOpen />
           {book.progress ? "Continue reading" : "Start reading"}
@@ -196,7 +196,7 @@ export function BookDetailsPanel({
             <Button
               variant="ghost"
               className={menuActionClass}
-              onClick={() => setDialog("reader")}
+              onClick={() => openReader(book.id)}
             >
               <List />
               {kind === "comics" ? "View pages" : "View chapters"}
@@ -204,7 +204,7 @@ export function BookDetailsPanel({
             <Button
               variant="ghost"
               className={menuActionClass}
-              onClick={() => setDialog("reader")}
+              onClick={() => openReader(book.id)}
             >
               <Bookmark />
               Bookmarks
@@ -316,7 +316,7 @@ export function BookDetailsPanel({
       </Sheet>
 
       <Dialog
-        open={dialog !== null && dialog !== "delete"}
+        open={dialog !== null && dialog !== "delete" && dialog !== "reader"}
         onOpenChange={(o) => {
           if (!o) setDialog(null);
         }}
@@ -333,7 +333,7 @@ export function BookDetailsPanel({
                   ? "Add to collection"
                   : dialog === "edit"
                     ? `Edit ${noun} details`
-                    : "Reader preview"}
+                    : "Book details"}
             </DialogTitle>
             <DialogDescription>
               {book.title} · {book.author}
@@ -344,27 +344,6 @@ export function BookDetailsPanel({
             <p className="text-sm leading-7">
               {book.synopsis ?? `No synopsis available for this ${noun}.`}
             </p>
-          )}
-
-          {dialog === "reader" && (
-            <div className="space-y-4">
-              <p className="text-xs text-muted-foreground">
-                {book.sourceId ? `Your ${book.format} file is saved on this device. Reading imported files is coming soon.` : "Visual preview · EPUB rendering is not connected."}
-              </p>
-              {!book.sourceId && <><h3 className="font-serif text-2xl">Chapter one</h3>
-              <p className="font-serif text-lg leading-8">
-                The room grew quiet as the afternoon light moved across the
-                floor. She turned the page, and for a moment the rest of the
-                world could wait.
-              </p></>}
-              <Button
-                variant="outline"
-                nativeButton={false}
-                render={<Link href="/annotations" onClick={() => setDialog(null)} />}
-              >
-                View saved annotations
-              </Button>
-            </div>
           )}
 
           {dialog === "collections" && (
