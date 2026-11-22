@@ -22,7 +22,6 @@ import {
   PencilIcon,
   PinIcon,
   PinOffIcon,
-  PlusIcon,
   TagIcon,
   Trash2Icon,
   type LucideIcon,
@@ -36,6 +35,7 @@ import {
 } from "@/features/reading-lists/model/reading-list";
 import { useActiveLibrary } from "@/features/library/model/use-active-library";
 import { Button } from "@/shared/ui/button";
+import { TooltipHint } from "@/shared/ui/tooltip";
 import { Input } from "@/shared/ui/input";
 import { ReadingListEditor } from "./reading-list-editor";
 import {
@@ -165,13 +165,12 @@ function ReadingListMenuItem({
 
 export function NavReadingLists() {
   const { state, isMobile, setOpenMobile } = useSidebar();
-  const { lists, createList, updateList, deleteList, togglePinned } =
+  const { lists, updateList, deleteList, togglePinned } =
     useActiveLibrary();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const selectedListId = searchParams.get("list");
-  const [isCreating, setIsCreating] = useLocalUIState(false);
   const [editingList, setEditingList] = useLocalUIState<
     ReadingList | undefined
   >();
@@ -202,9 +201,8 @@ export function NavReadingLists() {
   const visibleLists = isCollapsed ? collapsedLists : orderedLists;
   const canPin = pinnedCustomLists.length < MAX_PINNED_CUSTOM_LISTS;
 
-  function openEditor(list?: ReadingList) {
+  function openEditor(list: ReadingList) {
     setEditingList(list);
-    setIsCreating(true);
   }
 
   return (
@@ -231,13 +229,12 @@ export function NavReadingLists() {
               aria-hidden="true"
             />
           </button>
-          <Button
+          <TooltipHint content="View all reading lists"><Button
             nativeButton={false}
             variant="ghost"
             size="icon-xs"
             className="list-heading-action"
             aria-label="View all reading lists"
-            title="View all reading lists"
             render={
               <Link
                 href="/reading-lists"
@@ -246,7 +243,7 @@ export function NavReadingLists() {
             }
           >
             <ArrowUpRightIcon />
-          </Button>
+          </Button></TooltipHint>
         </div>
       )}
 
@@ -330,27 +327,16 @@ export function NavReadingLists() {
           </SidebarMenuItem>
         ) : null}
 
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            tooltip="Custom Reading List"
-            onClick={() => openEditor()}
-            className="reading-list-link"
-          >
-            <PlusIcon />
-            <span>Custom Reading List</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
       </SidebarMenu>
-      {isCreating && (
+      {editingList && (
         <ReadingListEditor
           list={editingList}
-          onClose={() => setIsCreating(false)}
+          onClose={() => setEditingList(undefined)}
           onSave={(details) => {
-            const id = editingList ? editingList.id : createList(details);
-            if (editingList) updateList(editingList.id, details);
-            setIsCreating(false);
+            updateList(editingList.id, details);
+            setEditingList(undefined);
             if (isMobile) setOpenMobile(false);
-            if (id) router.push(getReadingListUrl(id));
+            router.push(getReadingListUrl(editingList.id));
           }}
         />
       )}

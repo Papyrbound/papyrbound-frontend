@@ -8,6 +8,8 @@ import { AnnotationsProvider } from "@/features/annotations/stores/annotations-s
 import { AppearanceProvider } from "@/features/profile/ui/appearance-provider";
 import { ReadingMotionProvider } from "@/shared/ui/reading-motion";
 import { TooltipProvider } from "@/shared/ui/tooltip";
+import { Toaster } from "@/shared/ui/sonner";
+import { ReaderHost } from "@/features/reader/ui/reader-host";
 import { SidebarInset, SidebarProvider } from "@/shared/ui/sidebar";
 import { cn } from "@/shared/lib/utils";
 import localFont from "next/font/local";
@@ -45,6 +47,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                         <AppHeader />
                         {children}
                       </SidebarInset>
+                      <Toaster />
+                      <ReaderHost />
                     </SidebarProvider>
                   </TooltipProvider>
                 </AnnotationsProvider>

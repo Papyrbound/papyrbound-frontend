@@ -22,7 +22,9 @@ import { useActiveLibrary } from "@/features/library/model/use-active-library";
 
 import { useCollections } from "@/features/collections/stores/collections-store";
 
-import { useAnnotations } from "@/features/annotations/stores/annotations-store";
+import { removeBooks } from "../model/undo-actions";
+import { offerUndo, reportActionError } from "@/shared/lib/undo-toast";
+import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
 
 import { BookCover } from "@/features/home/ui/book-cover";
 
@@ -72,9 +74,11 @@ import type { SampleBook } from "@/features/home/model/sample-books";
 export function BookDetailsPanel({
   reading = false,
   fallback,
+  scope,
 }: {
   reading?: boolean;
   fallback?: SampleBook;
+  scope?: SampleBook[];
 }) {
   const {
     books,
@@ -82,19 +86,20 @@ export function BookDetailsPanel({
     toggleBook,
     markAsRead,
     markAsUnread,
-    deleteBook,
     updateBook,
     noun, kind,
   } = useActiveLibrary();
 
   const { collections, setCollections } = useCollections();
-  const { setAnnotations } = useAnnotations();
+  const [deleting, setDeleting] = useLocalUIState(false);
 
-  const { selectedId, panelOpen, setPanelOpen, dialog, setDialog, selectBook } =
+  const { selectedId, panelOpen, setPanelOpen, dialog, setDialog, openReader } =
     useWorkspace();
 
   const mobile = useIsCompactWindow();
-  const book = books.find((b) => b.id === selectedId) ?? (fallback && (fallback.kind ?? "books") === kind ? fallback : undefined) ?? books[0];
+  const candidates = scope ?? books;
+  const book = candidates.find((b) => b.id === selectedId) ??
+    (fallback && candidates.some((item) => item.id === fallback.id) ? fallback : undefined) ?? candidates[0];
   const itemLabel = kind === "comics" ? "Comic" : "Book";
   const activeCollections = collections.filter((collection) => (collection.kind ?? "books") === kind);
 
@@ -136,19 +141,19 @@ export function BookDetailsPanel({
           ? [
               [
                 "Current chapter",
-                `Chapter ${Math.max(1, Math.floor((book.progress / 100) * 18))} of 18`,
+                book.sourceId ? "Saved in reader" : "Sample title",
               ],
               [
                 "Pages read",
                 `${Math.round((book.pages * book.progress) / 100)} of ${book.pages}`,
               ],
-              ["Last read", "Today, 9:41 AM"],
+              ["Last read", book.lastReadAt ? new Date(book.lastReadAt).toLocaleDateString() : "Not opened"],
             ]
           : [
               ["File format", book.format ?? "EPUB"],
               ["Length", book.pages ? `${book.pages} pages` : "Not available"],
               ["Progress", `${book.progress}%`],
-              ["Last opened", book.progress ? "Today" : "Not opened"],
+              ["Last opened", book.lastReadAt ? new Date(book.lastReadAt).toLocaleDateString() : "Not opened"],
               ["Location", "On this device"],
             ]
         ).map(([k, v]) => (
@@ -181,7 +186,7 @@ export function BookDetailsPanel({
         <Button
           variant="ghost"
           className={menuActionClass}
-          onClick={() => setDialog("reader")}
+          onClick={() => openReader(book.id)}
         >
           <BookOpen />
           {book.progress ? "Continue reading" : "Start reading"}
@@ -191,7 +196,7 @@ export function BookDetailsPanel({
             <Button
               variant="ghost"
               className={menuActionClass}
-              onClick={() => setDialog("reader")}
+              onClick={() => openReader(book.id)}
             >
               <List />
               {kind === "comics" ? "View pages" : "View chapters"}
@@ -199,7 +204,7 @@ export function BookDetailsPanel({
             <Button
               variant="ghost"
               className={menuActionClass}
-              onClick={() => setDialog("reader")}
+              onClick={() => openReader(book.id)}
             >
               <Bookmark />
               Bookmarks
@@ -208,7 +213,7 @@ export function BookDetailsPanel({
               variant="ghost"
               className={menuActionClass}
               nativeButton={false}
-              render={<Link href="/annotations" />}
+              render={<Link href="/annotations" onClick={() => setDialog(null)} />}
             >
               <Highlighter />
               Annotations
@@ -297,7 +302,7 @@ export function BookDetailsPanel({
       )}
 
       <Sheet
-        open={mobile && panelOpen && selectedId !== null}
+        open={mobile && panelOpen && dialog === null && candidates.some((item) => item.id === selectedId)}
         onOpenChange={setPanelOpen}
       >
         <SheetContent className="overflow-y-auto bg-card">
@@ -311,7 +316,7 @@ export function BookDetailsPanel({
       </Sheet>
 
       <Dialog
-        open={dialog !== null && dialog !== "delete"}
+        open={dialog !== null && dialog !== "delete" && dialog !== "reader"}
         onOpenChange={(o) => {
           if (!o) setDialog(null);
         }}
@@ -328,7 +333,7 @@ export function BookDetailsPanel({
                   ? "Add to collection"
                   : dialog === "edit"
                     ? `Edit ${noun} details`
-                    : "Reader preview"}
+                    : "Book details"}
             </DialogTitle>
             <DialogDescription>
               {book.title} · {book.author}
@@ -339,27 +344,6 @@ export function BookDetailsPanel({
             <p className="text-sm leading-7">
               {book.synopsis ?? `No synopsis available for this ${noun}.`}
             </p>
-          )}
-
-          {dialog === "reader" && (
-            <div className="space-y-4">
-              <p className="text-xs text-muted-foreground">
-                {book.sourceId ? `Your ${book.format} file is saved on this device. Reading imported files is coming soon.` : "Visual preview · EPUB rendering is not connected."}
-              </p>
-              {!book.sourceId && <><h3 className="font-serif text-2xl">Chapter one</h3>
-              <p className="font-serif text-lg leading-8">
-                The room grew quiet as the afternoon light moved across the
-                floor. She turned the page, and for a moment the rest of the
-                world could wait.
-              </p></>}
-              <Button
-                variant="outline"
-                nativeButton={false}
-                render={<Link href="/annotations" />}
-              >
-                View saved annotations
-              </Button>
-            </div>
           )}
 
           {dialog === "collections" && (
@@ -464,28 +448,27 @@ export function BookDetailsPanel({
             <AlertDialogTitle>Delete {noun}?</AlertDialogTitle>
             <AlertDialogDescription>
               Remove {book.title} from your library? Its annotations and reading
-              progress will also be removed.
+              progress will also be removed. You can undo this for 15 seconds.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
-              onClick={() => {
-                deleteBook(book.id);
-                setCollections((cs) =>
-                  cs.map((c) => ({
-                    ...c,
-                    bookIds: c.bookIds.filter((id) => id !== book.id),
-                  })),
-                );
-                setAnnotations((a) => a.filter((n) => n.bookId !== book.id));
-                setDialog(null);
-                const next = books.find((b) => b.id !== book.id);
-                if (next) selectBook(next.id);
+              disabled={deleting}
+              onClick={async () => {
+                if (deleting) return;
+                setDeleting(true);
+                try {
+                  offerUndo(await removeBooks([book.id]));
+                  setDialog(null);
+                  const next = candidates.find((b) => b.id !== book.id);
+                  useWorkspace.setState({ selectedId: next?.id ?? null, panelOpen: mobile ? false : panelOpen });
+                } catch (error) { reportActionError(error); }
+                finally { setDeleting(false); }
               }}
             >
-              Delete {noun}
+              {deleting ? "Deleting…" : `Delete ${noun}`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

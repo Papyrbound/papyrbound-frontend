@@ -115,6 +115,10 @@
 }
 
 @layer base {
+  html {
+    /* Keep navigation and anchor targets below the sticky h-14 header. */
+    scroll-padding-top: 3.5rem;
+  }
   * {
     @apply border-border outline-ring/50;
   }

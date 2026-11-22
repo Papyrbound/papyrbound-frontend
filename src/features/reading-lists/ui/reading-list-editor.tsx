@@ -23,25 +23,23 @@ import {
 // Mounted for each editing session so cancelled drafts never leak into the next one.
 export function ReadingListEditor({
   list,
-  initialBookIds = [],
   onClose,
   onSave,
 }: {
-  list?: ReadingList;
-  initialBookIds?: string[];
+  list: ReadingList;
   onClose: () => void;
   onSave: (details: ReadingListDetails) => void;
 }) {
   const { books, plural, label } = useActiveLibrary();
   const [open, setOpen] = useLocalUIState(true);
   const pendingSave = useRef<ReadingListDetails | null>(null);
-  const [name, setName] = useLocalUIState(list?.name ?? "");
+  const [name, setName] = useLocalUIState(list.name);
   const [query, setQuery] = useLocalUIState("");
   const [color, setColor] = useLocalUIState(
-    list?.color ?? readingListColors[2].value,
+    list.color ?? readingListColors[2].value,
   );
   const [bookIds, setBookIds] = useLocalUIState(
-    list?.bookIds ?? initialBookIds,
+    list.bookIds ?? [],
   );
   const nameRef = useRef<HTMLInputElement>(null);
   const normalizedQuery = query.trim().toLowerCase();
@@ -86,7 +84,7 @@ export function ReadingListEditor({
         >
           <div className="pr-10">
             <SheetTitle>
-              {list ? "Edit reading list" : "Custom Reading List"}
+              Edit reading list
             </SheetTitle>
             <SheetDescription className="sr-only">
               Name your list, choose a color, and search for books to add.
@@ -230,7 +228,7 @@ export function ReadingListEditor({
               Cancel
             </Button>
             <Button type="submit" disabled={!name.trim()}>
-              {list ? "Save changes" : "Create list"}
+              Save changes
             </Button>
           </div>
         </form>

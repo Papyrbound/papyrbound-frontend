@@ -6,6 +6,7 @@ import { CheckIcon, PlusIcon, ShuffleIcon } from "lucide-react";
 import { useActiveLibrary } from "@/features/library/model/use-active-library";
 import { BookCover } from "@/features/home/ui/book-cover";
 import { Button } from "@/shared/ui/button";
+import { TooltipHint } from "@/shared/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -48,20 +49,19 @@ export function NextReadDialog() {
         setOpen(next);
       }}
     >
+      <TooltipHint content={unread.length === 0 ? `Add an unread ${noun} to get a suggestion` : `Choose an unread ${noun} from your library`}>
+      <span className="inline-flex" tabIndex={unread.length === 0 ? 0 : undefined} aria-label={unread.length === 0 ? "Pick my next read" : undefined}>
       <DialogTrigger
         disabled={unread.length === 0}
         render={
           <Button variant="outline" size="sm" className="next-read-trigger" />
         }
-        title={
-          unread.length === 0
-            ? `Add an unread ${noun} to get a suggestion`
-            : `Choose an unread ${noun} from your library`
-        }
       >
         <ShuffleIcon />
         Pick my next read
       </DialogTrigger>
+      </span>
+      </TooltipHint>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Your next chapter</DialogTitle>

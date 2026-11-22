@@ -2,6 +2,9 @@
 import { create } from "zustand";
 import { useEffect, type PropsWithChildren } from "react";
 import { deleteImportedFile, loadImportedBooks, saveImportedFile, updateImportedMetadata } from "@/features/library/model/import-storage";
+import { isLibrarySnapshot, librarySnapshot, restoreBookOrder } from "@/features/library/model/library-snapshot";
+import { readDeviceValue, subscribeDeviceState } from "@/shared/lib/device-storage";
+import type { ReadingData, ReadingPosition } from "@/features/reader/model/reading-state";
 import {
   defaultReadingLists,
   getReadingListUrl,
@@ -27,12 +30,14 @@ type ReadingListsState = {
   updateBook: (id: string, details: { title: string; author: string }) => void;
   books: SampleBook[];
   activity: ReadingActivityEvent[];
+  reading: ReadingData;
+  savePosition: (bookId: string, position: Omit<ReadingPosition, "updatedAt">) => void;
+  recordReading: (bookId: string, sessionId: string, date: string, seconds: number, pages: number) => void;
   addBook: (details: { title: string; author: string }) => void;
   markAsRead: (bookId: string) => void;
   markAsUnread: (bookId: string) => void;
   deleteBook: (bookId: string) => void;
   lists: ReadingList[];
-  createList: (details: ReadingListDetails) => string | undefined;
   updateList: (id: string, details: ReadingListDetails) => void;
   deleteList: (id: string) => void;
   togglePinned: (id: string) => void;
@@ -40,6 +45,7 @@ type ReadingListsState = {
 };
 
 export const useReadingLists = create<ReadingListsState>((set, get) => {
+  const pendingImports = new Map<string, Promise<boolean>>();
   const setBooks = (
     update: (
       books: (SampleBook & { previousProgress?: number })[],
@@ -73,12 +79,14 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
       genre: "Uncategorized",
       pages: 0,
       progress: 0,
+      addedAt: new Date().toISOString(),
+      addedLabel: "Added today",
       paper: "#d9cae9",
       ink: "#494059",
       tone: "var(--content-lilac)",
       art: "orbit",
     };
-    setBooks((current) => [...current, book]);
+    setBooks((current) => [book, ...current]);
     recordActivity(book.title, "added");
   };
 
@@ -99,7 +107,7 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
               ...list,
               bookIds: [...new Set([...(list.bookIds ?? []), bookId])],
             }
-          : list,
+          : list.id === "want-to-read" ? { ...list, bookIds: list.bookIds?.filter((id) => id !== bookId) } : list,
       ),
     );
     recordActivity(target.title, "completed", target.kind);
@@ -107,13 +115,13 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
 
   const markAsUnread = (bookId: string) => {
     const target = get().books.find((book) => book.id === bookId);
-    if (!target || target.progress < 100) return;
+    if (!target || target.progress === 0) return;
     setBooks((current) =>
       current.map((book) =>
-        book.id === bookId && book.progress >= 100
+        book.id === bookId && book.progress > 0
           ? {
               ...book,
-              progress: book.previousProgress ?? 0,
+              progress: 0,
               previousProgress: undefined,
             }
           : book,
@@ -127,6 +135,7 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
       ),
     );
     recordActivity(target.title, "unread", target.kind);
+    set((state) => ({ reading: { ...state.reading, positions: Object.fromEntries(Object.entries(state.reading.positions).filter(([id]) => id !== bookId)) } }));
   };
 
   const deleteBook = (bookId: string) => {
@@ -140,33 +149,10 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
       })),
     );
     recordActivity(target.title, "deleted", target.kind);
-  };
-
-  const createList = (details: ReadingListDetails) => {
-    const trimmedName = details.name.trim();
-    if (!trimmedName) return;
-    const id = crypto.randomUUID();
-    setLists((current) => {
-      const nextSortOrder =
-        current.reduce(
-          (highest, list) => Math.max(highest, list.sortOrder),
-          -1,
-        ) + 1;
-
-      return [
-        ...current,
-        {
-          ...details,
-          id,
-          name: trimmedName,
-          url: getReadingListUrl(id),
-          icon: "tag",
-          isPinned: false,
-          sortOrder: nextSortOrder,
-        },
-      ];
-    });
-    return id;
+    set((state) => ({ reading: {
+      positions: Object.fromEntries(Object.entries(state.reading.positions).filter(([id]) => id !== bookId)),
+      sessions: state.reading.sessions.filter((session) => session.bookId !== bookId),
+    } }));
   };
 
   const updateList = (id: string, details: ReadingListDetails) => {
@@ -207,9 +193,17 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
   };
 
   const toggleBook = (listId: string, bookId: string) => {
+    const book = get().books.find((item) => item.id === bookId);
+    if (!book) return;
+    if (listId === "completed") {
+      if (book.progress >= 100) markAsUnread(bookId);
+      else markAsRead(bookId);
+      return;
+    }
     setLists((current) =>
       current.map((list) => {
         if (list.id !== listId) return list;
+        if (!list.isDefault && (list.kind ?? "books") !== (book.kind ?? "books")) return list;
         const bookIds = list.bookIds ?? [];
         return {
           ...list,
@@ -226,10 +220,16 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
     storageError: "",
     importBook: async (book, file) => {
       if (get().books.some((existing) => existing.id === book.id)) return false;
-      await saveImportedFile(book, file);
-      setBooks((current) => [book, ...current]);
-      recordActivity(book.title, "added", book.kind);
-      return true;
+      const pending = pendingImports.get(book.id);
+      if (pending) { await pending; return false; }
+      const task = (async () => {
+        await saveImportedFile(book, file);
+        setBooks((current) => [book, ...current]);
+        recordActivity(book.title, "added", book.kind);
+        return true;
+      })();
+      pendingImports.set(book.id, task);
+      try { return await task; } finally { pendingImports.delete(book.id); }
     },
     updateBook: (id, details) =>
       set((s) => ({
@@ -248,11 +248,34 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
             : ["quiet", "sun", "night"],
     })),
     activity: [],
+    reading: { positions: {}, sessions: [] },
+    savePosition: (bookId, position) => {
+      const book = get().books.find((item) => item.id === bookId);
+      if (!book?.sourceId || !Number.isInteger(position.index) || position.index < 0 || position.index >= position.total ||
+        !Number.isInteger(position.total) || !Number.isFinite(position.offset) || !Number.isFinite(position.progress)) return;
+      const progress = Math.max(0, Math.min(100, position.progress));
+      if (progress >= 100 && book.progress < 100) markAsRead(bookId);
+      const updatedAt = new Date().toISOString();
+      set((state) => ({
+        books: state.books.map((item) => item.id === bookId ? { ...item, progress: Math.max(item.progress, progress), lastReadAt: updatedAt } : item),
+        lists: progress > 0 ? state.lists.map((list) => list.id === "want-to-read" ? { ...list, bookIds: list.bookIds?.filter((id) => id !== bookId) } : list) : state.lists,
+        reading: { ...state.reading, positions: { ...state.reading.positions, [bookId]: { ...position, offset: Math.max(0, Math.min(1, position.offset)), progress, updatedAt } } },
+      }));
+    },
+    recordReading: (bookId, sessionId, date, seconds, pages) => {
+      const book = get().books.find((item) => item.id === bookId);
+      if (!book?.sourceId || !Number.isFinite(seconds) || seconds < 0 || !Number.isInteger(pages) || pages < 0 || (!seconds && !pages)) return;
+      const id = `${sessionId}:${date}`;
+      set((state) => {
+        const existing = state.reading.sessions.find((session) => session.id === id);
+        const session = { id, bookId, kind: book.kind ?? "books" as const, date, seconds: (existing?.seconds ?? 0) + seconds, pages: (existing?.pages ?? 0) + pages, updatedAt: new Date().toISOString() };
+        return { reading: { ...state.reading, sessions: [session, ...state.reading.sessions.filter((item) => item.id !== id)].slice(0, 10_000) } };
+      });
+    },
     addBook,
     markAsRead,
     markAsUnread,
     deleteBook,
-    createList,
     updateList,
     deleteList,
     togglePinned,
@@ -264,18 +287,29 @@ export function ReadingListsProvider({ children }: PropsWithChildren) {
     let active = true;
     let unsubscribe: (() => void) | undefined;
     const storageFailure = (error: unknown) => useReadingLists.setState({
-      storageError: error instanceof Error ? error.message : "Could not update local library storage.",
+      storageError: error instanceof Error ? error.message : typeof error === "string" ? error : "Could not update local library storage.",
+    });
+    const saved = readDeviceValue("papyrbound-library-v1", isLibrarySnapshot, storageFailure);
+    if (saved) useReadingLists.setState({
+      books: [...saved.books.map((book) => ({ ...book, addedAt: book.addedAt ?? sampleBooks.find((sample) => sample.id === book.id)?.addedAt })), ...useReadingLists.getState().books.filter((book) => book.sourceId)],
+      lists: [
+        ...defaultReadingLists.map((list) => ({ ...list, bookIds: saved.lists.find((item) => item.id === list.id)?.bookIds ?? [] })),
+        ...saved.lists.filter((list) => !defaultReadingLists.some((item) => item.id === list.id)).map((list) => ({ ...list, isDefault: false, url: getReadingListUrl(list.id) })),
+      ],
+      activity: saved.activity,
+      reading: saved.reading ?? { positions: {}, sessions: [] },
     });
     loadImportedBooks().then((imported) => {
       if (!active) return;
       useReadingLists.setState((state) => ({
         importsReady: true,
-        books: [...state.books, ...imported.filter((book) => !state.books.some((existing) => existing.id === book.id))],
+        books: restoreBookOrder([...imported.filter((book) => !state.books.some((existing) => existing.id === book.id)), ...state.books], saved?.order ?? []),
         lists: state.lists.map((list) => list.id === "completed" ? {
           ...list, bookIds: [...new Set([...(list.bookIds ?? []), ...imported.filter((book) => book.progress >= 100).map((book) => book.id)])],
         } : list),
       }));
-      unsubscribe = useReadingLists.subscribe((state, previous) => {
+      const saveSnapshot = subscribeDeviceState(useReadingLists, "papyrbound-library-v1", librarySnapshot, storageFailure);
+      const saveFiles = useReadingLists.subscribe((state, previous) => {
         if (state.books === previous.books) return;
         for (const book of state.books) {
           if (book.sourceId && previous.books.find((existing) => existing.id === book.id) !== book) {
@@ -288,8 +322,13 @@ export function ReadingListsProvider({ children }: PropsWithChildren) {
           }
         }
       });
+      unsubscribe = () => { saveSnapshot(); saveFiles(); };
     }).catch((error) => {
-      if (active) { storageFailure(error); useReadingLists.setState({ importsReady: true }); }
+      if (active) {
+        storageFailure(error);
+        useReadingLists.setState({ importsReady: true });
+        unsubscribe = subscribeDeviceState(useReadingLists, "papyrbound-library-v1", librarySnapshot, storageFailure);
+      }
     });
     return () => { active = false; unsubscribe?.(); };
   }, []);

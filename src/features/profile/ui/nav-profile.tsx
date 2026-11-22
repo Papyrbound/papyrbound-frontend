@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
+import { BackupRestoreDialog } from "./backup-restore-dialog";
+import { KeyboardShortcutsDialog } from "./keyboard-shortcuts-dialog";
 import { useRouter } from "next/navigation";
 import { useAccount } from "@/features/profile/stores/account-store";
 import { useReadingTitles } from "@/features/profile/model/reading-titles";
@@ -19,12 +22,16 @@ import {
   useSidebar,
 } from "@/shared/ui/sidebar";
 import {
+  ArchiveRestoreIcon,
+  KeyboardIcon,
   ChevronsUpDownIcon,
   SettingsIcon,
   TrophyIcon,
 } from "lucide-react";
 
 export function NavProfile() {
+  const [backupOpen, setBackupOpen] = useLocalUIState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useLocalUIState(false);
   const { profile } = useAccount();
   const { activeTitle } = useReadingTitles();
   const { isMobile, setOpenMobile } = useSidebar();
@@ -59,7 +66,7 @@ export function NavProfile() {
               <ChevronsUpDownIcon className="ml-auto size-4 group-data-[collapsible=icon]:hidden" />
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-[272px]"
+              className="w-56 max-w-[calc(100vw-1rem)]"
               side={isMobile ? "top" : "right"}
               align="end"
               sideOffset={8}
@@ -70,9 +77,9 @@ export function NavProfile() {
                   aria-label="Open profile"
                   onClick={() => navigate("/profile")}
                 >
-                  <div className="flex items-center gap-3 px-2 py-2">
+                  <div className="flex min-w-0 w-full items-center gap-3 px-2 py-2">
                     <ReaderAvatar seed={profile.avatarSeed} src={profile.avatarUrl} />
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">
                         {profile.name}
                       </p>
@@ -89,6 +96,14 @@ export function NavProfile() {
                   <TrophyIcon />
                   Reading titles
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setBackupOpen(true)}>
+                  <ArchiveRestoreIcon />
+                  Back up &amp; restore
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShortcutsOpen(true)}>
+                  <KeyboardIcon />
+                  Keyboard shortcuts
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/settings")}>
                   <SettingsIcon />
                   Settings
@@ -98,6 +113,8 @@ export function NavProfile() {
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
+      {backupOpen && <BackupRestoreDialog onClose={() => setBackupOpen(false)} />}
+      {shortcutsOpen && <KeyboardShortcutsDialog onClose={() => setShortcutsOpen(false)} />}
     </>
   );
 }

@@ -3,10 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BookOpen, Pencil, ArrowUpRight } from "lucide-react";
+import { BookOpen, Pencil } from "lucide-react";
 import { useAccount } from "../stores/account-store";
 import { useReadingTitles } from "../model/reading-titles";
-import { libraryActivityPreview } from "../model/library-activity-preview";
+import { ReadingActivity } from "./reading-activity";
 import { ReaderAvatar } from "./reader-avatar";
 import { EditProfileDialog } from "./edit-profile-dialog";
 import { useActiveLibrary } from "@/features/library/model/use-active-library";
@@ -19,24 +19,15 @@ import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardTitle } from "@/shared/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/ui/tabs";
 
-const sections = ["Reading", "Highlights", "Library activity"] as const;
-
-const activityLabels = {
-  added: "Added to the library",
-  completed: "Finished reading",
-  unread: "Marked as unread",
-  deleted: "Removed from the library",
-};
+const sections = ["Reading", "Highlights", "Reading activity"] as const;
 
 export function ProfilePage() {
   const { profile } = useAccount();
   const { activeTitle } = useReadingTitles();
-  const { books, activity, kind, label, plural } = useActiveLibrary();
-  const showingActivityPreview = activity.length === 0;
-  const displayedActivity = showingActivityPreview && kind === "books" ? libraryActivityPreview : activity;
+  const { books, kind, label, plural } = useActiveLibrary();
   const { annotations } = useAnnotations();
   const { collections } = useCollections();
-  const selectBook = useWorkspace((state) => state.selectBook);
+  const selectBook = useWorkspace((state) => state.revealBook);
   const [editing, setEditing] = useLocalUIState(false);
   const router = useRouter();
   const reading = books.filter((book) => book.progress > 0 && book.progress < 100);
@@ -84,9 +75,9 @@ export function ProfilePage() {
           {profile.bio ? (
             <p className="mt-4 max-w-xl whitespace-pre-wrap break-words text-sm leading-6">{profile.bio}</p>
           ) : (
-            <Button variant="link" className="mt-4 h-auto justify-start p-0 text-sm text-muted-foreground" onClick={() => setEditing(true)}>
+            <div className="mt-4"><Button variant="link" className="h-auto justify-start p-0 text-sm text-muted-foreground" onClick={() => setEditing(true)}>
               Add a little about yourself
-            </Button>
+            </Button></div>
           )}
           <div className="mt-6 flex flex-wrap gap-x-6 gap-y-3">
             {stats.map((stat) => (
@@ -109,9 +100,6 @@ export function ProfilePage() {
           <TabsContent value="Reading" className="min-h-48 px-5 py-5 sm:px-7">
             <div className="mb-4 flex items-center justify-between gap-3">
               <h2 className="text-sm font-medium">Currently reading</h2>
-              <Link href="/reading-activity" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-                Reading activity <ArrowUpRight className="size-3.5" />
-              </Link>
             </div>
             {reading.length ? (
               <div className="divide-y divide-border/60">
@@ -154,33 +142,8 @@ export function ProfilePage() {
               <p className="py-6 text-sm text-muted-foreground">Your saved highlights will appear here.</p>
             )}
           </TabsContent>
-          <TabsContent value="Library activity" className="min-h-48 px-5 py-5 sm:px-7">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <span className="text-xs text-muted-foreground">
-                {showingActivityPreview && kind === "books" ? "Sample library activity" : "Recent library activity"}
-              </span>
-              <Link href="/reading-activity" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-                Reading activity <ArrowUpRight className="size-3.5" />
-              </Link>
-            </div>
-            {displayedActivity.length ? (
-              <div className="divide-y divide-border/60">
-                {displayedActivity.map((event) => (
-                  <div key={event.id} className="py-4">
-                    <p className="text-xs text-muted-foreground">{activityLabels[event.kind]}</p>
-                    <p className="mt-1 text-sm font-medium">{event.bookTitle}</p>
-                    <time dateTime={event.at} className="mt-1 block text-xs text-muted-foreground">
-                      {new Date(event.at).toLocaleString("en-US", {
-                        month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
-                        timeZone: "UTC", timeZoneName: "short",
-                      })}
-                    </time>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="py-6 text-sm text-muted-foreground">{label} you add or finish will appear here.</p>
-            )}
+          <TabsContent value="Reading activity" className="min-w-0 min-h-48 px-5 py-5 sm:px-7">
+            <ReadingActivity embedded />
           </TabsContent>
         </Tabs>
       </Card>
