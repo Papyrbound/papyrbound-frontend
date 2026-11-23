@@ -10,6 +10,8 @@ export const annotationColors = {
 };
 
 export type Annotation = {
+  location?: { index: number; path: string; start?: number; end?: number; quote?: string; offset?: number };
+  bookmark?: boolean;
   id: string;
   bookId: string;
   kind: "highlight" | "note";
@@ -27,6 +29,16 @@ export type AnnotationDetails = Omit<
   Annotation,
   "id" | "createdAt" | "starred"
 >;
+
+export function validAnnotationLocation(value: unknown): value is Annotation["location"] {
+  if (value === undefined) return true;
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return Number.isInteger(item.index) && Number(item.index) >= 0 && typeof item.path === "string" &&
+    (item.offset === undefined || (typeof item.offset === "number" && item.offset >= 0 && item.offset <= 1)) &&
+    (item.quote === undefined || typeof item.quote === "string") &&
+    (item.start === undefined && item.end === undefined || Number.isInteger(item.start) && Number(item.start) >= 0 && Number.isInteger(item.end) && Number(item.end) > Number(item.start));
+}
 
 // Original preview entries for the app's fictional sample books.
 export const sampleAnnotations: Annotation[] = [

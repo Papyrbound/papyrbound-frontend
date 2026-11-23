@@ -17,6 +17,11 @@ import { Progress } from "@/shared/ui/progress";
 import { readerChapterHtml } from "../model/reader-document";
 import { openReaderArchive, resolveReaderPath, type ReaderArchive } from "../model/reader-archive";
 import { activeReadingInterval, readingProgress, type ReadingPosition } from "../model/reading-state";
+import { markPassage, selectionLocation } from "../model/text-location";
+import { ReaderAnnotations } from "./reader-annotations";
+import { useAnnotations } from "@/features/annotations/stores/annotations-store";
+import { annotationColors } from "@/features/annotations/model/annotation";
+import { useWorkspace } from "@/app-shell/workspace-store";
 
 export function ReaderDialog({ book, onClose }: { book: SampleBook; onClose: () => void }) {
   const [archive, setArchive] = useLocalUIState<ReaderArchive | null>(null);
@@ -52,19 +57,24 @@ export function ReaderDialog({ book, onClose }: { book: SampleBook; onClose: () 
 
 function ReaderView({ book, archive, onClose }: { book: SampleBook; archive: ReaderArchive; onClose: () => void }) {
   const ui = useSettingsUI();
+  const annotations = useAnnotations((state) => state.annotations);
+  const [initialLocation] = useLocalUIState(() => useWorkspace.getState().readerLocation);
+  const pendingPassage = useRef(initialLocation);
+  const [selection, setSelection] = useLocalUIState<{ start: number; end: number; quote: string }>();
   const storageError = useReadingLists((state) => state.storageError);
   const [saved] = useLocalUIState(() => ui.resume ? useReadingLists.getState().reading.positions[book.id] : undefined);
-  const [index, setIndex] = useLocalUIState(Math.min(saved?.index ?? 0, archive.entries.length - 1));
+  const [index, setIndex] = useLocalUIState(Math.min(initialLocation?.index ?? saved?.index ?? 0, archive.entries.length - 1));
   const [fontSize, setFontSize] = useLocalUIState(20);
   const [zoom, setZoom] = useLocalUIState(1);
   const [source, setSource] = useLocalUIState("");
   const [error, setError] = useLocalUIState("");
   const [ready, setReady] = useLocalUIState(false);
   const [progress, setProgress] = useLocalUIState(saved?.progress ?? 0);
+  const [offset, setOffset] = useLocalUIState(initialLocation?.offset ?? saved?.offset ?? 0);
   const frame = useRef<HTMLIFrameElement>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const root = useRef<HTMLDivElement>(null);
-  const restoreOffset = useRef(saved?.offset ?? 0);
+  const restoreOffset = useRef(initialLocation?.offset ?? saved?.offset ?? 0);
   const pendingFragment = useRef("");
   const current = useRef<Omit<ReadingPosition, "updatedAt"> | null>(null);
   const pendingSave = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -82,6 +92,7 @@ function ReaderView({ book, archive, onClose }: { book: SampleBook; archive: Rea
   }, [book.id]);
   const observe = useCallback((position: number, offset: number) => {
     const bounded = Math.max(0, Math.min(1, offset));
+    setOffset(bounded);
     restoreOffset.current = bounded;
     const page = `${position}:${Math.floor(bounded * Math.max(0, archive.entries[position].pages - 1))}`;
     if (!visited.current.has(page)) { visited.current.add(page); pendingPages.current += 1; }
@@ -90,7 +101,7 @@ function ReaderView({ book, archive, onClose }: { book: SampleBook; archive: Rea
     current.current = { index: position, total: archive.entries.length, offset: bounded, progress: nextProgress };
     if (pendingSave.current) clearTimeout(pendingSave.current);
     pendingSave.current = setTimeout(persist, 500);
-  }, [archive, persist, setProgress]);
+  }, [archive, persist, setProgress, setOffset]);
   const navigate = useCallback((position: number, offset = 0, fragment = "") => {
     if (position < 0 || position >= archive.entries.length) return;
     persist(); touch(); setReady(false); pendingFragment.current = fragment; restoreOffset.current = offset; setIndex(position);
@@ -101,7 +112,7 @@ function ReaderView({ book, archive, onClose }: { book: SampleBook; archive: Rea
     if (archive.kind === "comics") return;
     try { setSource(readerChapterHtml(archive, index, { page: ui.page, font: ui.font, spacing: ui.spacing, fontSize })); }
     catch (cause) { setError(cause instanceof Error ? cause.message : "This chapter could not be displayed."); }
-  }, [archive, index, ui.page, ui.font, ui.spacing, fontSize, setReady, setSource, setError]);
+  }, [archive, index, ui.page, ui.font, ui.spacing, fontSize, annotations, setReady, setSource, setError]);
 
   // Flush on close, blur, backgrounding, and before the next local day begins.
   useEffect(() => {
@@ -150,6 +161,13 @@ function ReaderView({ book, archive, onClose }: { book: SampleBook; archive: Rea
     const window = frame.current?.contentWindow;
     if (!document || !window) { setError("This chapter could not be displayed."); return; }
     if (document.documentElement.getAttribute("data-reader-path") !== entry.path) return;
+    for (const item of annotations) {
+      const location = item.location;
+      if (item.bookId === book.id && location?.path === entry.path && location.start !== undefined && location.end !== undefined) {
+        markPassage(document.body, location.start, location.end, annotationColors[item.color], item.id);
+      }
+    }
+    const captureSelection = () => setSelection(selectionLocation(document.body, window.getSelection()));
     const offset = restoreOffset.current;
     const scroll = () => {
       touch();
@@ -171,6 +189,11 @@ function ReaderView({ book, archive, onClose }: { book: SampleBook; archive: Rea
       document.getElementById(fragment)?.scrollIntoView();
     };
     window.scrollTo(0, Math.max(0, document.documentElement.scrollHeight - window.innerHeight) * offset);
+    const passage = pendingPassage.current;
+    if (passage?.path === entry.path) {
+      pendingPassage.current = undefined;
+      if (passage.start !== undefined && passage.end !== undefined) markPassage(document.body, passage.start, passage.end, "#eee0a6")?.scrollIntoView({ block: "center" });
+    }
     if (pendingFragment.current) {
       let fragment = pendingFragment.current;
       pendingFragment.current = "";
@@ -181,9 +204,11 @@ function ReaderView({ book, archive, onClose }: { book: SampleBook; archive: Rea
     observe(index, range ? window.scrollY / range : 0); touch(); setReady(true);
     window.addEventListener("scroll", scroll, { passive: true });
     document.addEventListener("click", click); document.addEventListener("keydown", keyboard);
+    document.addEventListener("mouseup", captureSelection); document.addEventListener("keyup", captureSelection);
     for (const event of ["pointerdown", "pointermove", "wheel", "touchstart"] as const) document.addEventListener(event, touch, { passive: true });
     cleanFrame.current = () => {
       window.removeEventListener("scroll", scroll); document.removeEventListener("click", click); document.removeEventListener("keydown", keyboard);
+      document.removeEventListener("mouseup", captureSelection); document.removeEventListener("keyup", captureSelection);
       for (const event of ["pointerdown", "pointermove", "wheel", "touchstart"] as const) document.removeEventListener(event, touch);
     };
   }
@@ -195,6 +220,20 @@ function ReaderView({ book, archive, onClose }: { book: SampleBook; archive: Rea
         <SelectContent alignItemWithTrigger={false}><SelectGroup>{archive.entries.map((item, i) => <SelectItem key={item.path} value={String(i)}>{item.label}</SelectItem>)}</SelectGroup></SelectContent>
       </Select>
       <span className="mr-auto text-xs text-muted-foreground">{index + 1} / {archive.entries.length}</span>
+      <ReaderAnnotations bookId={book.id} chapter={entry.label} location={{ index, path: entry.path, offset }} selection={selection} jump={(location) => {
+        const target = archive.entries.findIndex((item) => item.path === location.path);
+        if (target < 0) return;
+        if (target === index && location.start === undefined) {
+          const doc = frame.current?.contentDocument;
+          if (doc) frame.current?.contentWindow?.scrollTo(0, (doc.documentElement.scrollHeight - (frame.current?.clientHeight ?? 0)) * (location.offset ?? 0));
+          const node = scroller.current;
+          if (node) node.scrollTop = (node.scrollHeight - node.clientHeight) * (location.offset ?? 0);
+          return;
+        }
+        if (target === index && frame.current?.contentDocument && location.start !== undefined && location.end !== undefined) {
+          markPassage(frame.current.contentDocument.body, location.start, location.end, "#eee0a6")?.scrollIntoView({ block: "center" });
+        } else { pendingPassage.current = location; navigate(target, location.offset ?? 0); }
+      }} />
       {archive.kind === "comics" ? <div className="flex items-center gap-1"><TooltipHint content="Zoom out"><Button size="icon-sm" variant="ghost" aria-label="Zoom out" disabled={zoom <= 0.5} onClick={() => setZoom(Math.max(0.5, zoom - 0.25))}><Minus /></Button></TooltipHint><span className="w-10 text-center text-xs">{Math.round(zoom * 100)}%</span><TooltipHint content="Zoom in"><Button size="icon-sm" variant="ghost" aria-label="Zoom in" disabled={zoom >= 2} onClick={() => setZoom(Math.min(2, zoom + 0.25))}><Plus /></Button></TooltipHint></div>
         : <Popover><PopoverTrigger aria-label="Reading appearance" render={<Button size="icon-sm" variant="ghost" />}><Settings2 /></PopoverTrigger><PopoverContent align="end" className="w-64 space-y-3">
           <h2 className="text-sm font-medium">Reading appearance</h2>

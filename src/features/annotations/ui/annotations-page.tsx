@@ -285,6 +285,7 @@ export function AnnotationsPage() {
                           <MoreHorizontal />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-[272px]">
+                          {a.location && book.sourceId && <DropdownMenuItem onClick={() => useWorkspace.getState().openReader(book.id, a.location)}><BookOpen />Go to passage</DropdownMenuItem>}
                           <DropdownMenuItem onClick={() => ui.patch({ editing: a })}>
                             <Pencil /> {a.kind === "highlight" ? "Edit highlight note" : "Edit note"}
                           </DropdownMenuItem>

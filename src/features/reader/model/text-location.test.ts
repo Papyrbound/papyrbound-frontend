@@ -1,0 +1,22 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { JSDOM } from "jsdom";
+import { markPassage, selectionLocation } from "./text-location";
+test("passages spanning inline elements remain addressable after highlight wrappers", () => {
+  const dom = new JSDOM("<body><p>The <em>paper</em> boat</p></body>");
+  const { document } = dom.window;
+  const body = document.body;
+  const range = document.createRange();
+  range.setStart(body.querySelector("p")!.firstChild!, 1);
+  range.setEnd(body.querySelector("p")!.lastChild!, 3);
+  const selection = dom.window.getSelection()!;
+  selection.addRange(range);
+  const location = selectionLocation(body, selection)!;
+  assert.deepEqual(location, { start: 1, end: 12, quote: "he paper bo" });
+  markPassage(body, location.start, location.end, "yellow", "note");
+  assert.equal(Array.from(body.querySelectorAll("mark")).map((mark) => mark.textContent).join(""), location.quote);
+  assert.equal(body.textContent, "The paper boat");
+  assert.ok(markPassage(body, 4, 9, "pink"));
+  assert.equal(body.textContent, "The paper boat");
+  dom.window.close();
+});

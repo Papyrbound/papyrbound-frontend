@@ -1,5 +1,5 @@
 import { strFromU8, strToU8, unzip, zip, type AsyncZippable } from "fflate";
-import { annotationColors, type Annotation } from "@/features/annotations/model/annotation";
+import { annotationColors, validAnnotationLocation, type Annotation } from "@/features/annotations/model/annotation";
 import type { Collection } from "@/features/collections/stores/collections-store";
 import type { SampleBook } from "@/features/home/model/sample-books";
 import { replaceImportedFiles, type StoredImport } from "@/features/library/model/import-storage";
@@ -66,7 +66,7 @@ function validManifest(value: unknown): value is BackupManifest {
     typeof item.name === "string" && typeof item.color === "string" && typeof item.pinned === "boolean" && strings(item.bookIds) &&
     libraryKind(item.kind) && optionalStrings(item, ["createdAt", "lastBookAddedAt"])) || !unique(collections.map((item) => item.id))) return false;
   if (!Array.isArray(annotations) || !annotations.every((item) => isRecord(item) && typeof item.id === "string" &&
-    typeof item.bookId === "string" && typeof item.content === "string" && typeof item.note === "string" &&
+    typeof item.bookId === "string" && typeof item.content === "string" && typeof item.note === "string" && validAnnotationLocation(item.location) &&
     (item.kind === "note" || item.kind === "highlight") && typeof item.color === "string" && Object.hasOwn(annotationColors, item.color) &&
     typeof item.starred === "boolean" && date(item.createdAt) && optionalStrings(item, ["chapter", "createdLabel"]) &&
     (item.page === undefined || (Number.isInteger(item.page) && Number(item.page) >= 0))) || !unique(annotations.map((item) => item.id))) return false;

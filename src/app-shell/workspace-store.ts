@@ -8,6 +8,7 @@ type WorkspaceState = {
   libraryKind: "books" | "comics";
   selectedId: string | null;
   readerId: string | null;
+  readerLocation?: import("@/features/annotations/model/annotation").Annotation["location"];
   panelOpen: boolean;
   view: View;
   selectionMode: boolean;
@@ -18,7 +19,7 @@ type WorkspaceState = {
   dialog: "synopsis" | "collections" | "delete" | "edit" | "reader" | null;
   setLibraryKind: (kind: WorkspaceState["libraryKind"]) => void;
   selectBook: (id: string) => void;
-  openReader: (id: string) => void;
+  openReader: (id: string, location?: import("@/features/annotations/model/annotation").Annotation["location"]) => void;
   revealBook: (id: string) => void;
   setPanelOpen: (open: boolean) => void;
   setView: (view: View) => void;
@@ -44,7 +45,7 @@ export const useWorkspace = create<WorkspaceState>((set) => ({
   dialog: null,
   setLibraryKind: (libraryKind) => set((state) => state.libraryKind === libraryKind ? {} : { libraryKind, selectedId: null, dialog: null, query: "", selectionMode: false, selectedIds: [] }),
   selectBook: (selectedId) => set({ selectedId, panelOpen: true }),
-  openReader: (readerId) => set({ readerId, selectedId: readerId, dialog: "reader", selectionMode: false, selectedIds: [] }),
+  openReader: (readerId, readerLocation) => set({ readerId, readerLocation, selectedId: readerId, dialog: "reader", selectionMode: false, selectedIds: [] }),
   revealBook: (selectedId) => set({ selectedId, panelOpen: true, filter: "all", query: "", dialog: null, selectionMode: false, selectedIds: [] }),
   setPanelOpen: (panelOpen) => set({ panelOpen }),
   setView: (view) => set({ view }),
