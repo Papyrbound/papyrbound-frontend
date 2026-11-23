@@ -1,6 +1,5 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element -- Comic pages are original local blob images, not web assets. */
 import { useCallback, useEffect, useRef } from "react";
 import { ArrowLeft, ArrowRight, Check, Minus, Plus, Settings2, LoaderCircle } from "lucide-react";
 import type { SampleBook } from "@/features/home/model/sample-books";
@@ -20,6 +19,8 @@ import { activeReadingInterval, readingProgress, type ReadingPosition } from "..
 import { markPassage, selectionLocation } from "../model/text-location";
 import { ReaderAnnotations } from "./reader-annotations";
 import { ReaderSearch } from "./reader-search";
+import { ComicCanvas } from "./comic-canvas";
+import { comicPages } from "../model/comic-pages";
 import { useAnnotations } from "@/features/annotations/stores/annotations-store";
 import { annotationColors, type Annotation } from "@/features/annotations/model/annotation";
 import { useWorkspace } from "@/app-shell/workspace-store";
@@ -87,6 +88,10 @@ function ReaderView({ book, archive, onClose }: { book: SampleBook; archive: Rea
   const pendingPages = useRef(0);
   const touch = useCallback(() => { lastInteraction.current = Date.now(); }, []);
   const entry = archive.entries[index];
+  const spread = archive.kind === "comics" && ui.reader.spread;
+  const group = comicPages(index, archive.entries.length, spread);
+  const previousIndex = archive.kind === "comics" ? group.previous : index - 1;
+  const nextIndex = archive.kind === "comics" ? group.next : index + 1 < archive.entries.length ? index + 1 : -1;
   const persist = useCallback(() => {
     if (pendingSave.current) clearTimeout(pendingSave.current);
     pendingSave.current = null;
@@ -98,20 +103,25 @@ function ReaderView({ book, archive, onClose }: { book: SampleBook; archive: Rea
     restoreOffset.current = bounded;
     const page = `${position}:${Math.floor(bounded * Math.max(0, archive.entries[position].pages - 1))}`;
     if (!visited.current.has(page)) { visited.current.add(page); pendingPages.current += 1; }
-    const nextProgress = readingProgress(archive.entries.map((item) => item.pages), position, archive.kind === "comics" ? 1 : bounded);
+    const visiblePages = comicPages(position, archive.entries.length, spread).pages;
+    if (archive.kind === "comics") for (const visible of visiblePages) {
+      const key = `${visible}:0`;
+      if (!visited.current.has(key)) { visited.current.add(key); pendingPages.current++; }
+    }
+    const nextProgress = readingProgress(archive.entries.map((item) => item.pages), archive.kind === "comics" ? visiblePages.at(-1)! : position, archive.kind === "comics" ? 1 : bounded);
     if (current.current?.progress !== nextProgress) setProgress(nextProgress);
     current.current = { index: position, total: archive.entries.length, offset: bounded, progress: nextProgress };
     if (pendingSave.current) clearTimeout(pendingSave.current);
     pendingSave.current = setTimeout(persist, 500);
-  }, [archive, persist, setProgress, setOffset]);
+  }, [archive, persist, setProgress, setOffset, spread]);
   const navigate = useCallback((position: number, offset = 0, fragment = "") => {
     if (position < 0 || position >= archive.entries.length) return;
-    persist(); touch(); setReady(false); pendingFragment.current = fragment; restoreOffset.current = offset; setIndex(position);
-  }, [archive.entries.length, persist, setIndex, setReady, touch]);
+    persist(); touch(); setReady(false); setSelection(undefined); setOffset(offset); pendingFragment.current = fragment; restoreOffset.current = offset; setIndex(position);
+  }, [archive.entries.length, persist, setIndex, setReady, setSelection, setOffset, touch]);
   useEffect(() => () => { cleanFrame.current?.(); persist(); }, [persist]);
   useEffect(() => {
-    setReady(false); setError("");
     if (archive.kind === "comics") return;
+    setReady(false); setError("");
     try { setSource(readerChapterHtml(archive, index, { page: ui.page, font: ui.font, spacing: ui.spacing, fontSize })); }
     catch (cause) { setError(cause instanceof Error ? cause.message : "This chapter could not be displayed."); }
   }, [archive, index, ui.page, ui.font, ui.spacing, fontSize, annotations, setReady, setSource, setError]);
@@ -152,9 +162,13 @@ function ReaderView({ book, archive, onClose }: { book: SampleBook; archive: Rea
   const keyboard = useCallback((event: KeyboardEvent) => {
     if (event.key === "Escape") { event.preventDefault(); persist(); onClose(); return; }
     if (event.ctrlKey || event.metaKey || event.altKey || (event.target as Element)?.closest?.('input,textarea,select,button,[role="listbox"],[role="combobox"]')) return;
-    if (event.key === "ArrowRight" && index < archive.entries.length - 1) { event.preventDefault(); navigate(index + 1); }
-    if (event.key === "ArrowLeft" && index > 0) { event.preventDefault(); navigate(index - 1); }
-  }, [archive.entries.length, index, navigate, onClose, persist]);
+    const forward = archive.kind === "comics" && ui.reader.direction === "rtl" ? "ArrowLeft" : "ArrowRight";
+    const pages = comicPages(index, archive.entries.length, spread);
+    const next = archive.kind === "comics" ? pages.next : index + 1 < archive.entries.length ? index + 1 : -1;
+    const previous = archive.kind === "comics" ? pages.previous : index - 1;
+    if (event.key === forward && next >= 0) { event.preventDefault(); navigate(next); }
+    if (event.key === (forward === "ArrowRight" ? "ArrowLeft" : "ArrowRight") && previous >= 0) { event.preventDefault(); navigate(previous); }
+  }, [archive, index, spread, ui.reader.direction, navigate, onClose, persist]);
   useEffect(() => { window.addEventListener("keydown", keyboard); return () => window.removeEventListener("keydown", keyboard); }, [keyboard]);
 
   function loadFrame() {
@@ -237,6 +251,12 @@ function ReaderView({ book, archive, onClose }: { book: SampleBook; archive: Rea
       <span className="mr-auto text-xs text-muted-foreground">{index + 1} / {archive.entries.length}</span>
       <ReaderAnnotations bookId={book.id} chapter={entry.label} location={{ index, path: entry.path, offset }} selection={selection} jump={jump} />
       {archive.kind === "books" && <ReaderSearch archive={archive} jump={jump} />}
+      {archive.kind === "comics" && <Popover><PopoverTrigger aria-label="Comic reading options" render={<Button size="icon-sm" variant="ghost" />}><Settings2 /></PopoverTrigger><PopoverContent align="end" className="w-64 space-y-3">
+        <h2 className="text-sm font-medium">Comic reading options</h2>
+        <div className="flex gap-2"><Button size="sm" variant={ui.reader.fit === "width" ? "secondary" : "ghost"} aria-pressed={ui.reader.fit === "width"} onClick={() => ui.patch({ reader: { ...ui.reader, fit: "width" } })}>Fit width</Button><Button size="sm" variant={ui.reader.fit === "page" ? "secondary" : "ghost"} aria-pressed={ui.reader.fit === "page"} onClick={() => ui.patch({ reader: { ...ui.reader, fit: "page" } })}>Fit page</Button></div>
+        <Button className="w-full" size="sm" variant="outline" aria-pressed={ui.reader.spread} onClick={() => ui.patch({ reader: { ...ui.reader, spread: !ui.reader.spread } })}>Two-page spreads: {ui.reader.spread ? "On" : "Off"}</Button>
+        <Button className="w-full" size="sm" variant="outline" aria-pressed={ui.reader.direction === "rtl"} onClick={() => ui.patch({ reader: { ...ui.reader, direction: ui.reader.direction === "ltr" ? "rtl" : "ltr" } })}>Right to left: {ui.reader.direction === "rtl" ? "On" : "Off"}</Button>
+      </PopoverContent></Popover>}
       {archive.kind === "comics" ? <div className="flex items-center gap-1"><TooltipHint content="Zoom out"><Button size="icon-sm" variant="ghost" aria-label="Zoom out" disabled={zoom <= 0.5} onClick={() => setZoom(Math.max(0.5, zoom - 0.25))}><Minus /></Button></TooltipHint><span className="w-10 text-center text-xs">{Math.round(zoom * 100)}%</span><TooltipHint content="Zoom in"><Button size="icon-sm" variant="ghost" aria-label="Zoom in" disabled={zoom >= 2} onClick={() => setZoom(Math.min(2, zoom + 0.25))}><Plus /></Button></TooltipHint></div>
         : <Popover><PopoverTrigger aria-label="Reading appearance" render={<Button size="icon-sm" variant="ghost" />}><Settings2 /></PopoverTrigger><PopoverContent align="end" className="w-64 space-y-3">
           <h2 className="text-sm font-medium">Reading appearance</h2>
@@ -245,18 +265,16 @@ function ReaderView({ book, archive, onClose }: { book: SampleBook; archive: Rea
         </PopoverContent></Popover>}
     </div>
     {error ? <p role="alert" className="m-auto p-6 text-sm text-destructive">{error}</p> : archive.kind === "books" ? source ? <iframe ref={frame} title={`${book.title} — ${entry.label}`} sandbox="allow-same-origin" srcDoc={source} className="min-h-0 flex-1 border-0" onLoad={loadFrame} /> : <p role="status" className="m-auto text-sm text-muted-foreground">Loading chapter…</p>
-      : <div ref={scroller} className="min-h-0 flex-1 overflow-auto bg-[#191919]" onScroll={() => {
+      : <ComicCanvas key={group.pages.join(":")} archive={archive} pages={group.pages} preferences={ui.reader} scroller={scroller} offset={offset} onScroll={() => {
         touch(); const node = scroller.current; if (node && ready) observe(index, node.scrollTop / Math.max(1, node.scrollHeight - node.clientHeight));
-      }}><div className="flex min-h-full min-w-full items-start justify-center py-3"><img key={entry.path} src={archive.resource(entry.path)} alt={`${book.title}, page ${index + 1}`} className="block h-auto shrink-0" style={{ width: `${zoom * 100}%`, maxWidth: `${zoom * 1000}px` }} onLoad={() => {
-        const node = scroller.current;
-        if (node) node.scrollTop = Math.max(0, node.scrollHeight - node.clientHeight) * restoreOffset.current;
+      }} onReady={() => {
         observe(index, restoreOffset.current); touch(); setReady(true);
-      }} onError={() => { setReady(false); setError("This comic page could not be decoded."); }} /></div></div>}
+      }} onError={() => { setReady(false); setError("This comic page could not be decoded."); }} />}
     <div className="border-t border-border px-4 py-3">
       <div className="mb-2 flex items-center justify-between gap-3">
-        <Button variant="ghost" size="sm" disabled={index === 0} onClick={() => navigate(index - 1)}><ArrowLeft /><span className="hidden sm:inline">Previous</span></Button>
+        <Button variant="ghost" size="sm" disabled={previousIndex < 0} onClick={() => navigate(previousIndex)}><ArrowLeft /><span className="hidden sm:inline">Previous</span></Button>
         <span className="text-center text-xs text-muted-foreground">{archive.kind === "comics" ? `Page ${index + 1}` : `Chapter ${index + 1}`} of {archive.entries.length} · {storageError ? "Position kept for this session" : "Position saved automatically"}</span>
-        {index < archive.entries.length - 1 ? <Button variant="ghost" size="sm" onClick={() => navigate(index + 1)}><span className="hidden sm:inline">Next</span><ArrowRight /></Button>
+        {nextIndex >= 0 ? <Button variant="ghost" size="sm" onClick={() => navigate(nextIndex)}><span className="hidden sm:inline">Next</span><ArrowRight /></Button>
           : <Button variant="secondary" size="sm" disabled={!ready} onClick={() => {
             if (pendingSave.current) clearTimeout(pendingSave.current);
             current.current = { index, total: archive.entries.length, offset: restoreOffset.current, progress: 100 };
