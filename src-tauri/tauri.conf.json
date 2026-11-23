@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "papyrbound-frontend",
+  "productName": "Papyrbound",
   "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "com.papyrbound.reader",
   "build": {
     "frontendDist": "../out",
     "devUrl": "http://localhost:3000",
@@ -12,7 +12,8 @@
   "app": {
     "windows": [
       {
-        "title": "papyrbound-frontend",
+        "create": false,
+        "title": "Papyrbound",
         "width": 800,
         "height": 600,
         "resizable": true,
@@ -24,6 +25,10 @@
     }
   },
   "bundle": {
+    "fileAssociations": [
+      { "ext": ["epub"], "name": "EPUB book", "mimeType": "application/epub+zip", "role": "Viewer" },
+      { "ext": ["cbz"], "name": "Comic book archive", "mimeType": "application/vnd.comicbook+zip", "role": "Viewer" }
+    ],
     "active": true,
     "targets": "all",
     "icon": [

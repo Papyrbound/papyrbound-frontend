@@ -5,7 +5,7 @@
   "scripts": {
     "test": "node --import tsx --test src/features/library/model/*.test.ts src/features/profile/model/*.test.ts src/features/profile/stores/*.test.ts src/features/annotations/model/*.test.ts src/features/reader/model/*.test.ts",
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "tauri": "tauri"
@@ -13,6 +13,7 @@
   "dependencies": {
     "@base-ui/react": "^1.8.0",
     "@tabler/icons-react": "^3.49.0",
+    "@tauri-apps/api": "^2.12.5",
     "@usenavii/react": "^0.9.1",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",

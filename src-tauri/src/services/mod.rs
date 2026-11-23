@@ -2,5 +2,6 @@
 
 pub mod cbz;
 pub mod epub;
+pub mod library_files;
 pub mod library_index;
 pub mod storage;
