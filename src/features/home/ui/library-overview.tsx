@@ -1,21 +1,45 @@
 "use client";
 
 import Link from "next/link";
+import { BookOpen, LoaderCircle } from "lucide-react";
 import { useWorkspace } from "@/app-shell/workspace-store";
 import { useActiveLibrary } from "@/features/library/model/use-active-library";
 import { BookDetailsPanel } from "@/features/library/ui/book-details-panel";
 import { BookCover } from "./book-cover";
 import type { SampleBook } from "../model/sample-books";
 import { orderBooks, nextUnreadBook } from "@/features/library/model/book-order";
+import { AddBookDialog } from "@/features/library/ui/add-book-dialog";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 
 export function LibraryOverview() {
-  const { books, lists, noun, label } = useActiveLibrary();
+  const { books, lists, noun, plural, label, kind, importsReady } = useActiveLibrary();
   const { selectBook, selectedId, openReader } = useWorkspace();
   const recent = books.filter((book) => book.progress > 0).slice(0, 4);
   const finished = books.filter((book) => book.progress >= 100);
   const queued = nextUnreadBook(books, lists.find((list) => list.id === "want-to-read")?.bookIds);
   const next = queued ? [queued] : [];
   const added = orderBooks(books).slice(0, 3);
+
+  if (!books.length) {
+    return (
+      <main aria-label="Reading Now" className="grid h-[calc(100dvh-3.5rem)] min-h-0 place-items-center overflow-y-auto px-6 py-12">
+        {importsReady ? (
+          <Empty className="min-h-80 max-w-lg border border-border/70 bg-card/40">
+            <EmptyHeader>
+              <EmptyMedia variant="icon" className="mb-3 size-12 rounded-2xl text-muted-foreground"><BookOpen aria-hidden="true" className="size-6" /></EmptyMedia>
+              <EmptyTitle role="heading" aria-level={1}>No {plural} yet</EmptyTitle>
+              <EmptyDescription>
+                Import {kind === "comics" ? "a CBZ comic" : "an EPUB book"} to get started. Your recent reads and reading progress will appear here.
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent><AddBookDialog /></EmptyContent>
+          </Empty>
+        ) : (
+          <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle aria-hidden="true" className="size-4 animate-spin" />Loading your library…</p>
+        )}
+      </main>
+    );
+  }
 
   function row(book: SampleBook, kind: "next" | "finished" | "added") {
     return (
