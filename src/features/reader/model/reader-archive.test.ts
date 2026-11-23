@@ -5,6 +5,8 @@ import { strToU8, zipSync } from "fflate";
 import { openReaderArchive, resolveReaderPath } from "./reader-archive";
 import { readerChapterHtml } from "./reader-document";
 import { readerComicFixture, readerEpubFixture } from "./reader-fixtures";
+import { searchBook } from "./book-search";
+import { textNodes } from "./text-location";
 
 const browser = new JSDOM("<!doctype html><html><body></body></html>");
 const oldWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
@@ -24,6 +26,21 @@ test("EPUB reader follows the spine and TOC and resolves local chapter resources
   assert.ok(archive.totalPages > 2);
   assert.match(archive.resource("OPS/images/cover.png")!, /^blob:/);
   assert.equal(archive.resource("missing.png"), undefined);
+  archive.destroy();
+});
+
+test("book search finds passages across chapters with exact display offsets and cancellation", async () => {
+  const archive = await openReaderArchive(readerEpubFixture(), "books");
+  const hits = await searchBook(archive, "paper boat");
+  assert.ok(hits.some((hit) => hit.index === 0));
+  assert.ok(hits.some((hit) => hit.index === 1));
+  for (const hit of hits) {
+    const doc = new DOMParser().parseFromString(readerChapterHtml(archive, hit.index, { page: "Dark", font: "Literata", spacing: "Spacious", fontSize: 30 }), "text/html");
+    assert.equal(textNodes(doc.body).map((node) => node.data).join("").slice(hit.start, hit.end).toLowerCase(), "paper boat");
+  }
+  assert.deepEqual(await searchBook(archive, "[not a regex].*"), []);
+  const job = new AbortController(); job.abort();
+  await assert.rejects(searchBook(archive, "paper boat", job.signal), /abort/i);
   archive.destroy();
 });
 

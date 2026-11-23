@@ -19,8 +19,9 @@ import { openReaderArchive, resolveReaderPath, type ReaderArchive } from "../mod
 import { activeReadingInterval, readingProgress, type ReadingPosition } from "../model/reading-state";
 import { markPassage, selectionLocation } from "../model/text-location";
 import { ReaderAnnotations } from "./reader-annotations";
+import { ReaderSearch } from "./reader-search";
 import { useAnnotations } from "@/features/annotations/stores/annotations-store";
-import { annotationColors } from "@/features/annotations/model/annotation";
+import { annotationColors, type Annotation } from "@/features/annotations/model/annotation";
 import { useWorkspace } from "@/app-shell/workspace-store";
 
 export function ReaderDialog({ book, onClose }: { book: SampleBook; onClose: () => void }) {
@@ -213,6 +214,19 @@ function ReaderView({ book, archive, onClose }: { book: SampleBook; archive: Rea
     };
   }
 
+  function jump(location: NonNullable<Annotation["location"]>) {
+    const target = archive.entries.findIndex((item) => item.path === location.path);
+    if (target < 0) return;
+    if (target === index) {
+      const doc = frame.current?.contentDocument;
+      if (doc && location.start !== undefined && location.end !== undefined) markPassage(doc.body, location.start, location.end, "#eee0a6")?.scrollIntoView({ block: "center" });
+      else {
+        if (doc) frame.current?.contentWindow?.scrollTo(0, (doc.documentElement.scrollHeight - (frame.current?.clientHeight ?? 0)) * (location.offset ?? 0));
+        const node = scroller.current;
+        if (node) node.scrollTop = (node.scrollHeight - node.clientHeight) * (location.offset ?? 0);
+      }
+    } else { pendingPassage.current = location; navigate(target, location.offset ?? 0); }
+  }
   return <div ref={root} className="flex min-h-0 flex-col" onPointerMove={touch} onPointerDown={touch} onKeyDown={touch}>
     <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2">
       <Select items={archive.entries.map((item, i) => ({ label: item.label, value: String(i) }))} value={String(index)} onValueChange={(value) => { if (value !== null && Number(value) !== index) navigate(Number(value)); }}>
@@ -220,20 +234,8 @@ function ReaderView({ book, archive, onClose }: { book: SampleBook; archive: Rea
         <SelectContent alignItemWithTrigger={false}><SelectGroup>{archive.entries.map((item, i) => <SelectItem key={item.path} value={String(i)}>{item.label}</SelectItem>)}</SelectGroup></SelectContent>
       </Select>
       <span className="mr-auto text-xs text-muted-foreground">{index + 1} / {archive.entries.length}</span>
-      <ReaderAnnotations bookId={book.id} chapter={entry.label} location={{ index, path: entry.path, offset }} selection={selection} jump={(location) => {
-        const target = archive.entries.findIndex((item) => item.path === location.path);
-        if (target < 0) return;
-        if (target === index && location.start === undefined) {
-          const doc = frame.current?.contentDocument;
-          if (doc) frame.current?.contentWindow?.scrollTo(0, (doc.documentElement.scrollHeight - (frame.current?.clientHeight ?? 0)) * (location.offset ?? 0));
-          const node = scroller.current;
-          if (node) node.scrollTop = (node.scrollHeight - node.clientHeight) * (location.offset ?? 0);
-          return;
-        }
-        if (target === index && frame.current?.contentDocument && location.start !== undefined && location.end !== undefined) {
-          markPassage(frame.current.contentDocument.body, location.start, location.end, "#eee0a6")?.scrollIntoView({ block: "center" });
-        } else { pendingPassage.current = location; navigate(target, location.offset ?? 0); }
-      }} />
+      <ReaderAnnotations bookId={book.id} chapter={entry.label} location={{ index, path: entry.path, offset }} selection={selection} jump={jump} />
+      {archive.kind === "books" && <ReaderSearch archive={archive} jump={jump} />}
       {archive.kind === "comics" ? <div className="flex items-center gap-1"><TooltipHint content="Zoom out"><Button size="icon-sm" variant="ghost" aria-label="Zoom out" disabled={zoom <= 0.5} onClick={() => setZoom(Math.max(0.5, zoom - 0.25))}><Minus /></Button></TooltipHint><span className="w-10 text-center text-xs">{Math.round(zoom * 100)}%</span><TooltipHint content="Zoom in"><Button size="icon-sm" variant="ghost" aria-label="Zoom in" disabled={zoom >= 2} onClick={() => setZoom(Math.min(2, zoom + 0.25))}><Plus /></Button></TooltipHint></div>
         : <Popover><PopoverTrigger aria-label="Reading appearance" render={<Button size="icon-sm" variant="ghost" />}><Settings2 /></PopoverTrigger><PopoverContent align="end" className="w-64 space-y-3">
           <h2 className="text-sm font-medium">Reading appearance</h2>
