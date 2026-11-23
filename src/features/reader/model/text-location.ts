@@ -13,14 +13,15 @@ export function selectionLocation(body: HTMLElement, selection: Selection | null
   if (!selection?.rangeCount || selection.isCollapsed) return;
   const range = selection.getRangeAt(0);
   if (!body.contains(range.commonAncestorContainer)) return;
-  let total = 0, start: number | undefined, end: number | undefined;
-  for (const node of textNodes(body)) {
-    if (node === range.startContainer) start = total + range.startOffset;
-    if (node === range.endContainer) end = total + range.endOffset;
-    total += node.length;
-  }
-  if (start === undefined || end === undefined || end <= start) return;
-  return { start, end, quote: selection.toString() };
+  const offsetBefore = (container: Node, offset: number) => {
+    const prefix = body.ownerDocument.createRange();
+    prefix.selectNodeContents(body); prefix.setEnd(container, offset);
+    const copy = body.ownerDocument.createElement("div"); copy.append(prefix.cloneContents());
+    return textNodes(copy).reduce((length, node) => length + node.length, 0);
+  };
+  const start = offsetBefore(range.startContainer, range.startOffset), end = offsetBefore(range.endContainer, range.endOffset);
+  if (end <= start) return;
+  return { start, end, quote: textNodes(body).map((node) => node.data).join("").slice(start, end) };
 }
 
 export function markPassage(body: HTMLElement, start: number, end: number, color: string, id?: string) {

@@ -16,8 +16,8 @@ const data: BackupData = {
     sessions: [{ id: "reading-session", bookId: "comic", kind: "comics", date: "2026-11-19", seconds: 120, pages: 3, updatedAt: "2026-11-19T12:00:00Z" }],
   } },
   collections: [{ id: "collection", name: "My collection", color: "#abcdef", pinned: true, bookIds: ["epub"] }],
-  annotations: [sampleAnnotations[0]],
-  settings: { page: "Dark", font: "Literata", spacing: "Spacious", interfaceSize: "Default", labels: true, resume: true },
+  annotations: [{ ...sampleAnnotations[0], bookmark: false, location: { index: 1, path: "OPS/chapter-2.xhtml", start: 4, end: 20, quote: "A saved passage", offset: 0.3 } }],
+  settings: { page: "Dark", font: "Georgia", spacing: "Spacious", interfaceSize: "Default", labels: true, resume: true, reader: { fontSize: 28, zoom: 1.5, fit: "page", spread: true, direction: "rtl" }, showDemo: false },
   workspace: { libraryKind: "comics", view: "list", panelOpen: false },
 };
 const records = [
@@ -55,6 +55,8 @@ test("backup validation rejects invalid versions, metadata, missing files and da
     { ...manifest, version: 99 },
     { ...manifest, account: { ...manifest.account, createdAt: "invalid" } },
     { ...manifest, settings: { ...manifest.settings, font: "Unknown" } },
+    { ...manifest, settings: { ...manifest.settings, reader: { ...manifest.settings.reader, zoom: 999 } } },
+    { ...manifest, annotations: [{ ...manifest.annotations[0], location: { index: -1, path: "chapter.xhtml" } }] },
     { ...manifest, library: { ...manifest.library, books: [{ ...sampleBooks[0], title: [] }] } },
   ]) {
     const bytes = zipSync({ ...original, "manifest.json": strToU8(JSON.stringify(change)) });

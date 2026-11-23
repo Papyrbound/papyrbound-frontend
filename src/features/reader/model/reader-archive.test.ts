@@ -31,7 +31,7 @@ test("EPUB reader follows the spine and TOC and resolves local chapter resources
 
 test("book search finds passages across chapters with exact display offsets and cancellation", async () => {
   const archive = await openReaderArchive(readerEpubFixture(), "books");
-  const hits = await searchBook(archive, "paper boat");
+  const hits = await searchBook({ ...archive, resource: () => { throw new Error("Search must not decode images"); } }, "paper boat");
   assert.ok(hits.some((hit) => hit.index === 0));
   assert.ok(hits.some((hit) => hit.index === 1));
   for (const hit of hits) {

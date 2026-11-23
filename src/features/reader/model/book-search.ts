@@ -8,9 +8,11 @@ export async function searchBook(archive: ReaderArchive, query: string, signal?:
   if (term.length < 2 || archive.kind !== "books") return [];
   const pattern = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "giu");
   const results: BookSearchHit[] = [];
+  // Searching text must not decode every image/font in the book into blob URLs.
+  const textOnlyArchive = { ...archive, resource: () => undefined };
   for (let index = 0; index < archive.entries.length; index++) {
     signal?.throwIfAborted();
-    const doc = new DOMParser().parseFromString(readerChapterHtml(archive, index, { page: "Paper", font: "Literata", spacing: "Comfortable", fontSize: 20 }), "text/html");
+    const doc = new DOMParser().parseFromString(readerChapterHtml(textOnlyArchive, index, { page: "Paper", font: "Georgia", spacing: "Comfortable", fontSize: 20 }), "text/html");
     const text = textNodes(doc.body).map((node) => node.data).join("");
     for (const match of text.matchAll(pattern)) {
       const start = match.index;

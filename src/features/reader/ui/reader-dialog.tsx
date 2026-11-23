@@ -116,8 +116,8 @@ function ReaderView({ book, archive, onClose }: { book: SampleBook; archive: Rea
   }, [archive, persist, setProgress, setOffset, spread]);
   const navigate = useCallback((position: number, offset = 0, fragment = "") => {
     if (position < 0 || position >= archive.entries.length) return;
-    persist(); touch(); setReady(false); setSelection(undefined); setOffset(offset); pendingFragment.current = fragment; restoreOffset.current = offset; setIndex(position);
-  }, [archive.entries.length, persist, setIndex, setReady, setSelection, setOffset, touch]);
+    persist(); touch(); setReady(false); setError(""); setSelection(undefined); setOffset(offset); pendingFragment.current = fragment; restoreOffset.current = offset; setIndex(position);
+  }, [archive.entries.length, persist, setIndex, setReady, setError, setSelection, setOffset, touch]);
   useEffect(() => () => { cleanFrame.current?.(); persist(); }, [persist]);
   useEffect(() => {
     if (archive.kind === "comics") return;
@@ -160,7 +160,10 @@ function ReaderView({ book, archive, onClose }: { book: SampleBook; archive: Rea
   }, [ready, book.id]);
 
   const keyboard = useCallback((event: KeyboardEvent) => {
-    if (event.key === "Escape") { event.preventDefault(); persist(); onClose(); return; }
+    if (event.key === "Escape") {
+      if (event.currentTarget === window) return; // Let shadcn dismiss the topmost parent popover/dialog.
+      event.preventDefault(); persist(); onClose(); return;
+    }
     if (event.ctrlKey || event.metaKey || event.altKey || (event.target as Element)?.closest?.('input,textarea,select,button,[role="listbox"],[role="combobox"]')) return;
     const forward = archive.kind === "comics" && ui.reader.direction === "rtl" ? "ArrowLeft" : "ArrowRight";
     const pages = comicPages(index, archive.entries.length, spread);

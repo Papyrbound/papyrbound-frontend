@@ -16,6 +16,9 @@ test("passages spanning inline elements remain addressable after highlight wrapp
   markPassage(body, location.start, location.end, "yellow", "note");
   assert.equal(Array.from(body.querySelectorAll("mark")).map((mark) => mark.textContent).join(""), location.quote);
   assert.equal(body.textContent, "The paper boat");
+  selection.removeAllRanges();
+  const all = document.createRange(); all.selectNodeContents(body); selection.addRange(all);
+  assert.deepEqual(selectionLocation(body, selection), { start: 0, end: 14, quote: "The paper boat" });
   assert.ok(markPassage(body, 4, 9, "pink"));
   assert.equal(body.textContent, "The paper boat");
   dom.window.close();
