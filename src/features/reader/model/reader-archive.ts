@@ -1,4 +1,4 @@
-import { strFromU8, unzip } from "fflate";
+import { strFromU8, unzip, unzipSync } from "fflate";
 
 export type ReaderEntry = { path: string; label: string; pages: number };
 export type ReaderArchive = {
@@ -37,20 +37,30 @@ export function readerXml(bytes: Uint8Array | undefined) {
 export const xmlElements = (node: Document | Element, name: string) => Array.from(node.getElementsByTagNameNS("*", name));
 
 export async function openReaderArchive(file: Blob, kind: "books" | "comics"): Promise<ReaderArchive> {
+  if (file.size > 250 * 1024 * 1024) throw new Error("Choose a file smaller than 250 MB.");
+  const compressed = new Uint8Array(await file.arrayBuffer());
+  const assets = new Set<string>();
   let expanded = 0;
   const files = await new Promise<Record<string, Uint8Array>>((resolve, reject) => {
-    void file.arrayBuffer().then((buffer) => unzip(new Uint8Array(buffer), { filter: (entry) => {
+    try { unzip(compressed, { filter: (entry) => {
       if (entry.name.endsWith("/") || entry.name.startsWith("__MACOSX/") || entry.name.split("/").some((part) => part.startsWith("."))) return false;
       if (kind === "comics" && !image.test(entry.name)) return false;
+      // Keep archive images compressed until a visible page requests one.
+      if (media[entry.name.split(".").pop()?.toLowerCase() ?? ""]) {
+        if (entry.originalSize > 64 * 1024 * 1024) throw new Error("An image in this archive is too large to display.");
+        assets.add(entry.name);
+        if (assets.size > 20000) throw new Error("This archive contains too many resources.");
+        return false;
+      }
       expanded += entry.originalSize;
       if (entry.originalSize > 64 * 1024 * 1024 || expanded > 512 * 1024 * 1024) throw new Error("This archive is too large to open in the reader.");
       return true;
-    } }, (error, result) => error ? reject(new Error("This file could not be opened. It may be damaged or encrypted.")) : resolve(result))).catch(reject);
+    } }, (error, result) => error ? reject(new Error("This file could not be opened. It may be damaged or encrypted.")) : resolve(result)); } catch (error) { reject(error); }
   });
   const entries: ReaderEntry[] = [];
   if (kind === "comics") {
     const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
-    Object.keys(files).sort(collator.compare).forEach((path, index) => entries.push({ path, label: `Page ${index + 1}`, pages: 1 }));
+    [...assets].filter((path) => image.test(path)).sort(collator.compare).forEach((path, index) => entries.push({ path, label: `Page ${index + 1}`, pages: 1 }));
   } else {
     const container = readerXml(files["META-INF/container.xml"]);
     const packagePath = xmlElements(container, "rootfile")[0]?.getAttribute("full-path");
@@ -90,10 +100,20 @@ export async function openReaderArchive(file: Blob, kind: "books" | "comics"): P
   return {
     kind, entries, files, totalPages: entries.reduce((sum, entry) => sum + entry.pages, 0),
     resource: (path) => {
-      const bytes = files[path];
       const mime = media[path.split(".").pop()?.toLowerCase() ?? ""];
-      if (!bytes || !mime) return;
-      if (!urls.has(path)) urls.set(path, URL.createObjectURL(new Blob([new Uint8Array(bytes).buffer], { type: mime })));
+      if (!assets.has(path) || !mime) return;
+      if (!urls.has(path)) {
+        let bytes: Uint8Array | undefined;
+        try { bytes = unzipSync(compressed, { filter: (entry) => entry.name === path })[path]; }
+        catch { return "data:,"; } // Let the reader image error state handle damaged page data.
+        if (!bytes) return;
+        urls.set(path, URL.createObjectURL(new Blob([new Uint8Array(bytes).buffer], { type: mime })));
+        // A comic only needs its visible spread and a few recently visited pages.
+        if (kind === "comics" && urls.size > 6) {
+          const oldest = urls.keys().next().value!;
+          URL.revokeObjectURL(urls.get(oldest)!); urls.delete(oldest);
+        }
+      } else if (kind === "comics") { const value = urls.get(path)!; urls.delete(path); urls.set(path, value); }
       return urls.get(path);
     },
     destroy: () => { for (const url of urls.values()) URL.revokeObjectURL(url); urls.clear(); },

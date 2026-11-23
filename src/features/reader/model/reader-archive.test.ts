@@ -70,6 +70,20 @@ test("CBZ pages use natural order, ignore auxiliary entries and release object U
   await assert.rejects(fetch(url));
 });
 
+test("large comics retain compressed pages and bound the decoded page cache", async () => {
+  const fixture = readerComicFixture();
+  const { unzipSync } = await import("fflate");
+  const image = Object.values(unzipSync(new Uint8Array(await fixture.arrayBuffer())))[0];
+  const pages = Object.fromEntries(Array.from({ length: 200 }, (_, index) => [`pages/${index + 1}.png`, image]));
+  const archive = await openReaderArchive(new Blob([new Uint8Array(zipSync(pages)).buffer]), "comics");
+  assert.equal(archive.entries.length, 200);
+  assert.equal(Object.keys(archive.files).length, 0);
+  const first = archive.resource(archive.entries[0].path);
+  for (let index = 1; index < 20; index++) assert.ok(archive.resource(archive.entries[index].path));
+  assert.notEqual(archive.resource(archive.entries[0].path), first);
+  archive.destroy();
+});
+
 test("reader rejects invalid archives, missing chapters and paths outside the archive", async () => {
   assert.deepEqual(resolveReaderPath("OPS/chapters/one.xhtml", "../images/my%20cover.png#part"), { path: "OPS/images/my cover.png", fragment: "part" });
   for (const href of ["../../../escape.png", "https://example.com/cover.png", "//remote/cover.png", "javascript:alert(1)", "%2Fetc/passwd", "..\\outside", "%invalid"]) assert.equal(resolveReaderPath("OPS/one.xhtml", href), undefined);
