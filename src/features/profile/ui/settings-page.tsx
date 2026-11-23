@@ -82,6 +82,7 @@ export function SettingsPage() {
       <div className="grid min-w-0 items-start gap-12 xl:grid-cols-[minmax(0,1.554fr)_minmax(300px,1fr)]">
         <div className="space-y-7">
           <section className="rounded-section bg-card px-6 pt-5">
+            <SettingsRow label="Show demo content" description="Explore fictional books and sample collections. These do not unlock reading titles."><Switch aria-label="Show demo content" checked={ui.showDemo} onCheckedChange={(showDemo) => ui.patch({ showDemo })} /></SettingsRow>
             <h2 className="mb-2 text-base font-semibold leading-[26px]">
               Appearance
             </h2>

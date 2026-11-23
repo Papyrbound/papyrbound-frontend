@@ -4,6 +4,7 @@ import { isRecord, readDeviceValue, subscribeDeviceState } from "@/shared/lib/de
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
 import { defaultReaderPreferences, validReaderPreferences, type ReaderPreferences } from "@/features/reader/model/reader-preferences";
 export const useSettingsUI = create<{
+  showDemo: boolean;
   reader: ReaderPreferences;
   page: string;
   font: string;
@@ -14,6 +15,7 @@ export const useSettingsUI = create<{
   editing: boolean;
   patch: (
     v: Partial<{
+      showDemo: boolean;
       reader: ReaderPreferences;
       page: string;
       font: string;
@@ -25,6 +27,7 @@ export const useSettingsUI = create<{
     }>,
   ) => void;
 }>((set) => ({
+  showDemo: false,
   reader: defaultReaderPreferences,
   page: "Paper",
   font: "Georgia",
@@ -37,12 +40,12 @@ export const useSettingsUI = create<{
 }));
 
 export function startSettingsPersistence() {
-  const select = ({ page, font, spacing, interfaceSize, labels, resume, reader }: ReturnType<typeof useSettingsUI.getState>) => ({ page, font, spacing, interfaceSize, labels, resume, reader });
+  const select = ({ page, font, spacing, interfaceSize, labels, resume, reader, showDemo }: ReturnType<typeof useSettingsUI.getState>) => ({ page, font, spacing, interfaceSize, labels, resume, reader, showDemo });
   const report = (storageError: string) => useReadingLists.setState({ storageError });
   const saved = readDeviceValue("papyrbound-reading-settings-v1", (value): value is ReturnType<typeof select> =>
-    isRecord(value) && ["White", "Paper", "Dark"].includes(String(value.page)) &&
+    isRecord(value) && (value.showDemo === undefined || typeof value.showDemo === "boolean") && ["White", "Paper", "Dark"].includes(String(value.page)) &&
     ["Literata", "Georgia", "Sans serif"].includes(String(value.font)) && (value.reader === undefined || validReaderPreferences(value.reader)) && ["Compact", "Comfortable", "Spacious"].includes(String(value.spacing)) &&
     ["Small", "Default", "Large"].includes(String(value.interfaceSize)) && typeof value.labels === "boolean" && typeof value.resume === "boolean", report);
-  if (saved) useSettingsUI.setState({ ...saved, font: saved.font === "Literata" ? "Georgia" : saved.font, reader: saved.reader ?? defaultReaderPreferences });
+  if (saved) useSettingsUI.setState({ ...saved, showDemo: saved.showDemo ?? false, font: saved.font === "Literata" ? "Georgia" : saved.font, reader: saved.reader ?? defaultReaderPreferences });
   return subscribeDeviceState(useSettingsUI, "papyrbound-reading-settings-v1", select, report);
 }

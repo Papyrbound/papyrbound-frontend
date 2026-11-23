@@ -11,7 +11,7 @@ import type { useWorkspace } from "@/app-shell/workspace-store";
 import { isStoredProfileBanner, isStoredProfilePhoto } from "./profile-banner";
 import { validReaderPreferences, type ReaderPreferences } from "@/features/reader/model/reader-preferences";
 
-type Settings = Pick<ReturnType<typeof useSettingsUI.getState>, "page" | "font" | "spacing" | "interfaceSize" | "labels" | "resume"> & { reader?: ReaderPreferences };
+type Settings = Pick<ReturnType<typeof useSettingsUI.getState>, "page" | "font" | "spacing" | "interfaceSize" | "labels" | "resume"> & { reader?: ReaderPreferences; showDemo?: boolean };
 type Workspace = Pick<ReturnType<typeof useWorkspace.getState>, "libraryKind" | "view" | "panelOpen">;
 export type BackupData = {
   account: ReturnType<typeof useAccount.getState>;
@@ -71,7 +71,7 @@ function validManifest(value: unknown): value is BackupManifest {
     (item.kind === "note" || item.kind === "highlight") && typeof item.color === "string" && Object.hasOwn(annotationColors, item.color) &&
     typeof item.starred === "boolean" && date(item.createdAt) && optionalStrings(item, ["chapter", "createdLabel"]) &&
     (item.page === undefined || (Number.isInteger(item.page) && Number(item.page) >= 0))) || !unique(annotations.map((item) => item.id))) return false;
-  if (!isRecord(settings) || !["White", "Paper", "Dark"].includes(String(settings.page)) ||
+  if (!isRecord(settings) || (settings.showDemo !== undefined && typeof settings.showDemo !== "boolean") || !["White", "Paper", "Dark"].includes(String(settings.page)) ||
     !["Literata", "Georgia", "Sans serif"].includes(String(settings.font)) || (settings.reader !== undefined && !validReaderPreferences(settings.reader)) || !["Compact", "Comfortable", "Spacious"].includes(String(settings.spacing)) ||
     !["Small", "Default", "Large"].includes(String(settings.interfaceSize)) || typeof settings.labels !== "boolean" || typeof settings.resume !== "boolean") return false;
   if (!isRecord(workspace) || !["books", "comics"].includes(String(workspace.libraryKind)) ||
@@ -141,14 +141,14 @@ type DeviceStorage = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 function storageEntries(data: BackupData): [string, string][] {
   const envelope = (value: unknown) => JSON.stringify({ version: 1, data: value });
   // Only restore durable preferences; extra archive fields must never replace store actions.
-  const { page, font, spacing, interfaceSize, labels, resume, reader } = data.settings;
+  const { page, font, spacing, interfaceSize, labels, resume, reader, showDemo } = data.settings;
   const { libraryKind, view, panelOpen } = data.workspace;
   return [
     ["papyrbound-account-v1", JSON.stringify(data.account)],
     ["papyrbound-library-v1", envelope(data.library)],
     ["papyrbound-collections-v1", envelope(data.collections)],
     ["papyrbound-annotations-v1", envelope(data.annotations)],
-    ["papyrbound-reading-settings-v1", envelope({ page, font, spacing, interfaceSize, labels, resume, reader })],
+    ["papyrbound-reading-settings-v1", envelope({ page, font, spacing, interfaceSize, labels, resume, reader, showDemo })],
     ["papyrbound-workspace-v1", envelope({ libraryKind, view, panelOpen })],
   ];
 }

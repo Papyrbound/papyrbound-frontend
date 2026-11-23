@@ -26,7 +26,8 @@ import {
   BookOpen,
 } from "lucide-react";
 
-import { useCollections, type Collection } from "../stores/collections-store";
+import { type Collection } from "../stores/collections-store";
+import { useVisibleCollections as useCollections } from "../stores/use-visible-collections";
 
 import { useActiveLibrary } from "@/features/library/model/use-active-library";
 

@@ -4,7 +4,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { CheckSquare2, Heart, Check, Bookmark, FolderPlus, Trash2, X, MoreHorizontal } from "lucide-react";
 import { useWorkspace } from "@/app-shell/workspace-store";
-import { useCollections } from "@/features/collections/stores/collections-store";
+import { useVisibleCollections as useCollections } from "@/features/collections/stores/use-visible-collections";
 import { useActiveLibrary } from "../model/use-active-library";
 import { applyBulkAction, type BulkAction } from "../model/bulk-actions";
 import { removeBooks } from "../model/undo-actions";
@@ -31,7 +31,7 @@ export function SelectionToggle() {
 export function BulkSelectionToolbar({ books }: { books: SampleBook[] }) {
   const { selectedIds, setSelectionMode } = useWorkspace();
   const { kind, lists, plural } = useActiveLibrary();
-  const collections = useCollections((state) => state.collections);
+  const { collections } = useCollections();
   const [confirm, setConfirm] = useLocalUIState(false);
   const [busy, setBusy] = useLocalUIState(false);
   const selected = books.filter((book) => selectedIds.includes(book.id));

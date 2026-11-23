@@ -13,6 +13,7 @@ import { useAccount, updatePreferences } from "../stores/account-store";
 import { ReadingWeekPicker } from "./reading-week-picker";
 
 import { useActiveLibrary } from "@/features/library/model/use-active-library";
+import { isDemoBook } from "@/features/library/model/demo-data";
 
 import { BookCover } from "@/features/home/ui/book-cover";
 
@@ -85,7 +86,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
   ).map((session) => ({ ...session, minutes: Math.floor(session.seconds / 60) }));
   const selected = heatmapDays.find((d) => d.date === day);
   const total = Math.floor(sessions.reduce((sum, s) => sum + s.seconds, 0) / 60);
-  const finished = books.filter((b) => b.progress >= 100);
+  const finished = books.filter((b) => !isDemoBook(b) && b.progress >= 100);
   return (
     <div>
       <header className="flex flex-wrap items-start justify-between gap-4">

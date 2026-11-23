@@ -4,10 +4,11 @@ import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-s
 import { useCollections } from "@/features/collections/stores/collections-store"
 import { useAnnotations } from "@/features/annotations/stores/annotations-store"
 import { useAccount } from "@/features/profile/stores/account-store"
+import { isDemoBook, isDemoCollection } from "@/features/library/model/demo-data"
 
 export function useReadingTitles() {
-  const { books } = useReadingLists()
-  const { collections } = useCollections()
+  const books = useReadingLists().books.filter((book) => !isDemoBook(book))
+  const collections = useCollections().collections.filter((item) => !isDemoCollection(item))
   const { annotations } = useAnnotations()
   const { profile } = useAccount()
   const completed = books.filter((book) => book.progress >= 100).length

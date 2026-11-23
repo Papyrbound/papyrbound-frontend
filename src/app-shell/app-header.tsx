@@ -28,7 +28,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/shared/ui/breadcrumb";
-import { useCollections } from "@/features/collections/stores/collections-store";
+import { useVisibleCollections as useCollections } from "@/features/collections/stores/use-visible-collections";
+import { DemoIndicator } from "@/features/library/ui/demo-indicator";
 import { useActiveLibrary } from "@/features/library/model/use-active-library";
 
 const routeLabels: Record<string, string> = {
@@ -148,6 +149,7 @@ export function AppHeader() {
         <RouteBreadcrumbs pathname={pathname} />
       </Suspense>
       <div className="ml-auto flex shrink-0 items-center gap-2">
+        <DemoIndicator />
         <Suspense><SelectionToggle /></Suspense>
         {pathname === "/annotations" && <AnnotationsToolbar />}
         {(pathname === "/library" || pathname === "/reading-lists") && (

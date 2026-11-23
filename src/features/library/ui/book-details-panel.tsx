@@ -20,7 +20,7 @@ import { useWorkspace } from "@/app-shell/workspace-store";
 
 import { useActiveLibrary } from "@/features/library/model/use-active-library";
 
-import { useCollections } from "@/features/collections/stores/collections-store";
+import { useVisibleCollections as useCollections } from "@/features/collections/stores/use-visible-collections";
 
 import { removeBooks } from "../model/undo-actions";
 import { offerUndo, reportActionError } from "@/shared/lib/undo-toast";

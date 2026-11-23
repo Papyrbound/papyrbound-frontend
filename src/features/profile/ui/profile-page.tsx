@@ -11,10 +11,11 @@ import { ReaderAvatar } from "./reader-avatar";
 import { EditProfileDialog } from "./edit-profile-dialog";
 import { useActiveLibrary } from "@/features/library/model/use-active-library";
 import { useAnnotations } from "@/features/annotations/stores/annotations-store";
-import { useCollections } from "@/features/collections/stores/collections-store";
+import { useVisibleCollections as useCollections } from "@/features/collections/stores/use-visible-collections";
 import { useWorkspace } from "@/app-shell/workspace-store";
 import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
 import { BookCover } from "@/features/home/ui/book-cover";
+import { isDemoBook, isDemoCollection } from "@/features/library/model/demo-data";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardTitle } from "@/shared/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/ui/tabs";
@@ -36,10 +37,10 @@ export function ProfilePage() {
     (note) => note.kind === "highlight" && bookIds.has(note.bookId),
   );
   const stats = [
-    { label, count: books.length, href: "/library" },
-    { label: "Finished", count: books.filter((book) => book.progress >= 100).length, href: "/reading-lists?list=completed" },
-    { label: "Highlights", count: highlights.length, href: "/annotations" },
-    { label: "Collections", count: collections.filter((collection) => (collection.kind ?? "books") === kind).length, href: "/collections" },
+    { label, count: books.filter((book) => !isDemoBook(book)).length, href: "/library" },
+    { label: "Finished", count: books.filter((book) => !isDemoBook(book) && book.progress >= 100).length, href: "/reading-lists?list=completed" },
+    { label: "Highlights", count: highlights.filter((note) => books.some((book) => book.id === note.bookId && !isDemoBook(book))).length, href: "/annotations" },
+    { label: "Collections", count: collections.filter((collection) => !isDemoCollection(collection) && (collection.kind ?? "books") === kind).length, href: "/collections" },
   ];
 
   return (
