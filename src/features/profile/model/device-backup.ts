@@ -11,14 +11,14 @@ import { createBackup, type BackupData } from "./library-backup";
 export async function backUpDevice() {
   const library = useReadingLists.getState();
   if (!library.importsReady) throw new Error("Your library is still loading. Try again in a moment.");
-  const { page, font, spacing, interfaceSize, labels, resume } = useSettingsUI.getState();
+  const { page, font, spacing, interfaceSize, labels, resume, reader } = useSettingsUI.getState();
   const { libraryKind, view, panelOpen } = useWorkspace.getState();
   const data: BackupData = {
     account: useAccount.getState(),
     library: librarySnapshot(library),
     collections: useCollections.getState().collections,
     annotations: useAnnotations.getState().annotations,
-    settings: { page, font, spacing, interfaceSize, labels, resume },
+    settings: { page, font, spacing, interfaceSize, labels, resume, reader },
     workspace: { libraryKind, view, panelOpen },
   };
   const stored = new Map((await loadStoredImports()).map((record) => [record.id, record]));

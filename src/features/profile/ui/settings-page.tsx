@@ -147,7 +147,7 @@ export function SettingsPage() {
                 "Reading font",
                 "Choose a comfortable typeface.",
                 ui.font,
-                ["Literata", "Sans serif"],
+                ["Georgia", "Sans serif"],
                 (font: string) => ui.patch({ font }),
               ],
               [
@@ -215,12 +215,12 @@ export function SettingsPage() {
               CHAPTER ONE
             </p>
             <h3
-              className={`mb-10 mt-9 text-[30px] font-normal leading-[41px] ${ui.font === "Literata" ? "font-[Georgia,serif]" : "font-sans"}`}
+              className={`mb-10 mt-9 text-[30px] font-normal leading-[41px] ${ui.font === "Georgia" ? "font-[Georgia,serif]" : "font-sans"}`}
             >
               A place between pages
             </h3>
             <div
-              className={`space-y-8 text-[21px] ${ui.font === "Literata" ? "font-[Georgia,serif]" : "font-sans"} ${ui.spacing === "Compact" ? "leading-7" : ui.spacing === "Spacious" ? "leading-10" : "leading-[31.5px]"}`}
+              className={`space-y-8 text-[21px] ${ui.font === "Georgia" ? "font-[Georgia,serif]" : "font-sans"} ${ui.spacing === "Compact" ? "leading-7" : ui.spacing === "Spacious" ? "leading-10" : "leading-[31.5px]"}`}
             >
               <p>
                 The room grew quiet as the afternoon light moved across the
