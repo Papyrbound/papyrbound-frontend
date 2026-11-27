@@ -18,6 +18,8 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-surface-raised: var(--surface-raised);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
@@ -45,11 +47,25 @@
   --radius-3xl: 24px;
   --radius-4xl: 32px;
   --radius-menu: 12px;
-  --radius-selection: 18px;
-  --radius-section: 20px;
-  --shadow-soft: 0 2px 6px -2px rgb(32 32 32 / 9%);
-  --shadow-selection: 0 6px 20px -4px rgb(36 36 36 / 10%);
-  --shadow-menu: 0 8px 24px -6px rgb(32 32 32 / 13%);
+  --radius-selection: 12px;
+  --radius-section: 16px;
+  --radius-control: 8px;
+  --radius-dialog: 16px;
+  --spacing-control: 2rem;
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 6%);
+  --shadow-selection: 0 0 0 1px var(--border);
+  --shadow-menu: 0 8px 28px -8px rgb(0 0 0 / 20%), 0 2px 6px rgb(0 0 0 / 5%);
+  --text-ui-title: 1.5rem;
+  --text-ui-title--line-height: 2rem;
+  --text-ui-title--font-weight: 600;
+  --text-ui-title--letter-spacing: -0.025em;
+  --text-ui-section: 1.125rem;
+  --text-ui-section--line-height: 1.5rem;
+  --text-ui-section--font-weight: 600;
+  --text-ui-label: 0.8125rem;
+  --text-ui-label--line-height: 1.25rem;
+  --text-ui-meta: 0.75rem;
+  --text-ui-meta--line-height: 1.125rem;
   --color-selected: var(--selected);
   --color-soft-border: var(--soft-border);
   --color-hover: var(--hover);
@@ -59,24 +75,27 @@
 :root {
   color-scheme: light;
   --canvas-base: #fcfcfc;
-  --background: #fcfcfc;
-  --card: #f6f6f6;
-  --popover: #fcfcfc;
-  --foreground: #2b2b2b;
-  --primary: #303030;
+  --background: #fafafa;
+  --card: #f3f3f5;
+  --popover: #ffffff;
+  --surface-raised: #ffffff;
+  --foreground: #28282c;
+  --primary: #303034;
+  --primary-hover: #47474c;
   --primary-foreground: #ffffff;
-  --secondary: #f5f5f5;
-  --muted: #eeeeee;
-  --muted-foreground: #737373;
+  --secondary: #ededf0;
+  --muted: #ededf0;
+  --muted-foreground: #686870;
   --accent: #eaeaea;
   --border: #e5e5e5;
   --input: #e5e5e5;
-  --ring: #737373;
+  --ring: #626270;
   --destructive: #b34b4b;
   --sidebar-accent: #eaeaea;
-  --selected: #ffffff;
-  --soft-border: rgb(255 255 255 / 95%);
-  --hover: #f5f5f5;
+  --selected: #e8e8ed;
+  --soft-border: rgb(40 40 44 / 9%);
+  --hover: #efeff2;
+  --scrollbar-thumb: rgb(40 40 44 / 22%);
   --row-hover: #f5f5f5;
   --row-active: #eaeaea;
   --radius: 12px;
@@ -89,24 +108,27 @@
 .dark {
   color-scheme: dark;
   --canvas-base: #202020;
-  --background: #272727;
-  --card: #232323;
-  --popover: #2b2b2b;
-  --foreground: #f2f2f2;
-  --primary: #ffffff;
+  --background: #242426;
+  --card: #1e1e20;
+  --popover: #2c2c30;
+  --surface-raised: #303034;
+  --foreground: #f4f4f5;
+  --primary: #f2f2f3;
+  --primary-hover: #dcdce0;
   --primary-foreground: #1a1a1a;
-  --secondary: #333333;
-  --muted: #333333;
-  --muted-foreground: #999999;
+  --secondary: #303034;
+  --muted: #303034;
+  --muted-foreground: #ababb3;
   --accent: #333333;
   --border: #333333;
   --input: #333333;
   --ring: #cccccc;
   --destructive: #f87171;
   --sidebar-accent: #383838;
-  --selected: #343434;
+  --selected: #39393e;
   --soft-border: rgb(255 255 255 / 8%);
-  --hover: #303030;
+  --hover: #2f2f33;
+  --scrollbar-thumb: rgb(244 244 245 / 25%);
   --dot-color: rgb(255 255 255 / 12%);
   --panel-glass: color-mix(in srgb, var(--card) 82%, transparent);
   --panel-filter: blur(18px) saturate(160%) brightness(1.08);
@@ -145,6 +167,9 @@
 :root {
   --motion-reading-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --motion-control-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --motion-duration-fast: 120ms;
+  --motion-duration-normal: 180ms;
+  --motion-duration-panel: 220ms;
 }
 @layer components {
   .reader-page {
@@ -779,12 +804,23 @@ html[data-reduce-motion="true"] *::after {
   }
 }
 
-/* Keep wheel, touch, and keyboard scrolling without visible scrollbar tracks. */
+/* Quiet, discoverable scrolling for desktop panels and overflow content. */
 @layer utilities {
   * {
-    scrollbar-width: none;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
   }
   *::-webkit-scrollbar {
-    display: none;
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background: var(--scrollbar-thumb);
+    background-clip: padding-box;
   }
 }

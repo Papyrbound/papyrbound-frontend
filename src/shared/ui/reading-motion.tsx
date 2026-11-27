@@ -19,14 +19,13 @@ export function useReadingMotion() { return useContext(ReducedMotionContext) }
 
 const MotionCard = m.create(Card)
 
-/** Entrance motion decorates the existing shadcn Card without adding a layout wrapper. */
+/** Short opacity feedback keeps content immediately available without staged entrances. */
 export function RevealCard({ index = 0, ...props }: Omit<ComponentProps<typeof MotionCard>, "initial" | "whileInView" | "viewport" | "transition"> & { index?: number }) {
   const reduced = useReadingMotion()
-  return <MotionCard {...props} data-reading-reveal="" initial={reduced ? false : { opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.08 }} transition={{ duration: reduced ? 0 : 0.5, ease: readingEase, delay: reduced ? 0 : Math.min(index, 6) * 0.055 }} />
+  return <MotionCard {...props} data-reading-reveal="" data-reveal-order={index} initial={false} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: reduced ? 0 : 0.16, ease: readingEase }} />
 }
 
 export function RevealText({ children }: { children: string }) {
   const reduced = useReadingMotion()
-  const words = children.split(" ")
-  return <span className="reading-reveal-text">{words.map((word, index) => <span key={`${index}-${word}`} className="reading-word-mask"><m.span initial={reduced ? false : { y: "105%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: reduced ? 0 : 0.5, delay: reduced ? 0 : Math.min(index, 10) * 0.04, ease: readingEase }}>{word}</m.span>{index < words.length - 1 ? " " : ""}</span>)}</span>
+  return <m.span initial={false} animate={{ opacity: 1 }} transition={{ duration: reduced ? 0 : 0.16, ease: readingEase }}>{children}</m.span>
 }
