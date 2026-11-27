@@ -219,7 +219,15 @@ export const useReadingLists = create<ReadingListsState>((set, get) => {
     importsReady: false,
     storageError: "",
     importBook: async (book, file) => {
-      if (get().books.some((existing) => existing.id === book.id)) return false;
+      const existing = get().books.find((item) => item.id === book.id);
+      if (existing) {
+        if (book.sourcePath && book.sourcePath !== existing.sourcePath) {
+          const updated = { ...existing, sourcePath: book.sourcePath };
+          await updateImportedMetadata(updated);
+          setBooks((items) => items.map((item) => item.id === book.id ? { ...item, sourcePath: book.sourcePath } : item));
+        }
+        return false;
+      }
       const pending = pendingImports.get(book.id);
       if (pending) { await pending; return false; }
       const task = (async () => {

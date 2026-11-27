@@ -36,6 +36,8 @@ test("EPUB imports metadata, cover, kind and a content-based ID", async () => {
   assert.equal(book.kind, "books");
   assert.match(book.cover!, /^data:image\/png;base64,/);
   assert.equal(book.sourceName, "fallback.epub");
+  assert.equal(book.sourcePath, undefined);
+  assert.equal((await parseLibraryFile(file, "books", "C:\\Books\\fallback.epub")).sourcePath, "C:\\Books\\fallback.epub");
   assert.equal(book.id, (await parseLibraryFile(new File([file], "renamed.epub"), "books")).id);
   assert.equal(belongsToLibrary(book, "comics"), false);
   assert.equal(belongsToLibrary({ ...book, kind: undefined }, "books"), true);

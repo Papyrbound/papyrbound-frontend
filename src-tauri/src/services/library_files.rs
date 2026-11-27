@@ -17,8 +17,9 @@ fn supported(path: &Path) -> bool {
 }
 
 impl OpenedLibraryFiles {
-    /// Only OS launch arguments and OS drop events authorize a native file read.
-    pub fn enqueue(&self, paths: impl IntoIterator<Item = PathBuf>) {
+    /// Only OS file selection, launch arguments and drop events authorize reads.
+    pub fn authorize(&self, paths: impl IntoIterator<Item = PathBuf>) -> Vec<String> {
+        let mut selected = Vec::new();
         for path in paths {
             let Ok(path) = path.canonicalize() else {
                 continue;
@@ -28,7 +29,16 @@ impl OpenedLibraryFiles {
             }
             self.allowed.lock().unwrap().insert(path.clone());
             let path = path.to_string_lossy().into_owned();
-            let mut pending = self.pending.lock().unwrap();
+            if !selected.contains(&path) {
+                selected.push(path);
+            }
+        }
+        selected
+    }
+    pub fn enqueue(&self, paths: impl IntoIterator<Item = PathBuf>) {
+        let selected = self.authorize(paths);
+        let mut pending = self.pending.lock().unwrap();
+        for path in selected {
             if !pending.contains(&path) {
                 pending.push(path);
             }

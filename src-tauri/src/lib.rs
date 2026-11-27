@@ -23,6 +23,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::library::pending_library_files,
             commands::library::read_library_file,
+            commands::library::pick_library_files,
             commands::dictionary::lookup_dictionary
         ])
         .on_window_event(|window, event| {

@@ -46,6 +46,13 @@ test("importing the same file twice adds one item and records the right library 
   const file = new File(["archive"], "example.cbz");
   assert.equal(await useReadingLists.getState().importBook(book, file), true);
   assert.equal(await useReadingLists.getState().importBook(book, file), false);
+  useReadingLists.setState((state) => ({ books: state.books.map((item) => item.id === book.id ? { ...item, progress: 42, title: "My edited title" } : item) }));
+  assert.equal(await useReadingLists.getState().importBook({ ...book, sourcePath: "C:\\Comics\\example.cbz" }, file), false);
+  const updated = useReadingLists.getState().books.find((item) => item.id === book.id)!;
+  assert.equal(updated.sourcePath, "C:\\Comics\\example.cbz");
+  assert.equal(updated.progress, 42);
+  assert.equal(updated.title, "My edited title");
+  assert.equal((await loadImportedBooks()).find((item) => item.id === book.id)?.sourcePath, updated.sourcePath);
   assert.equal(useReadingLists.getState().books.filter((item) => item.id === book.id).length, 1);
   assert.equal(useReadingLists.getState().activity[0].libraryKind, "comics");
   assert.equal((await loadImportedBooks()).filter((item) => item.id === book.id).length, 1);

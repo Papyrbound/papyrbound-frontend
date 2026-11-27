@@ -4,6 +4,7 @@ export type SampleBook = {
   format?: "EPUB" | "CBZ";
   sourceId?: string;
   sourceName?: string;
+  sourcePath?: string;
   synopsis?: string;
   cover?: string;
   addedLabel?: string;

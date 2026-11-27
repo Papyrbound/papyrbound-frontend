@@ -21,7 +21,7 @@ const data: BackupData = {
   workspace: { libraryKind: "comics", view: "list", panelOpen: false },
 };
 const records = [
-  { id: "epub", book: { ...sampleBooks[0], id: "epub", sourceId: "epub", kind: "books" as const, format: "EPUB" as const, sourceName: "book.epub", cover: "data:image/png;base64,Y292ZXI=" }, file: new File([new Uint8Array([0, 1, 255, 42])], "book.epub", { type: "application/epub+zip" }) },
+  { id: "epub", book: { ...sampleBooks[0], id: "epub", sourceId: "epub", kind: "books" as const, format: "EPUB" as const, sourceName: "book.epub", sourcePath: "C:\\Books\\book.epub", cover: "data:image/png;base64,Y292ZXI=" }, file: new File([new Uint8Array([0, 1, 255, 42])], "book.epub", { type: "application/epub+zip" }) },
   { id: "comic", book: { ...sampleBooks[1], id: "comic", sourceId: "comic", kind: "comics" as const, format: "CBZ" as const, sourceName: "comic.cbz" }, file: new File(["comic file bytes"], "comic.cbz", { type: "application/vnd.comicbook+zip" }) },
 ];
 const archive = async (value = data) => new Blob([await createBackup(value, records)]);

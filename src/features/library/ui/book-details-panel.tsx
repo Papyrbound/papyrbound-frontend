@@ -1,5 +1,6 @@
 "use client";
 
+import { fileLocation } from "../model/file-location";
 import Link from "next/link";
 
 import {
@@ -154,12 +155,12 @@ export function BookDetailsPanel({
               ["Length", book.pages ? `${book.pages} pages` : "Not available"],
               ["Progress", `${book.progress}%`],
               ["Last opened", book.lastReadAt ? new Date(book.lastReadAt).toLocaleDateString() : "Not opened"],
-              ["Location", "On this device"],
+              ["Location", fileLocation(book)],
             ]
         ).map(([k, v]) => (
-          <div key={k} className="flex h-8 items-center justify-between gap-4">
-            <dt className="text-muted-foreground">{k}</dt>
-            <dd className="text-right">{v}</dd>
+          <div key={k} className="flex min-h-8 items-start justify-between gap-4 py-1">
+            <dt className="shrink-0 text-muted-foreground">{k}</dt>
+            <dd className="min-w-0 break-all text-right">{v}</dd>
           </div>
         ))}
       </dl>

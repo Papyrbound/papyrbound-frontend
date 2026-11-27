@@ -23,7 +23,7 @@ export function AddBookDialog({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
   const label = `Import ${plural}`;
 
-  async function importFiles(files: File[]) {
+  async function importFiles(files: File[], paths: string[] = []) {
     if (!files.length || importing.current) return;
     importing.current = true;
     setBusy(true);
@@ -31,9 +31,9 @@ export function AddBookDialog({ compact = false }: { compact?: boolean }) {
     let lastId: string | undefined;
     try {
       const { parseLibraryFile } = await import("../model/import-file");
-      for (const file of files) {
+      for (const [index, file] of files.entries()) {
         try {
-          const book = await parseLibraryFile(file, kind);
+          const book = await parseLibraryFile(file, kind, paths[index]);
           if (await importBook(book, file)) { outcome.added++; lastId = book.id; }
           else outcome.duplicates++;
         } catch (error) {
@@ -51,6 +51,23 @@ export function AddBookDialog({ compact = false }: { compact?: boolean }) {
       setBusy(false);
       setResult(outcome);
     }
+  }
+
+  async function chooseFiles() {
+    const { isTauri, invoke } = await import("@tauri-apps/api/core");
+    if (!isTauri()) { input.current?.click(); return; }
+    setBusy(true);
+    try {
+      const paths = await invoke<string[]>("pick_library_files", { kind });
+      const files: File[] = [];
+      for (const path of paths) {
+        const bytes = await invoke<ArrayBuffer>("read_library_file", { path });
+        files.push(new File([bytes], path.split(/[/\\]/).at(-1)!));
+      }
+      await importFiles(files, paths);
+    } catch (error) {
+      setResult({ added: 0, duplicates: 0, errors: [error instanceof Error ? error.message : String(error)] });
+    } finally { setBusy(false); }
   }
 
   return (
@@ -76,7 +93,7 @@ export function AddBookDialog({ compact = false }: { compact?: boolean }) {
         aria-label={busy ? "Importing files" : label}
         aria-busy={busy}
         disabled={busy || !importsReady}
-        onClick={() => input.current?.click()}
+        onClick={() => void chooseFiles()}
       >
         <span className="flex size-4 items-center justify-center" aria-hidden="true">
           {busy ? <LoaderCircle className="size-3.5 animate-spin" /> : <UploadIcon className="size-3.5" />}

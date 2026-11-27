@@ -58,7 +58,7 @@ function coverDataUrl(data: Uint8Array, path: string) {
 }
 
 /** Reads only metadata and the cover; the original archive is stored separately. */
-export async function parseLibraryFile(file: File, kind: LibraryKind): Promise<SampleBook> {
+export async function parseLibraryFile(file: File, kind: LibraryKind, sourcePath?: string): Promise<SampleBook> {
   const extension = file.name.split(".").pop()?.toLowerCase();
   if (extension !== (kind === "books" ? "epub" : "cbz")) {
     throw new Error(kind === "books" ? "Choose an EPUB file in Books mode." : "Choose a CBZ comic in Comics mode. CBR and CB7 are not supported yet.");
@@ -70,7 +70,7 @@ export async function parseLibraryFile(file: File, kind: LibraryKind): Promise<S
   const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", buffer));
   const id = `import-${Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join("")}`;
   const book: SampleBook = {
-    id, sourceId: id, sourceName: file.name, kind,
+    id, sourceId: id, sourceName: file.name, ...(sourcePath ? { sourcePath } : {}), kind,
     format: kind === "books" ? "EPUB" : "CBZ",
     title: file.name.replace(/\.[^.]+$/, ""), author: "Unknown author",
     genre: kind === "books" ? "Uncategorized" : "Comics",

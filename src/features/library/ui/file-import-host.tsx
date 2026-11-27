@@ -14,7 +14,7 @@ export function FileImportHost() {
     if (!ready) return;
     let active = true;
     const cleanups: (() => void)[] = [];
-    const processFiles = (load: () => Promise<File[]>) => {
+    const processFiles = (load: () => Promise<{ file: File; sourcePath?: string }[]>) => {
       queue.current = queue.current.then(async () => {
         if (!active) return;
         const notification = toast.loading("Opening your files…");
@@ -24,11 +24,11 @@ export function FileImportHost() {
           const { parseLibraryFile } = await import("../model/import-file");
           let opened = 0, last: Awaited<ReturnType<typeof parseLibraryFile>> | undefined;
           const errors: string[] = [];
-          for (const file of files) {
+          for (const { file, sourcePath } of files) {
             if (!active) break;
             try {
               const kind = file.name.toLowerCase().endsWith(".cbz") ? "comics" : "books";
-              const book = await parseLibraryFile(file, kind);
+              const book = await parseLibraryFile(file, kind, sourcePath);
               await useReadingLists.getState().importBook(book, file); last = book; opened++;
             } catch (error) { errors.push(`${file.name}: ${error instanceof Error ? error.message : "Could not open file"}`); }
           }
@@ -48,7 +48,7 @@ export function FileImportHost() {
       if (!event.dataTransfer?.types.includes("Files")) return;
       event.preventDefault(); setHover(false);
       const files = Array.from(event.dataTransfer.files);
-      processFiles(async () => files);
+      processFiles(async () => files.map((file) => ({ file })));
     };
     window.addEventListener("dragover", drag); window.addEventListener("dragleave", leave); window.addEventListener("drop", drop);
     void (async () => {
@@ -57,11 +57,11 @@ export function FileImportHost() {
       const { listen } = await import("@tauri-apps/api/event");
       const drain = () => processFiles(async () => {
         const paths = await invoke<string[]>("pending_library_files");
-        const files: File[] = [];
+        const files: { file: File; sourcePath: string }[] = [];
         for (const path of paths) {
           try {
             const bytes = await invoke<ArrayBuffer>("read_library_file", { path });
-            files.push(new File([bytes], path.split(/[/\\]/).at(-1)!));
+            files.push({ file: new File([bytes], path.split(/[/\\]/).at(-1)!), sourcePath: path });
           } catch (error) { toast.error(`Could not open file: ${String(error)}`); }
         }
         return files;
