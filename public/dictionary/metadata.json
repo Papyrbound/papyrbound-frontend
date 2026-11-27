@@ -1,0 +1,7 @@
+{
+  "source": "https://en-word.net/downloads/english-wordnet-2025-json.zip",
+  "version": "2025",
+  "sha256": "7d749f6e2c39e6970e4997839dcf6e42fd281f3c2fae0171d2192bae8cfa4b51",
+  "entries": 127311,
+  "license": "CC BY 4.0"
+}

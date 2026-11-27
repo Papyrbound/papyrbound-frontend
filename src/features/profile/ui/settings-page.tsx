@@ -202,6 +202,11 @@ export function SettingsPage() {
             <h2 className="text-ui-section">Library</h2>
             <SettingsRow label="Show demo content" description="Explore fictional books and sample collections. These do not unlock reading titles."><Switch aria-label="Show demo content" checked={ui.showDemo} onCheckedChange={(showDemo) => ui.patch({ showDemo })} /></SettingsRow>
           </section>
+          <section className="border-b border-border/60 pb-6">
+            <h2 className="text-base font-semibold leading-7">Dictionary</h2>
+            <p className="mt-2 text-sm text-muted-foreground">English definitions are included for offline reading. Select a word in an EPUB and choose Look up.</p>
+            <p className="mt-3 text-xs leading-5 text-muted-foreground">Open English WordNet 2025, by the Open English WordNet Community, derived from Princeton WordNet. Adapted under CC BY 4.0. <a href="/dictionary/NOTICE.txt" target="_blank" rel="noreferrer" className="underline underline-offset-2">Source and attribution</a></p>
+          </section>
           <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-muted-foreground">
             <span>
               {profile.name} · Profile and appearance saved on this device.

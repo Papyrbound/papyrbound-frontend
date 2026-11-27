@@ -1,0 +1,17 @@
+Papyrbound offline English dictionary
+
+Source: Open English WordNet 2025, by the Open English WordNet Community,
+derived from Princeton WordNet.
+https://en-word.net/
+https://github.com/globalwordnet/english-wordnet
+Contributors: https://github.com/globalwordnet/english-wordnet/blob/main/CONTRIBUTORS.md
+
+Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0):
+https://creativecommons.org/licenses/by/4.0/
+License text: https://creativecommons.org/licenses/by/4.0/legalcode
+
+Papyrbound transforms the JSON export into alphabetic lookup indexes, retaining
+definitions, part of speech, pronunciations, up to two examples per sense and
+inflected forms. Semantic relations and other lexical metadata are omitted.
+Build instructions and the source archive checksum are included in
+scripts/build-dictionary.py and public/dictionary/metadata.json.

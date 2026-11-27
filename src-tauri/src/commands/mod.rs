@@ -4,3 +4,5 @@ pub mod annotations;
 pub mod collections;
 pub mod library;
 pub mod reader;
+
+pub mod dictionary;
