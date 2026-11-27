@@ -3,6 +3,7 @@ import { BookmarkPlus, Highlighter, NotebookPen, Trash2 } from "lucide-react";
 import type { Annotation } from "@/features/annotations/model/annotation";
 import { useAnnotations } from "@/features/annotations/stores/annotations-store";
 import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
+import { TooltipHint } from "@/shared/ui/tooltip";
 import { Button } from "@/shared/ui/button";
 import { Textarea } from "@/shared/ui/textarea";
 import { Popover, PopoverTrigger, PopoverTitle, PopoverContent } from "@/shared/ui/popover";
@@ -25,7 +26,7 @@ export function ReaderAnnotations({ bookId, chapter, location, selection, jump }
     }]);
     setNote(""); setMessage(bookmark ? "Bookmark saved" : "Annotation saved");
   }
-  return <Popover><PopoverTrigger aria-label="Notes and bookmarks" render={<Button size="icon-sm" variant="ghost" />}><NotebookPen /></PopoverTrigger>
+  return <Popover><TooltipHint content="Notes and bookmarks"><PopoverTrigger aria-label="Notes and bookmarks" render={<Button size="icon-sm" variant="ghost" />}><NotebookPen /></PopoverTrigger></TooltipHint>
     <PopoverContent align="end" className="w-80 max-w-[calc(100vw-3rem)] space-y-3">
       <PopoverTitle>Notes and bookmarks</PopoverTitle>
       {selection ? <p className="max-h-24 overflow-auto text-xs text-muted-foreground">“{selection.quote}”</p> : <p className="text-xs text-muted-foreground">Select text in the book to highlight it, or save a note at your current position.</p>}

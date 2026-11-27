@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
-import { ArrowLeft, ArrowRight, Check, Minus, Plus, Settings2, LoaderCircle, Maximize2, Minimize2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Minus, Plus, Settings2, BookOpen, LoaderCircle, Maximize2, Minimize2 } from "lucide-react";
+import { BookCover } from "@/features/home/ui/book-cover";
 import type { SampleBook } from "@/features/home/model/sample-books";
 import { getImportedFile } from "@/features/library/model/import-storage";
 import { useReadingLists } from "@/features/reading-lists/stores/reading-lists-store";
@@ -13,6 +14,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from "@/shared/ui/popover";
 import { TooltipHint } from "@/shared/ui/tooltip";
 import { Progress } from "@/shared/ui/progress";
+import { readerSurface } from "../model/reader-preferences";
 import { readerChapterHtml } from "../model/reader-document";
 import { openReaderArchive, resolveReaderPath, type ReaderArchive } from "../model/reader-archive";
 import { activeReadingInterval, readingProgress, type ReadingPosition } from "../model/reading-state";
@@ -46,11 +48,15 @@ export function ReaderDialog({ book, onClose }: { book: SampleBook; onClose: () 
     return () => { active = false; owned?.destroy(); };
   }, [id, imported, kind, setArchive, setError]);
   return <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-    <DialogContent className={`grid gap-0 overflow-hidden p-0 ${controlsHidden ? "grid-rows-1 h-dvh w-dvw rounded-none border-0 sm:max-w-none" : "grid-rows-[auto_minmax(0,1fr)] h-[calc(100dvh-2rem)] w-[calc(100dvw-2rem)] sm:max-w-[1200px]"}`} data-reader-open="true">
+    <DialogContent className={`grid min-w-0 gap-0 overflow-hidden p-0 ${controlsHidden ? "grid-rows-1 h-dvh w-dvw max-w-none rounded-none border-0 sm:max-w-none" : "grid-rows-[auto_minmax(0,1fr)] h-[calc(100dvh-2rem)] w-[calc(100dvw-2rem)] sm:max-w-[1200px]"}`} data-reader-open="true">
       {archive && <TooltipHint content={`${controlsHidden ? "Show" : "Hide"} controls (Ctrl+Shift+F)`}><Button className="absolute top-4 right-14 z-10 bg-secondary" size="icon-sm" variant="ghost" aria-label={controlsHidden ? "Show reading controls" : "Hide reading controls"} aria-pressed={controlsHidden} onClick={toggleControls}>{controlsHidden ? <Minimize2 /> : <Maximize2 />}</Button></TooltipHint>}
-      <DialogHeader className={controlsHidden ? "sr-only" : "border-b border-border/60 px-5 py-4 pr-24"}>
-        <DialogTitle className="truncate leading-5">{book.title}</DialogTitle>
-        <DialogDescription className="truncate text-xs">{book.author} · {kind === "comics" ? "Comic reader" : "Book reader"}</DialogDescription>
+      <DialogHeader className={controlsHidden ? "sr-only" : "min-w-0 flex-row items-center gap-3 border-b border-soft-border px-6 py-3 pr-24"}>
+        {book.cover ? <div className="w-7 shrink-0 [&_.book-cover]:rounded-sm [&_.book-cover]:shadow-soft"><BookCover book={book} /></div>
+          : <div aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-control bg-secondary text-muted-foreground"><BookOpen className="size-5" /></div>}
+        <div className="min-w-0 space-y-1">
+          <DialogTitle className="truncate text-sm leading-5">{book.title}</DialogTitle>
+          <DialogDescription className="truncate text-xs">{book.author} &middot; {book.format ?? (kind === "comics" ? "CBZ" : "EPUB")}</DialogDescription>
+        </div>
       </DialogHeader>
       {!imported ? <div className="flex flex-col items-center justify-center gap-4 p-8 text-center"><h2 className="font-medium">Import a file to start reading</h2><p className="max-w-sm text-sm text-muted-foreground">This sample title has no reading file. Import your own EPUB books or CBZ comics from the library.</p><Button variant="outline" onClick={onClose}>Back to library</Button></div>
         : error ? <div role="alert" className="flex flex-col items-center justify-center gap-4 p-8 text-center"><p className="max-w-md text-sm text-muted-foreground">{error}</p><Button variant="outline" onClick={onClose}>Close reader</Button></div>
@@ -249,46 +255,54 @@ function ReaderView({ book, archive, onClose, controlsHidden, toggleControls }: 
       }
     } else { pendingPassage.current = location; navigate(target, location.offset ?? 0); }
   }
-  return <div ref={root} className="flex min-h-0 flex-col" onPointerMove={touch} onPointerDown={touch} onKeyDown={touch}>
-    <div className={controlsHidden ? "hidden" : "flex flex-wrap items-center gap-2 border-b border-border/60 px-4 py-2"}>
+  return <div ref={root} className="flex min-h-0 min-w-0 flex-col" onPointerMove={touch} onPointerDown={touch} onKeyDown={touch}>
+    <div className={controlsHidden ? "hidden" : "flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-soft-border bg-background/20 px-4 py-2 sm:px-6"}>
+      <div className="flex min-w-0 flex-1 items-center gap-2">
       <Select items={archive.entries.map((item, i) => ({ label: item.label, value: String(i) }))} value={String(index)} onValueChange={(value) => { if (value !== null && Number(value) !== index) navigate(Number(value)); }}>
-        <SelectTrigger aria-label={archive.kind === "comics" ? "Go to page" : "Go to chapter"} className="w-full max-w-[min(55vw,320px)]"><SelectValue /></SelectTrigger>
+        <SelectTrigger aria-label={archive.kind === "comics" ? "Go to page" : "Go to chapter"} className="min-w-0 flex-1 bg-secondary/60 sm:max-w-80"><BookOpen className="size-4 shrink-0 text-muted-foreground" /><SelectValue /></SelectTrigger>
         <SelectContent alignItemWithTrigger={false}><SelectGroup>{archive.entries.map((item, i) => <SelectItem key={item.path} value={String(i)}>{item.label}</SelectItem>)}</SelectGroup></SelectContent>
       </Select>
-      <span className="mr-auto text-xs text-muted-foreground">{index + 1} / {archive.entries.length}</span>
+      <span className="shrink-0 text-xs tabular-nums text-muted-foreground" aria-label={`${archive.kind === "comics" ? "Page" : "Section"} ${index + 1} of ${archive.entries.length}`}>{index + 1} / {archive.entries.length}</span>
+      </div>
+      <div className="ml-auto flex shrink-0 items-center gap-1 rounded-button bg-secondary/70 p-1 [&_button]:text-muted-foreground [&_button:hover]:text-foreground [&_button:focus-visible]:text-foreground [&_button[aria-expanded=true]]:text-foreground" role="group" aria-label="Reading tools">
       <ReaderAnnotations bookId={book.id} chapter={entry.label} location={{ index, path: entry.path, offset }} selection={selection} jump={jump} />
       {archive.kind === "books" && <ReaderSearch archive={archive} jump={jump} />}
-      {archive.kind === "comics" && <Popover><PopoverTrigger aria-label="Comic reading options" render={<Button size="icon-sm" variant="ghost" />}><Settings2 /></PopoverTrigger><PopoverContent align="end" className="w-64 space-y-3">
+      {archive.kind === "comics" && <Popover><TooltipHint content="Comic reading options"><PopoverTrigger aria-label="Comic reading options" render={<Button size="icon-sm" variant="ghost" />}><Settings2 /></PopoverTrigger></TooltipHint><PopoverContent align="end" className="w-64 space-y-3">
         <PopoverTitle>Comic reading options</PopoverTitle>
         <div className="flex gap-2"><Button size="sm" variant={ui.reader.fit === "width" ? "secondary" : "ghost"} aria-pressed={ui.reader.fit === "width"} onClick={() => ui.patch({ reader: { ...ui.reader, fit: "width" } })}>Fit width</Button><Button size="sm" variant={ui.reader.fit === "page" ? "secondary" : "ghost"} aria-pressed={ui.reader.fit === "page"} onClick={() => ui.patch({ reader: { ...ui.reader, fit: "page" } })}>Fit page</Button></div>
         <Button className="w-full" size="sm" variant="outline" aria-pressed={ui.reader.spread} onClick={() => ui.patch({ reader: { ...ui.reader, spread: !ui.reader.spread } })}>Two-page spreads: {ui.reader.spread ? "On" : "Off"}</Button>
         <Button className="w-full" size="sm" variant="outline" aria-pressed={ui.reader.direction === "rtl"} onClick={() => ui.patch({ reader: { ...ui.reader, direction: ui.reader.direction === "ltr" ? "rtl" : "ltr" } })}>Right to left: {ui.reader.direction === "rtl" ? "On" : "Off"}</Button>
       </PopoverContent></Popover>}
       {archive.kind === "comics" ? <div className="flex items-center gap-1"><TooltipHint content="Zoom out"><Button size="icon-sm" variant="ghost" aria-label="Zoom out" disabled={zoom <= 0.5} onClick={() => setZoom(Math.max(0.5, zoom - 0.25))}><Minus /></Button></TooltipHint><span className="w-10 text-center text-xs">{Math.round(zoom * 100)}%</span><TooltipHint content="Zoom in"><Button size="icon-sm" variant="ghost" aria-label="Zoom in" disabled={zoom >= 2} onClick={() => setZoom(Math.min(2, zoom + 0.25))}><Plus /></Button></TooltipHint></div>
-        : <Popover><PopoverTrigger aria-label="Reading appearance" render={<Button size="icon-sm" variant="ghost" />}><Settings2 /></PopoverTrigger><PopoverContent align="end" className="w-64 space-y-3">
+        : <Popover><TooltipHint content="Reading appearance"><PopoverTrigger aria-label="Reading appearance" render={<Button size="icon-sm" variant="ghost" />}><Settings2 /></PopoverTrigger></TooltipHint><PopoverContent align="end" className="w-64 space-y-3">
           <PopoverTitle>Reading appearance</PopoverTitle>
           {[{ label: "Page colour", value: ui.page, options: ["White", "Paper", "Dark"], change: (page: string) => ui.patch({ page }) }, { label: "Reading font", value: ui.font, options: ["Georgia", "Sans serif"], change: (font: string) => ui.patch({ font }) }, { label: "Line spacing", value: ui.spacing, options: ["Compact", "Comfortable", "Spacious"], change: (spacing: string) => ui.patch({ spacing }) }, { label: "Text width", value: ui.reader.measure ?? "Comfortable", options: ["Narrow", "Comfortable", "Wide"], change: (measure: string) => ui.patch({ reader: { ...ui.reader, measure: measure as NonNullable<typeof ui.reader.measure> } }) }, { label: "Margins", value: ui.reader.margins ?? "Comfortable", options: ["Narrow", "Comfortable", "Wide"], change: (margins: string) => ui.patch({ reader: { ...ui.reader, margins: margins as NonNullable<typeof ui.reader.margins> } }) }].map((choice) => <label key={choice.label} className="flex items-center justify-between gap-3 text-xs">{choice.label}<Select items={choice.options.map((option) => ({ label: option, value: option }))} value={choice.value} onValueChange={(value) => { if (value) choice.change(value); }}><SelectTrigger aria-label={choice.label} size="sm" className="w-32"><SelectValue /></SelectTrigger><SelectContent alignItemWithTrigger={false}><SelectGroup>{choice.options.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectGroup></SelectContent></Select></label>)}
           <div className="flex items-center justify-between text-xs"><span>Text size</span><div className="flex items-center gap-2"><Button size="icon-sm" variant="outline" aria-label="Smaller text" disabled={fontSize <= 14} onClick={() => setFontSize(fontSize - 2)}><Minus /></Button><span>{fontSize}px</span><Button size="icon-sm" variant="outline" aria-label="Larger text" disabled={fontSize >= 32} onClick={() => setFontSize(fontSize + 2)}><Plus /></Button></div></div>
         </PopoverContent></Popover>}
+      </div>
     </div>
-    {error ? <p role="alert" className="m-auto p-6 text-sm text-destructive">{error}</p> : archive.kind === "books" ? source ? <iframe ref={frame} title={`${book.title} — ${entry.label}`} sandbox="allow-same-origin" srcDoc={source} className="min-h-0 flex-1 border-0" onLoad={loadFrame} /> : <p role="status" className="m-auto text-sm text-muted-foreground">Loading chapter…</p>
+    {error ? <p role="alert" className="m-auto p-6 text-sm text-destructive">{error}</p> : archive.kind === "books" ? source ? <iframe ref={frame} title={`${book.title} — ${entry.label}`} sandbox="allow-same-origin" srcDoc={source} className="block min-h-0 w-full min-w-0 flex-1 border-0" style={{ backgroundColor: readerSurface(ui.page).background }} onLoad={loadFrame} /> : <p role="status" className="m-auto text-sm text-muted-foreground">Loading chapter…</p>
       : <ComicCanvas key={group.pages.join(":")} archive={archive} pages={group.pages} preferences={ui.reader} scroller={scroller} offset={offset} onScroll={() => {
         touch(); const node = scroller.current; if (node && ready) observe(index, node.scrollTop / Math.max(1, node.scrollHeight - node.clientHeight));
       }} onReady={() => {
         observe(index, restoreOffset.current); touch(); setReady(true);
       }} onError={() => { setReady(false); setError("This comic page could not be decoded."); }} />}
-    <div className={controlsHidden ? "hidden" : "border-t border-border/60 px-4 py-2"}>
-      <div className="mb-2 flex items-center justify-between gap-3">
-        <Button variant="ghost" size="sm" aria-label="Previous chapter or page" disabled={previousIndex < 0} onClick={() => navigate(previousIndex)}><ArrowLeft /><span className="hidden sm:inline">Previous</span></Button>
-        <span className="text-center text-xs text-muted-foreground">{archive.kind === "comics" ? `Page ${index + 1}` : `Chapter ${index + 1}`} of {archive.entries.length} · {storageError ? "Position kept for this session" : "Position saved automatically"}</span>
-        {nextIndex >= 0 ? <Button variant="ghost" size="sm" aria-label="Next chapter or page" onClick={() => navigate(nextIndex)}><span className="hidden sm:inline">Next</span><ArrowRight /></Button>
-          : <Button variant="secondary" size="sm" disabled={!ready} onClick={() => {
+    <div className={controlsHidden ? "hidden" : "relative shrink-0 border-t border-soft-border bg-background/20 px-4 py-3 sm:px-6"}>
+      <Progress value={progress} aria-label="Reading progress" className="absolute inset-x-0 top-0 gap-0 [&_[data-slot=progress-track]]:h-0.5 [&_[data-slot=progress-track]]:rounded-none" />
+      <div className="grid grid-cols-[1fr_minmax(0,3fr)_1fr] items-center gap-3">
+        <Button variant="ghost" size="sm" className="justify-self-start" aria-label="Previous chapter or page" disabled={previousIndex < 0} onClick={() => navigate(previousIndex)}><ArrowLeft /><span className="hidden sm:inline">Previous</span></Button>
+        <div className="min-w-0 text-center text-xs">
+          <p className="truncate font-medium">{entry.label}</p>
+          <p className="mt-1 text-muted-foreground"><span className="tabular-nums">{Math.round(progress)}% read</span><span className="hidden sm:inline"> &middot; {storageError ? "Position kept for this session" : "Auto-save on"}</span></p>
+          {storageError && <p className="mt-1 text-muted-foreground sm:hidden">Position kept for this session</p>}
+        </div>
+        {nextIndex >= 0 ? <Button variant="ghost" size="sm" className="justify-self-end" aria-label="Next chapter or page" onClick={() => navigate(nextIndex)}><span className="hidden sm:inline">Next</span><ArrowRight /></Button>
+          : <Button variant="secondary" size="sm" className="justify-self-end" disabled={!ready} onClick={() => {
             if (pendingSave.current) clearTimeout(pendingSave.current);
             current.current = { index, total: archive.entries.length, offset: restoreOffset.current, progress: 100 };
             persist(); onClose();
           }}><Check />Finish</Button>}
       </div>
-      <Progress value={progress} aria-label="Reading progress" className="h-1" />
     </div>
   </div>;
 }

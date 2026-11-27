@@ -61,7 +61,36 @@ export function readerChapterHtml(archive: ReaderArchive, index: number, appeara
   const serif = appearance.font === "Literata" || appearance.font === "Georgia";
   const width = appearance.measure === "Narrow" ? 560 : appearance.measure === "Wide" ? 840 : 680;
   const margin = appearance.margins === "Narrow" ? 16 : appearance.margins === "Wide" ? 56 : 32;
-  style.textContent = `html{color-scheme:${dark ? "dark" : "light"};background:${surface.background};color:${surface.foreground};overflow-wrap:anywhere}body{box-sizing:border-box;max-width:${width + margin * 2}px;margin:0 auto;padding:40px min(${margin}px,6vw) 80px;font-family:${serif ? "Georgia,serif" : "system-ui,sans-serif"}!important;font-size:${Math.max(14, Math.min(32, appearance.fontSize))}px!important;line-height:${appearance.spacing === "Compact" ? 1.5 : appearance.spacing === "Spacious" ? 2 : 1.75}!important;background:transparent!important;color:inherit!important}p{color:inherit!important}img,svg{max-width:100%;height:auto}pre{white-space:pre-wrap}a{color:inherit;text-decoration:underline}table{max-width:100%}*{scrollbar-width:thin;scrollbar-color:${dark ? "#666" : "#aaa"} transparent}@media(max-width:500px){body{padding:24px 18px 60px}}`;
+  // Publisher body classes (and inline !important rules) must not displace the
+  // reading column. Keep chapter markup and paragraph styling inside this shell.
+  const layout: Record<string, string> = {
+    "box-sizing": "border-box", display: "block", position: "static", float: "none",
+    transform: "none", translate: "none", rotate: "none", scale: "none", inset: "auto",
+    width: "100%", "min-width": "0", "max-width": `${width + margin * 2}px`,
+    height: "auto", "min-height": "100vh", "max-height": "none",
+    margin: "0 auto", padding: `clamp(32px, 5vh, 56px) min(${margin}px, 6vw) 80px`,
+    "column-count": "auto", "column-width": "auto", overflow: "visible",
+    "font-family": serif ? "Georgia,serif" : "system-ui,sans-serif",
+    "font-size": `${Math.max(14, Math.min(32, appearance.fontSize))}px`,
+    "line-height": String(appearance.spacing === "Compact" ? 1.5 : appearance.spacing === "Spacious" ? 2 : 1.75),
+    background: "transparent", color: "inherit",
+  };
+  // Clear conflicting logical properties as well as physical publisher offsets.
+  for (const property of Array.from(doc.body.style)) {
+    if (/^(margin|padding|inset|inline-size|block-size|min-inline-size|max-inline-size|min-block-size|max-block-size|transform|translate|rotate|scale)/.test(property)) doc.body.style.removeProperty(property);
+  }
+  for (const [property, value] of Object.entries(layout)) doc.body.style.setProperty(property, value, "important");
+  style.textContent = `
+    html{color-scheme:${dark ? "dark" : "light"};background:${surface.background}!important;color:${surface.foreground}!important;overflow-wrap:anywhere;scrollbar-gutter:stable both-edges}
+    html:root{box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:none!important;margin:0!important;padding:0!important}
+    body{inset:auto!important;transform:none!important;translate:none!important;rotate:none!important;scale:none!important}
+    p{color:inherit!important}
+    img,svg{max-width:100%;height:auto}
+    pre{white-space:pre-wrap}
+    a{color:inherit;text-decoration:underline}
+    table{max-width:100%}
+    *{scrollbar-width:thin;scrollbar-color:${dark ? "#666" : "#aaa"} transparent}
+  `;
   doc.head.append(style);
   return `<!doctype html>${doc.documentElement.outerHTML}`;
 }

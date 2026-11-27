@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
 import { Search } from "lucide-react";
+import { TooltipHint } from "@/shared/ui/tooltip";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
@@ -13,7 +14,7 @@ export function ReaderSearch({ archive, jump }: { archive: ReaderArchive; jump: 
   const [status, setStatus] = useLocalUIState("");
   const request = useRef<AbortController | null>(null);
   useEffect(() => () => request.current?.abort(), []);
-  return <Popover><PopoverTrigger aria-label="Search in book" render={<Button size="icon-sm" variant="ghost" />}><Search /></PopoverTrigger>
+  return <Popover><TooltipHint content="Search in book"><PopoverTrigger aria-label="Search in book" render={<Button size="icon-sm" variant="ghost" />}><Search /></PopoverTrigger></TooltipHint>
     <PopoverContent aria-label="Search in book" align="end" className="w-80 max-w-[calc(100vw-3rem)] space-y-3">
       <form className="flex gap-2" onSubmit={async (event) => {
         event.preventDefault(); request.current?.abort();

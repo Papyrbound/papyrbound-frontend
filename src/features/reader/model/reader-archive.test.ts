@@ -56,7 +56,7 @@ test("EPUB chapter rendering removes active content and remote loads while prese
   assert.equal(doc.querySelector("a")!.getAttribute("data-reader-href"), "two.xhtml#ending");
   assert.equal(doc.querySelector("a")!.getAttribute("href"), "#");
   assert.match(doc.body.textContent!, /The paper boat/);
-  assert.match(doc.head.textContent!, /font-size:24px/);
+  assert.equal(doc.body.style.fontSize, "24px");
   assert.doesNotMatch(doc.head.textContent!, /@import/);
   archive.destroy();
 });
@@ -77,10 +77,30 @@ test("EPUB layout preferences preserve content and remain responsive", async () 
     new DOMParser().parseFromString(readerChapterHtml(archive, 0, { ...appearance, measure, margins }), "text/html");
   const narrow = render("Narrow", "Narrow");
   const wide = render("Wide", "Wide");
-  assert.match(narrow.head.textContent!, /max-width:592px/);
-  assert.match(wide.head.textContent!, /max-width:952px/);
-  assert.match(wide.head.textContent!, /min\(56px,6vw\)/);
+  assert.equal(narrow.body.style.maxWidth, "592px");
+  assert.equal(wide.body.style.maxWidth, "952px");
+  assert.match(wide.body.style.padding, /min\(56px, 6vw\)/);
   assert.equal(narrow.body.textContent, wide.body.textContent);
+  archive.destroy();
+});
+
+test("publisher body layout cannot override the reader column or user typography", async () => {
+  const archive = await openReaderArchive(readerEpubFixture(), "books");
+  const path = archive.entries[0].path;
+  archive.files[path] = strToU8(`<html><head><style>
+    body.publisher { margin:8px!important; padding:0!important; width:1200px!important; font-size:36px!important }
+    p { text-indent:1em } em { font-style:italic }
+  </style></head><body class="publisher" style="margin-inline:0!important;padding:0!important;width:1200px!important;transform:translateX(20px)!important;font-size:36px!important"><h1>Chapter 2</h1><p>A passage with <em>emphasis</em>.</p></body></html>`);
+  const doc = new DOMParser().parseFromString(readerChapterHtml(archive, 0, { page: "Dark", font: "Georgia", spacing: "Comfortable", fontSize: 20 }), "text/html");
+  for (const property of ["margin", "padding", "width", "max-width", "font-size", "transform"]) assert.equal(doc.body.style.getPropertyPriority(property), "important");
+  assert.equal(doc.body.style.margin, "0px auto");
+  assert.equal(doc.body.style.width, "100%");
+  assert.equal(doc.body.style.maxWidth, "744px");
+  assert.equal(doc.body.style.fontSize, "20px");
+  assert.equal(doc.body.style.transform, "none");
+  assert.equal(doc.body.style.getPropertyValue("margin-inline"), "");
+  assert.equal(doc.querySelector("em")?.textContent, "emphasis");
+  assert.match(doc.head.textContent!, /text-indent:1em/);
   archive.destroy();
 });
 
