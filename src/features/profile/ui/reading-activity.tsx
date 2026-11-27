@@ -68,6 +68,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
   const firstAvailableDay = Math.max(0, heatmapDays.findIndex((entry) => entry.minutes !== null));
   const availableDays = heatmapDays.slice(Math.floor(firstAvailableDay / 7) * 7);
   const chartDays = embedded ? availableDays.slice(-182) : availableDays;
+  const readingDayCount = chartDays.filter((entry) => !!entry.minutes).length;
   const streak = activityStreak(heatmapDays, day);
   const months = chartDays.filter((_, index) => index % 7 === 0).flatMap((entry, index, weeks) => {
     const date = new Date(`${entry.date}T12:00:00Z`);
@@ -120,8 +121,8 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
           [`${streak.current} ${streak.current === 1 ? "day" : "days"}`, "Reading streak"],
           [String(finished.length), `${label} finished in your library`],
         ].map(([n, l]) => (
-          <div key={l} className="min-w-0 border-r border-border pr-4 last:border-0">
-            <p className={cn("font-medium", embedded ? "text-2xl leading-9" : "text-2xl leading-9")}>{n}</p>
+          <div key={l} className="min-w-0">
+            <p className="text-2xl font-medium leading-9">{n}</p>
             <p className="mt-1 text-[13px] leading-6 text-muted-foreground">
               {l}
             </p>
@@ -129,7 +130,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
         ))}
       </div>
       <div className={cn("grid min-w-0 gap-7", !embedded && "xl:grid-cols-[minmax(0,1.88fr)_minmax(280px,1fr)]")}>
-        <section className={cn("min-w-0 rounded-section bg-card", embedded ? "border border-border p-4" : "p-6")}>
+        <section className={cn("min-w-0", embedded ? "border-b border-border/60 pb-6" : "rounded-section bg-card p-6")}>
           <h2 className="text-base font-semibold leading-[26px]">
             Reading consistency
           </h2>
@@ -165,7 +166,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-xs leading-[18px]">
             <span>
-              {chartDays.filter((d) => !!d.minutes).length} reading days
+              {readingDayCount} reading {readingDayCount === 1 ? "day" : "days"}
             </span>
             <span className="flex items-center gap-1 text-muted-foreground">
               Less
@@ -188,7 +189,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
             {day} · {selected?.minutes ?? 0} minutes read
           </p>
         </section>
-        <section className={cn("relative rounded-section bg-card p-6 pb-12", embedded && "border border-border")}>
+        <section className={cn("relative pb-12", embedded ? "border-b border-border/60" : "rounded-section bg-card p-6 pb-12")}>
           <h2 className="flex items-center justify-between text-base font-semibold leading-[26px]">
             Daily reading goal
             <CircleCheck className="size-4 text-muted-foreground" />

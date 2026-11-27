@@ -145,7 +145,7 @@ export function BookDetailsPanel({
               ],
               [
                 "Pages read",
-                `${Math.round((book.pages * book.progress) / 100)} of ${book.pages}`,
+                book.pages > 0 ? `${Math.round((book.pages * book.progress) / 100)} of ${book.pages}` : "Not available",
               ],
               ["Last read", book.lastReadAt ? new Date(book.lastReadAt).toLocaleDateString() : "Not opened"],
             ]

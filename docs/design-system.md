@@ -172,3 +172,63 @@ Before designing or implementing an interface, consider:
 6. Does it feel appropriate for a desktop application?
 7. Does it support the content rather than distract from it?
 8. Is the visual treatment intentional?
+
+## Reference sources and implementation
+
+The November 2026 implementation pass uses these public references:
+
+- [HeroUI theming](https://heroui.com/en/docs/react/getting-started/theming):
+  semantic surface and foreground variables, coordinated themes, and reusable
+  component styling. Papyrbound retains its shadcn/Base UI behavior and neutral
+  palette; HeroUI is not a runtime dependency.
+- [Uber Base dimensions](https://base.uber.com/6d2425e9f/p/598458-dimensions):
+  consistent spacing in increments of four. Revised screens use the shared
+  Tailwind spacing scale instead of fractional layout measurements.
+- [Apple toolbars](https://developer.apple.com/design/human-interface-guidelines/toolbars):
+  prioritize useful commands, disclose secondary options progressively, and
+  provide a reliable way to restore hidden reading controls.
+- [Apple accessibility](https://developer.apple.com/design/human-interface-guidelines/accessibility):
+  keyboard operation, readable text, contrast in both themes, and state indicators
+  that include labels or icons.
+
+### Shared defaults
+
+| Role | Default |
+| --- | --- |
+| Page title | 24px / 32px, semibold |
+| Section title | 18px / 24px, semibold |
+| Control label | 13px / 20px |
+| Metadata | 12px / 18px |
+| Standard control height | 32px; existing compact variants remain available |
+| Control / menu / dialog radius | 8px / 12px / 16px |
+| Section and selection radius | 16px and 12px |
+| Fast / normal / panel transition | 120ms / 180ms / 220ms |
+
+Floating controls use the popover surface and restrained elevation. Content
+sections use subtle fills or separators; nested profile activity sections use
+separators instead of additional cards. Book artwork keeps its own proportions
+and small corner radius. Search and the library switcher keep their existing
+dimensions.
+
+Reading Now places captions and progress outside cover artwork. Reading titles
+use a list with explicit Selected, Available, and Locked states. Activity charts
+start at the first available account week. Settings separate appearance, reading,
+and library preferences, and their preview shares the reader's surface palette.
+
+The EPUB reader exposes text width and margins alongside its existing appearance
+settings. These preferences persist and remain compatible with older settings
+and backups. Both readers offer a distraction-free view; the visible restore
+button and Ctrl/Command+Shift+F restore controls, including from EPUB content.
+
+### Verification for this pass
+
+- 52 model and persistence tests pass, including older preferences and responsive
+  EPUB layout rendering. ESLint, TypeScript, and the production build pass.
+- Browser checks cover light and dark themes, 900px and 1280px desktop widths,
+  Reading Now, reading titles, settings, profile activity, and original EPUB/CBZ
+  test files. Reading preferences were changed and verified after reload.
+- The muted text token has at least 4.5:1 contrast on the default and selected
+  surfaces in both themes. This is a token check, not a complete accessibility
+  certification.
+- This pass verifies the frontend in the browser. It does not replace testing
+  the newly styled interface in a fresh native installer.

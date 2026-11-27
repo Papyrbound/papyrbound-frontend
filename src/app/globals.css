@@ -777,7 +777,7 @@
   }
   [data-slot="sheet-content"] {
     transition-timing-function: var(--motion-reading-ease);
-    transition-duration: 260ms;
+    transition-duration: var(--motion-duration-panel);
   }
   @media (prefers-reduced-motion: reduce) {
     .reading-word-mask > span,
