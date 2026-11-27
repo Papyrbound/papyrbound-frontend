@@ -28,6 +28,10 @@ An existing official export ZIP may be supplied as the first argument. The
 script writes version, source URL and archive SHA-256 to `metadata.json`. The
 source ZIP is not needed to run the app and is not committed.
 
+`src/app/globals.css` excludes the generated dictionary directory from Tailwind
+source detection. These files contain definitions rather than UI classes; the
+exclusion follows [Tailwind's source detection guidance](https://tailwindcss.com/docs/detecting-classes-in-source-files#ignoring-specific-paths).
+
 Validation includes selection normalization, real offline data, irregular forms,
 missing definitions, native command bounds and Rust lookup. Browser verification
 covers the EPUB selection/context menu and displayed dictionary results.
