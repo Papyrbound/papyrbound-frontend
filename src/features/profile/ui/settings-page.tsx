@@ -2,6 +2,7 @@
 
 import { useAccount, updatePreferences } from "../stores/account-store";
 
+import { readerSurface } from "@/features/reader/model/reader-preferences";
 import { useSettingsUI } from "../stores/settings-ui-store";
 
 import { EditProfileDialog } from "./edit-profile-dialog";
@@ -66,6 +67,7 @@ function SettingsRow({
 export function SettingsPage() {
   const { preferences, profile } = useAccount();
   const ui = useSettingsUI();
+  const surface = readerSurface(ui.page);
   return (
     <main className="mx-auto max-w-7xl px-6 py-8 lg:px-10">
       <header className="mb-8 flex items-center justify-between gap-4">
@@ -172,6 +174,15 @@ export function SettingsPage() {
                 />
               </SettingsRow>
             ))}
+            <SettingsRow label="Text size" description="Size of the text inside your books.">
+              <Choice label="Reading text size" value={String(ui.reader.fontSize)} options={["14", "16", "18", "20", "22", "24", "26", "28", "30", "32"]} onChange={(value) => ui.patch({ reader: { ...ui.reader, fontSize: Number(value) } })} />
+            </SettingsRow>
+            <SettingsRow label="Text width" description="Keep lines at a comfortable reading length.">
+              <Choice label="Text width" value={ui.reader.measure ?? "Comfortable"} options={["Narrow", "Comfortable", "Wide"]} onChange={(value) => ui.patch({ reader: { ...ui.reader, measure: value as NonNullable<typeof ui.reader.measure> } })} />
+            </SettingsRow>
+            <SettingsRow label="Margins" description="Space around the text on each page.">
+              <Choice label="Margins" value={ui.reader.margins ?? "Comfortable"} options={["Narrow", "Comfortable", "Wide"]} onChange={(value) => ui.patch({ reader: { ...ui.reader, margins: value as NonNullable<typeof ui.reader.margins> } })} />
+            </SettingsRow>
             <SettingsRow
               label="Resume where you left off"
               description="Open books at your last reading position."
@@ -213,9 +224,10 @@ export function SettingsPage() {
             Your default reading appearance.
           </p>
           <div
-            className={`relative min-h-96 rounded-section border border-soft-border px-8 pb-24 pt-12 sm:px-10 ${ui.page === "Dark" ? "bg-[#292929] text-[#e5e5e5]" : ui.page === "Paper" ? "bg-[#f3f0e7] text-[#44423d]" : "bg-white text-[#343434]"}`}
+            className="relative min-h-96 rounded-section border border-soft-border pb-24 pt-10"
+            style={{ background: surface.background, color: surface.foreground, paddingInline: ui.reader.margins === "Narrow" ? 16 : ui.reader.margins === "Wide" ? 56 : 32 }}
           >
-            <p className="text-center text-[11px] leading-[18px] text-muted-foreground">
+            <p style={{ color: surface.muted }} className="text-center text-xs leading-5">
               CHAPTER ONE
             </p>
             <h3
@@ -224,8 +236,8 @@ export function SettingsPage() {
               A place between pages
             </h3>
             <div
-              style={{ fontSize: ui.reader.fontSize }}
-              className={`space-y-6 ${ui.font === "Georgia" ? "font-[Georgia,serif]" : "font-sans"} ${ui.spacing === "Compact" ? "leading-7" : ui.spacing === "Spacious" ? "leading-10" : "leading-[31.5px]"}`}
+              style={{ fontSize: ui.reader.fontSize, lineHeight: ui.spacing === "Compact" ? 1.5 : ui.spacing === "Spacious" ? 2 : 1.75 }}
+              className={`space-y-6 ${ui.font === "Georgia" ? "font-[Georgia,serif]" : "font-sans"}`}
             >
               <p>
                 The room grew quiet as the afternoon light moved across the
@@ -238,7 +250,7 @@ export function SettingsPage() {
                 might come next.
               </p>
             </div>
-            <p className="absolute inset-x-0 bottom-10 text-center text-xs text-muted-foreground">
+            <p style={{ color: surface.muted }} className="absolute inset-x-0 bottom-10 text-center text-xs">
               1
             </p>
           </div>

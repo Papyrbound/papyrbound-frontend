@@ -46,6 +46,6 @@ export function startSettingsPersistence() {
     isRecord(value) && (value.showDemo === undefined || typeof value.showDemo === "boolean") && ["White", "Paper", "Dark"].includes(String(value.page)) &&
     ["Literata", "Georgia", "Sans serif"].includes(String(value.font)) && (value.reader === undefined || validReaderPreferences(value.reader)) && ["Compact", "Comfortable", "Spacious"].includes(String(value.spacing)) &&
     ["Small", "Default", "Large"].includes(String(value.interfaceSize)) && typeof value.labels === "boolean" && typeof value.resume === "boolean", report);
-  if (saved) useSettingsUI.setState({ ...saved, showDemo: saved.showDemo ?? false, font: saved.font === "Literata" ? "Georgia" : saved.font, reader: saved.reader ?? defaultReaderPreferences });
+  if (saved) useSettingsUI.setState({ ...saved, showDemo: saved.showDemo ?? false, font: saved.font === "Literata" ? "Georgia" : saved.font, reader: { ...defaultReaderPreferences, ...saved.reader } });
   return subscribeDeviceState(useSettingsUI, "papyrbound-reading-settings-v1", select, report);
 }

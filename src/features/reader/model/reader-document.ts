@@ -1,8 +1,9 @@
+import { readerSurface, type ReaderPreferences } from "./reader-preferences";
 import createDOMPurify from "dompurify";
 import { strFromU8 } from "fflate";
 import { resolveReaderPath, type ReaderArchive } from "./reader-archive";
 
-export type ReaderAppearance = { page: string; font: string; spacing: string; fontSize: number };
+export type ReaderAppearance = { page: string; font: string; spacing: string; fontSize: number; measure?: ReaderPreferences["measure"]; margins?: ReaderPreferences["margins"] };
 
 /** Chapters are isolated in a scriptless frame; only local archive assets are allowed. */
 export function readerChapterHtml(archive: ReaderArchive, index: number, appearance: ReaderAppearance) {
@@ -56,8 +57,11 @@ export function readerChapterHtml(archive: ReaderArchive, index: number, appeara
   doc.head.append(viewport);
   const style = doc.createElement("style");
   const dark = appearance.page === "Dark";
+  const surface = readerSurface(appearance.page);
   const serif = appearance.font === "Literata" || appearance.font === "Georgia";
-  style.textContent = `html{color-scheme:${dark ? "dark" : "light"};background:${dark ? "#242424" : appearance.page === "Paper" ? "#f3f0e7" : "#fff"};color:${dark ? "#e5e5e5" : "#343434"};overflow-wrap:anywhere}body{box-sizing:border-box;max-width:760px;margin:0 auto;padding:36px 28px 80px;font-family:${serif ? "Georgia,serif" : "system-ui,sans-serif"}!important;font-size:${Math.max(14, Math.min(32, appearance.fontSize))}px!important;line-height:${appearance.spacing === "Compact" ? 1.5 : appearance.spacing === "Spacious" ? 2 : 1.75}!important;background:transparent!important;color:inherit!important}p{color:inherit!important}img,svg{max-width:100%;height:auto}pre{white-space:pre-wrap}a{color:inherit;text-decoration:underline}table{max-width:100%}@media(max-width:500px){body{padding:24px 18px 60px}}`;
+  const width = appearance.measure === "Narrow" ? 560 : appearance.measure === "Wide" ? 840 : 680;
+  const margin = appearance.margins === "Narrow" ? 16 : appearance.margins === "Wide" ? 56 : 32;
+  style.textContent = `html{color-scheme:${dark ? "dark" : "light"};background:${surface.background};color:${surface.foreground};overflow-wrap:anywhere}body{box-sizing:border-box;max-width:${width + margin * 2}px;margin:0 auto;padding:40px min(${margin}px,6vw) 80px;font-family:${serif ? "Georgia,serif" : "system-ui,sans-serif"}!important;font-size:${Math.max(14, Math.min(32, appearance.fontSize))}px!important;line-height:${appearance.spacing === "Compact" ? 1.5 : appearance.spacing === "Spacious" ? 2 : 1.75}!important;background:transparent!important;color:inherit!important}p{color:inherit!important}img,svg{max-width:100%;height:auto}pre{white-space:pre-wrap}a{color:inherit;text-decoration:underline}table{max-width:100%}*{scrollbar-width:thin;scrollbar-color:${dark ? "#666" : "#aaa"} transparent}@media(max-width:500px){body{padding:24px 18px 60px}}`;
   doc.head.append(style);
   return `<!doctype html>${doc.documentElement.outerHTML}`;
 }

@@ -14,7 +14,7 @@ export function ReaderSearch({ archive, jump }: { archive: ReaderArchive; jump: 
   const request = useRef<AbortController | null>(null);
   useEffect(() => () => request.current?.abort(), []);
   return <Popover><PopoverTrigger aria-label="Search in book" render={<Button size="icon-sm" variant="ghost" />}><Search /></PopoverTrigger>
-    <PopoverContent align="end" className="w-80 max-w-[calc(100vw-3rem)] space-y-3">
+    <PopoverContent aria-label="Search in book" align="end" className="w-80 max-w-[calc(100vw-3rem)] space-y-3">
       <form className="flex gap-2" onSubmit={async (event) => {
         event.preventDefault(); request.current?.abort();
         const job = new AbortController(); request.current = job;

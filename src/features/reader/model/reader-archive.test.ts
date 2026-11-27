@@ -70,6 +70,20 @@ test("CBZ pages use natural order, ignore auxiliary entries and release object U
   await assert.rejects(fetch(url));
 });
 
+test("EPUB layout preferences preserve content and remain responsive", async () => {
+  const archive = await openReaderArchive(readerEpubFixture(), "books");
+  const appearance = { page: "Paper", font: "Georgia", spacing: "Comfortable", fontSize: 20 };
+  const render = (measure: "Narrow" | "Wide", margins: "Narrow" | "Wide") =>
+    new DOMParser().parseFromString(readerChapterHtml(archive, 0, { ...appearance, measure, margins }), "text/html");
+  const narrow = render("Narrow", "Narrow");
+  const wide = render("Wide", "Wide");
+  assert.match(narrow.head.textContent!, /max-width:592px/);
+  assert.match(wide.head.textContent!, /max-width:952px/);
+  assert.match(wide.head.textContent!, /min\(56px,6vw\)/);
+  assert.equal(narrow.body.textContent, wide.body.textContent);
+  archive.destroy();
+});
+
 test("large comics retain compressed pages and bound the decoded page cache", async () => {
   const fixture = readerComicFixture();
   const { unzipSync } = await import("fflate");

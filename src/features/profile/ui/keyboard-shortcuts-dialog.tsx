@@ -13,16 +13,20 @@ const navigation = [
   { label: "Move between controls", keys: ["Tab"] },
   { label: "Close a menu or dialog", keys: ["Esc"] },
 ];
+const reading = [
+  { label: "Hide or show reading controls", keys: ["Ctrl / ⌘", "Shift", "F"] },
+  { label: "Previous / next chapter or page", keys: ["←", "→"] },
+];
 
 export function KeyboardShortcutsDialog({ onClose }: { onClose: () => void }) {
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="gap-5 sm:max-w-[440px]">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] gap-5 overflow-y-auto sm:max-w-[440px]">
         <DialogHeader className="pr-8">
           <DialogTitle>Keyboard shortcuts</DialogTitle>
           <DialogDescription>A quicker way around your library.</DialogDescription>
         </DialogHeader>
-        {[{ title: "Anywhere", rows: shortcuts }, { title: "Navigation", rows: navigation }].map(({ title, rows }) => (
+        {[{ title: "Anywhere", rows: shortcuts }, { title: "Navigation", rows: navigation }, { title: "While reading", rows: reading }].map(({ title, rows }) => (
           <section key={title} aria-label={title}>
             <h2 className="mb-2 text-xs font-medium text-muted-foreground">{title}</h2>
             <dl className="divide-y divide-border">

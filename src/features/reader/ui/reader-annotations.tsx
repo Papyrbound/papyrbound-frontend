@@ -5,7 +5,7 @@ import { useAnnotations } from "@/features/annotations/stores/annotations-store"
 import { useLocalUIState } from "@/shared/hooks/use-local-ui-state";
 import { Button } from "@/shared/ui/button";
 import { Textarea } from "@/shared/ui/textarea";
-import { Popover, PopoverTrigger, PopoverContent } from "@/shared/ui/popover";
+import { Popover, PopoverTrigger, PopoverTitle, PopoverContent } from "@/shared/ui/popover";
 import { offerUndo } from "@/shared/lib/undo-toast";
 import { removeAnnotation } from "@/features/library/model/undo-actions";
 
@@ -27,7 +27,7 @@ export function ReaderAnnotations({ bookId, chapter, location, selection, jump }
   }
   return <Popover><PopoverTrigger aria-label="Notes and bookmarks" render={<Button size="icon-sm" variant="ghost" />}><NotebookPen /></PopoverTrigger>
     <PopoverContent align="end" className="w-80 max-w-[calc(100vw-3rem)] space-y-3">
-      <h2 className="font-medium">Notes and bookmarks</h2>
+      <PopoverTitle>Notes and bookmarks</PopoverTitle>
       {selection ? <p className="max-h-24 overflow-auto text-xs text-muted-foreground">“{selection.quote}”</p> : <p className="text-xs text-muted-foreground">Select text in the book to highlight it, or save a note at your current position.</p>}
       <Textarea aria-label="Reader note" placeholder="Add your thoughts…" value={note} onChange={(event) => setNote(event.target.value)} maxLength={5000} />
       <div className="flex flex-wrap gap-2"><Button size="sm" disabled={!selection && !note.trim()} onClick={() => save()}><Highlighter />{selection ? "Save highlight" : "Save note"}</Button><Button size="sm" variant="outline" onClick={() => save(true)}><BookmarkPlus />Bookmark</Button></div>
