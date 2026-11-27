@@ -19,6 +19,7 @@ import { readerChapterHtml } from "../model/reader-document";
 import { openReaderArchive, resolveReaderPath, type ReaderArchive } from "../model/reader-archive";
 import { activeReadingInterval, readingProgress, type ReadingPosition } from "../model/reading-state";
 import { markPassage, selectionLocation } from "../model/text-location";
+import { ReaderContextMenu } from "./reader-context-menu";
 import { ReaderAnnotations } from "./reader-annotations";
 import { ReaderSearch } from "./reader-search";
 import { ComicCanvas } from "./comic-canvas";
@@ -84,6 +85,7 @@ function ReaderView({ book, archive, onClose, controlsHidden, toggleControls }: 
   const [progress, setProgress] = useLocalUIState(saved?.progress ?? 0);
   const [offset, setOffset] = useLocalUIState(initialLocation?.offset ?? saved?.offset ?? 0);
   const frame = useRef<HTMLIFrameElement>(null);
+  const contextTrigger = useRef<HTMLDivElement>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const root = useRef<HTMLDivElement>(null);
   const restoreOffset = useRef(initialLocation?.offset ?? saved?.offset ?? 0);
@@ -133,7 +135,7 @@ function ReaderView({ book, archive, onClose, controlsHidden, toggleControls }: 
     setReady(false); setError("");
     try { setSource(readerChapterHtml(archive, index, { page: ui.page, font: ui.font, spacing: ui.spacing, fontSize, measure: ui.reader.measure, margins: ui.reader.margins })); }
     catch (cause) { setError(cause instanceof Error ? cause.message : "This chapter could not be displayed."); }
-  }, [archive, index, ui.page, ui.font, ui.spacing, fontSize, ui.reader.measure, ui.reader.margins, annotations, setReady, setSource, setError]);
+  }, [archive, index, ui.page, ui.font, ui.spacing, fontSize, ui.reader.measure, ui.reader.margins, setReady, setSource, setError]);
 
   // Flush on close, blur, backgrounding, and before the next local day begins.
   useEffect(() => {
@@ -184,19 +186,50 @@ function ReaderView({ book, archive, onClose, controlsHidden, toggleControls }: 
   }, [archive, index, spread, ui.reader.direction, navigate, onClose, persist, toggleControls]);
   useEffect(() => { window.addEventListener("keydown", keyboard); return () => window.removeEventListener("keydown", keyboard); }, [keyboard]);
 
-  function loadFrame() {
-    cleanFrame.current?.();
-    const document = frame.current?.contentDocument;
-    const window = frame.current?.contentWindow;
-    if (!document || !window) { setError("This chapter could not be displayed."); return; }
-    if (document.documentElement.getAttribute("data-reader-path") !== entry.path) return;
+  const applyAnnotations = useCallback((document: Document) => {
+    for (const mark of document.querySelectorAll("mark[data-annotation-id]")) mark.replaceWith(...mark.childNodes);
+    document.body.normalize();
     for (const item of annotations) {
       const location = item.location;
       if (item.bookId === book.id && location?.path === entry.path && location.start !== undefined && location.end !== undefined) {
         markPassage(document.body, location.start, location.end, annotationColors[item.color], item.id);
       }
     }
+  }, [annotations, book.id, entry.path]);
+  useEffect(() => {
+    const document = frame.current?.contentDocument;
+    if (document?.documentElement.getAttribute("data-reader-path") === entry.path) applyAnnotations(document);
+  }, [applyAnnotations, entry.path]);
+
+  function loadFrame() {
+    cleanFrame.current?.();
+    const document = frame.current?.contentDocument;
+    const window = frame.current?.contentWindow;
+    if (!document || !window) { setError("This chapter could not be displayed."); return; }
+    if (document.documentElement.getAttribute("data-reader-path") !== entry.path) return;
+    applyAnnotations(document);
     const captureSelection = () => setSelection(selectionLocation(document.body, window.getSelection()));
+    // Events inside the scriptless EPUB frame do not bubble to the React tree.
+    // Translate its pointer position into the parent viewport for shadcn's menu.
+    const contextMenu = (event: MouseEvent | KeyboardEvent) => {
+      event.preventDefault();
+      captureSelection(); touch();
+      const rect = frame.current?.getBoundingClientRect();
+      if (!rect || !contextTrigger.current) return;
+      const range = window.getSelection()?.rangeCount ? window.getSelection()!.getRangeAt(0).getBoundingClientRect() : undefined;
+      const point = "clientX" in event && (event.clientX || event.clientY)
+        ? { x: event.clientX, y: event.clientY }
+        : { x: Math.max(16, range?.left ?? 24), y: Math.max(16, Math.min(window.innerHeight - 16, range?.bottom ?? 24)) };
+      contextTrigger.current.dispatchEvent(new MouseEvent("contextmenu", {
+        bubbles: true, cancelable: true, button: 2,
+        clientX: rect.left + point.x * rect.width / frame.current!.clientWidth,
+        clientY: rect.top + point.y * rect.height / frame.current!.clientHeight,
+      }));
+    };
+    const frameKeyboard = (event: KeyboardEvent) => {
+      if (event.key === "ContextMenu" || event.shiftKey && event.key === "F10") { contextMenu(event); return; }
+      keyboard(event);
+    };
     const offset = restoreOffset.current;
     const scroll = () => {
       touch();
@@ -232,11 +265,13 @@ function ReaderView({ book, archive, onClose, controlsHidden, toggleControls }: 
     const range = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
     observe(index, range ? window.scrollY / range : 0); touch(); setReady(true);
     window.addEventListener("scroll", scroll, { passive: true });
-    document.addEventListener("click", click); document.addEventListener("keydown", keyboard);
+    document.addEventListener("click", click); document.addEventListener("keydown", frameKeyboard);
+    document.addEventListener("contextmenu", contextMenu);
     document.addEventListener("mouseup", captureSelection); document.addEventListener("keyup", captureSelection);
     for (const event of ["pointerdown", "pointermove", "wheel", "touchstart"] as const) document.addEventListener(event, touch, { passive: true });
     cleanFrame.current = () => {
-      window.removeEventListener("scroll", scroll); document.removeEventListener("click", click); document.removeEventListener("keydown", keyboard);
+      window.removeEventListener("scroll", scroll); document.removeEventListener("click", click); document.removeEventListener("keydown", frameKeyboard);
+      document.removeEventListener("contextmenu", contextMenu);
       document.removeEventListener("mouseup", captureSelection); document.removeEventListener("keyup", captureSelection);
       for (const event of ["pointerdown", "pointermove", "wheel", "touchstart"] as const) document.removeEventListener(event, touch);
     };
@@ -281,12 +316,14 @@ function ReaderView({ book, archive, onClose, controlsHidden, toggleControls }: 
         </PopoverContent></Popover>}
       </div>
     </div>
+    <ReaderContextMenu triggerRef={contextTrigger} bookId={book.id} chapter={entry.label} location={{ index, path: entry.path, offset }} selection={selection}>
     {error ? <p role="alert" className="m-auto p-6 text-sm text-destructive">{error}</p> : archive.kind === "books" ? source ? <iframe ref={frame} title={`${book.title} — ${entry.label}`} sandbox="allow-same-origin" srcDoc={source} className="block min-h-0 w-full min-w-0 flex-1 border-0" style={{ backgroundColor: readerSurface(ui.page).background }} onLoad={loadFrame} /> : <p role="status" className="m-auto text-sm text-muted-foreground">Loading chapter…</p>
       : <ComicCanvas key={group.pages.join(":")} archive={archive} pages={group.pages} preferences={ui.reader} scroller={scroller} offset={offset} onScroll={() => {
         touch(); const node = scroller.current; if (node && ready) observe(index, node.scrollTop / Math.max(1, node.scrollHeight - node.clientHeight));
       }} onReady={() => {
         observe(index, restoreOffset.current); touch(); setReady(true);
       }} onError={() => { setReady(false); setError("This comic page could not be decoded."); }} />}
+    </ReaderContextMenu>
     <div className={controlsHidden ? "hidden" : "relative shrink-0 border-t border-soft-border bg-background/20 px-4 py-3 sm:px-6"}>
       <Progress value={progress} aria-label="Reading progress" className="absolute inset-x-0 top-0 gap-0 [&_[data-slot=progress-track]]:h-0.5 [&_[data-slot=progress-track]]:rounded-none" />
       <div className="grid grid-cols-[1fr_minmax(0,3fr)_1fr] items-center gap-3">
