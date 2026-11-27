@@ -16,6 +16,12 @@ The application combines a Next.js frontend with Tauri to provide a native deskt
 - EPUB e-books
 - CBZ comic book archives
 
+## Design direction
+
+Follow the [Papyrbound design system and UI/UX context](docs/design-system.md)
+for interface work: HeroUI for visual inspiration, Uber Base for foundations,
+Apple Human Interface Guidelines for desktop UX, and shadcn/ui for components.
+
 ## Architecture
 
 The frontend uses a feature-oriented structure with one-way dependencies:

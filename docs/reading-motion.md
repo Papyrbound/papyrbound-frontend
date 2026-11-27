@@ -1,5 +1,9 @@
 # Papyrbound motion
 
+This document records an earlier motion implementation. Follow the current
+[Papyrbound design direction](design-system.md) where guidance differs,
+especially its emphasis on restrained motion and immediate interaction.
+
 Motion supports browsing and reading, with no looping decorative movement or scroll interception.
 
 ## References reviewed

@@ -1,5 +1,9 @@
 # Penpot implementation reference
 
+Historical implementation reference. Follow the current
+[Papyrbound design direction](design-system.md) where guidance differs; the
+values and patterns below describe an earlier iteration.
+
 Source: **Panels — Reference recreation**, file `52a5041f-08a1-80f1-8008-c3ceb61a118d`, page `b6ac89e5-6209-809c-8008-dca6976d7ee7`.
 
 The latest Panels screens override the older foundation palette and typeface. Use their soft monochrome colours and retain the foundation spacing and radius scale. The app uses regular Inter following the typography update; the original Panels references use Inter Tight. Shared values live in `src/app/globals.css` under `@theme` and the light/dark semantic variables. Component styling belongs in Tailwind classes.

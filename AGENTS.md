@@ -11,3 +11,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## UI components
 
 Use shadcn/ui components whenever they fit. Reuse the existing components in `src/shared/ui` and add missing shadcn components before building custom UI primitives.
+
+## Design direction
+
+Read [Papyrbound's design system and UI/UX context](docs/design-system.md) before designing or changing an interface. It is the current design direction and takes precedence over earlier design-reference and motion notes when they conflict.
+
+Use HeroUI for visual inspiration, Uber Base for semantic foundations, Apple Human Interface Guidelines for desktop UX, and shadcn/ui for implementation. Preserve Papyrbound's own identity: calm, compact, content-focused, accessible, and consistent across light and dark themes. Centralize reusable visual decisions in semantic tokens and shared components; avoid decorative clutter and isolated styling solutions.

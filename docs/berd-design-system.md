@@ -1,5 +1,9 @@
 # Papyrbound: a Berd-inspired reading space
 
+Historical implementation reference. Follow the current
+[Papyrbound design direction](design-system.md) where guidance differs; the
+values and patterns below describe an earlier iteration.
+
 ## Reference and scope
 
 Inspected [block/berd](https://github.com/block/berd) at commit
