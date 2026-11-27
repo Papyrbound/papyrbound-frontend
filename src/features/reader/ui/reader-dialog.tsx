@@ -209,6 +209,22 @@ function ReaderView({ book, archive, onClose, controlsHidden, toggleControls }: 
     if (document.documentElement.getAttribute("data-reader-path") !== entry.path) return;
     applyAnnotations(document);
     const captureSelection = () => setSelection(selectionLocation(document.body, window.getSelection()));
+    // Native events stop at the iframe boundary. Forward presses onto the frame
+    // element so shared menus/popovers receive their normal outside-press events.
+    const bridgePress = (event: MouseEvent) => {
+      const node = frame.current;
+      if (!node) return;
+      const rect = node.getBoundingClientRect();
+      const options = { bubbles: true, cancelable: true, button: event.button, buttons: event.buttons,
+        clientX: rect.left + event.clientX * rect.width / node.clientWidth,
+        clientY: rect.top + event.clientY * rect.height / node.clientHeight };
+      node.dispatchEvent(event.type.startsWith("pointer")
+        ? new PointerEvent(event.type, { ...options, pointerType: "pointerType" in event ? String(event.pointerType) : "mouse" })
+        : new MouseEvent(event.type, options));
+    };
+    const pressEvents = ["pointerdown", "pointerup", "mousedown", "mouseup", "click"] as const;
+    for (const type of pressEvents) document.addEventListener(type, bridgePress);
+
     // Events inside the scriptless EPUB frame do not bubble to the React tree.
     // Translate its pointer position into the parent viewport for shadcn's menu.
     const contextMenu = (event: MouseEvent | KeyboardEvent) => {
@@ -270,6 +286,7 @@ function ReaderView({ book, archive, onClose, controlsHidden, toggleControls }: 
     document.addEventListener("mouseup", captureSelection); document.addEventListener("keyup", captureSelection);
     for (const event of ["pointerdown", "pointermove", "wheel", "touchstart"] as const) document.addEventListener(event, touch, { passive: true });
     cleanFrame.current = () => {
+      for (const type of pressEvents) document.removeEventListener(type, bridgePress);
       window.removeEventListener("scroll", scroll); document.removeEventListener("click", click); document.removeEventListener("keydown", frameKeyboard);
       document.removeEventListener("contextmenu", contextMenu);
       document.removeEventListener("mouseup", captureSelection); document.removeEventListener("keyup", captureSelection);
