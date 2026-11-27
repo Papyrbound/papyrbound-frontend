@@ -20,6 +20,7 @@ import { openReaderArchive, resolveReaderPath, type ReaderArchive } from "../mod
 import { activeReadingInterval, readingProgress, type ReadingPosition } from "../model/reading-state";
 import { markPassage, selectionLocation } from "../model/text-location";
 import { ReaderContextMenu } from "./reader-context-menu";
+import { ReaderContents } from "./reader-contents";
 import { ReaderAnnotations } from "./reader-annotations";
 import { ReaderSearch } from "./reader-search";
 import { ComicCanvas } from "./comic-canvas";
@@ -310,6 +311,7 @@ function ReaderView({ book, archive, onClose, controlsHidden, toggleControls }: 
   return <div ref={root} className="flex min-h-0 min-w-0 flex-col" onPointerMove={touch} onPointerDown={touch} onKeyDown={touch}>
     <div className={controlsHidden ? "hidden" : "flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-soft-border bg-background/20 px-4 py-2 sm:px-6"}>
       <div className="flex min-w-0 flex-1 items-center gap-2">
+      <ReaderContents entries={archive.entries} index={index} navigate={navigate} />
       <Select items={archive.entries.map((item, i) => ({ label: item.label, value: String(i) }))} value={String(index)} onValueChange={(value) => { if (value !== null && Number(value) !== index) navigate(Number(value)); }}>
         <SelectTrigger aria-label={archive.kind === "comics" ? "Go to page" : "Go to chapter"} className="min-w-0 flex-1 bg-secondary/60 sm:max-w-80"><BookOpen className="size-4 shrink-0 text-muted-foreground" /><SelectValue /></SelectTrigger>
         <SelectContent alignItemWithTrigger={false}><SelectGroup>{archive.entries.map((item, i) => <SelectItem key={item.path} value={String(i)}>{item.label}</SelectItem>)}</SelectGroup></SelectContent>
@@ -318,6 +320,7 @@ function ReaderView({ book, archive, onClose, controlsHidden, toggleControls }: 
       </div>
       <div className="ml-auto flex shrink-0 items-center gap-1 rounded-button bg-secondary/70 p-1 [&_button]:text-muted-foreground [&_button:hover]:text-foreground [&_button:focus-visible]:text-foreground [&_button[aria-expanded=true]]:text-foreground" role="group" aria-label="Reading tools">
       <ReaderAnnotations bookId={book.id} chapter={entry.label} location={{ index, path: entry.path, offset }} selection={selection} jump={jump} />
+      <ReaderAnnotations bookId={book.id} chapter={entry.label} location={{ index, path: entry.path, offset }} jump={jump} mode="bookmarks" />
       {archive.kind === "books" && <ReaderSearch archive={archive} jump={jump} />}
       {archive.kind === "comics" && <Popover><TooltipHint content="Comic reading options"><PopoverTrigger aria-label="Comic reading options" render={<Button size="icon-sm" variant="ghost" />}><Settings2 /></PopoverTrigger></TooltipHint><PopoverContent align="end" className="w-64 space-y-3">
         <PopoverTitle>Comic reading options</PopoverTitle>
