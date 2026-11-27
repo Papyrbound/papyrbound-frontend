@@ -70,7 +70,7 @@ function Navigation() {
         {items.map(({ label, href, icon: Icon }) => (
           <SidebarMenuItem key={href}>
             <SidebarMenuButton
-              className={`h-8 rounded-lg px-3 text-[13px] leading-4 ${labels ? "" : "[&>span]:sr-only"}`}
+              className={`h-8 rounded-selection px-3 text-[13px] leading-4 ${labels ? "" : "[&>span]:sr-only"}`}
               isActive={
                 href.includes("?")
                   ? path + "?" + search.toString() === href

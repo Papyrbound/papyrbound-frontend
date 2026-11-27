@@ -28,7 +28,7 @@ function Choice({
 }) {
   return (
     <Select items={options.map((option) => ({ label: option, value: option }))} value={value} onValueChange={(next) => { if (next) onChange(next); }}>
-      <SelectTrigger aria-label={label} className="w-40 rounded-lg text-[13px] sm:w-60"><SelectValue /></SelectTrigger>
+      <SelectTrigger aria-label={label} className="w-40 text-[13px] sm:w-60"><SelectValue /></SelectTrigger>
       <SelectContent alignItemWithTrigger={false}><SelectGroup>
         {options.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}
       </SelectGroup></SelectContent>
@@ -92,7 +92,7 @@ export function SettingsPage() {
               description="Choose how Papyrbound looks."
             >
               <div
-                className="flex h-9 w-full shrink-0 sm:w-[280px] rounded-xl bg-muted p-1"
+                className="flex h-9 w-full shrink-0 sm:w-[280px] rounded-button bg-muted p-1"
                 role="group"
                 aria-label="Theme"
               >
@@ -102,7 +102,7 @@ export function SettingsPage() {
                     variant="ghost"
                     size="sm"
                     aria-pressed={preferences.theme === theme}
-                    className={`h-7 flex-1 rounded-lg px-2 text-[13px] capitalize ${preferences.theme === theme ? "bg-selected shadow-soft hover:bg-selected dark:bg-foreground/10 dark:hover:bg-foreground/15" : "text-muted-foreground"}`}
+                    className={`h-7 flex-1 px-2 text-[13px] capitalize ${preferences.theme === theme ? "bg-selected shadow-soft hover:bg-selected dark:bg-foreground/10 dark:hover:bg-foreground/15" : "text-muted-foreground"}`}
                     onClick={() => updatePreferences({ theme })}
                   >
                     {theme}

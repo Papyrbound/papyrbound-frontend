@@ -163,7 +163,7 @@ export function AppHeader() {
         <AddBookDialog compact={compact} />
         {gallery && (
           <div
-            className="flex h-8 w-[72px] items-center justify-center gap-1 rounded-lg border border-soft-border bg-secondary p-1 shadow-soft"
+            className="flex h-8 w-[72px] items-center justify-center gap-1 rounded-control border border-soft-border bg-secondary p-1 shadow-soft"
             role="group"
             aria-label="Library view"
           >
@@ -174,8 +174,8 @@ export function AppHeader() {
                 size="icon-sm"
                 className={
                   view === v
-                    ? "h-6 w-7 rounded-md border-foreground/10 bg-selected text-foreground shadow-soft hover:bg-selected dark:bg-foreground/15 dark:hover:bg-foreground/20"
-                    : "h-6 w-7 rounded-md text-muted-foreground"
+                    ? "h-6 w-7 rounded-lg border-foreground/10 bg-selected text-foreground shadow-soft hover:bg-selected dark:bg-foreground/15 dark:hover:bg-foreground/20"
+                    : "h-6 w-7 rounded-lg text-muted-foreground"
                 }
                 aria-label={`${v} view`}
                 aria-pressed={view === v}
@@ -190,7 +190,6 @@ export function AppHeader() {
           <TooltipHint content={panelOpen ? "Hide details panel" : "Show details panel"}><Button
             variant="outline"
             size="icon-sm"
-            className="rounded-lg"
             aria-label={panelOpen ? "Hide details panel" : "Show details panel"}
             aria-pressed={panelOpen}
             onClick={() => setPanelOpen(!panelOpen)}

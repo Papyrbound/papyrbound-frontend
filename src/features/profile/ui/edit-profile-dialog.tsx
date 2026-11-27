@@ -157,7 +157,7 @@ export function EditProfileDialog({ onClose }: { onClose: () => void }) {
                     <Button
                       type="button"
                       variant="outline"
-                      className="h-8 max-w-full gap-2 rounded-lg px-3 font-normal"
+                      className="h-8 max-w-full gap-2 px-3 font-normal"
                     />
                   }
                 >

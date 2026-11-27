@@ -200,12 +200,19 @@ The November 2026 implementation pass uses these public references:
 | Control label | 13px / 20px |
 | Metadata | 12px / 18px |
 | Standard control height | 32px; existing compact variants remain available |
-| Control / menu / dialog radius | 8px / 12px / 16px |
-| Section and selection radius | 16px and 12px |
+| Button radius | Pill-shaped; icon-only buttons are circular |
+| Field / menu / dialog radius | 12px / 16px / 24px |
+| Section and selection radius | 24px and 12px |
+| Book cover radius | 4–6px |
 | Fast / normal / panel transition | 120ms / 180ms / 220ms |
 
-Floating controls use the popover surface and restrained elevation. Content
-sections use subtle fills or separators; nested profile activity sections use
+Floating controls use the popover surface and restrained elevation. Shared
+controls follow [HeroUI's softer radius direction](https://heroui.com/en/docs/react/migration/styling)
+through shared semantic tokens. Segmented controls and menu rows retain inset
+corners that fit their parent surface. Control heights and sidebar spacing remain
+unchanged.
+
+Content sections use subtle fills or separators; nested profile activity sections use
 separators instead of additional cards. Book artwork keeps its own proportions
 and small corner radius. Search and the library switcher keep their existing
 dimensions.
