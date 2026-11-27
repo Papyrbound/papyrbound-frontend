@@ -72,13 +72,13 @@ export function AddBookDialog({ compact = false }: { compact?: boolean }) {
       <span className="inline-flex" tabIndex={busy || !importsReady ? 0 : undefined} aria-label={busy || !importsReady ? label : undefined}>
       <Button
         size="sm"
-        className={`gap-2 rounded-[10px] border-primary-foreground/10 text-[13px] font-medium shadow-[0_1px_2px_rgb(0_0_0/12%),inset_0_1px_0_rgb(255_255_255/16%)] transition-[background-color,box-shadow] duration-150 hover:bg-primary/90 hover:shadow-[0_2px_5px_rgb(0_0_0/16%)] ${compact ? "w-8 p-0" : "w-auto pl-1.5 pr-3"}`}
+        className={`gap-2 ${compact ? "w-8 p-0" : "px-3"}`}
         aria-label={busy ? "Importing files" : label}
         aria-busy={busy}
         disabled={busy || !importsReady}
         onClick={() => input.current?.click()}
       >
-        <span className="flex size-5 items-center justify-center rounded-md bg-primary-foreground/10" aria-hidden="true">
+        <span className="flex size-4 items-center justify-center" aria-hidden="true">
           {busy ? <LoaderCircle className="size-3.5 animate-spin" /> : <UploadIcon className="size-3.5" />}
         </span>
         {!compact && <span>{busy ? "Importing…" : label}</span>}

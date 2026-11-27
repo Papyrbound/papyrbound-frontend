@@ -48,7 +48,7 @@ function SettingsRow({
 }) {
   return (
     <div
-      className={`flex min-h-[74px] flex-wrap items-center justify-between gap-3 py-3 sm:flex-nowrap sm:gap-5 sm:py-0 border-b border-border ${className}`}
+      className={`flex min-h-18 flex-wrap items-center justify-between gap-3 py-4 sm:flex-nowrap sm:gap-5 border-b border-border/60 ${className}`}
     >
       <div>
         <h3 className="text-sm font-medium leading-6">{label}</h3>
@@ -67,11 +67,11 @@ export function SettingsPage() {
   const { preferences, profile } = useAccount();
   const ui = useSettingsUI();
   return (
-    <main className="p-5 lg:px-12 lg:py-8">
-      <header className="mb-[30px] flex items-center justify-between gap-4">
+    <main className="mx-auto max-w-7xl px-6 py-8 lg:px-10">
+      <header className="mb-8 flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold leading-[42px]">Settings</h1>
-          <p className="mt-3 text-[13px] leading-6 text-muted-foreground">
+          <h1 className="text-ui-title">Settings</h1>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
             Make Papyrbound feel like your own.
           </p>
         </div>
@@ -79,10 +79,9 @@ export function SettingsPage() {
           Edit profile
         </Button>
       </header>
-      <div className="grid min-w-0 items-start gap-12 xl:grid-cols-[minmax(0,1.554fr)_minmax(300px,1fr)]">
+      <div className="grid min-w-0 items-start gap-8 xl:grid-cols-[minmax(0,1.5fr)_minmax(300px,1fr)]">
         <div className="space-y-7">
-          <section className="rounded-section bg-card px-6 pt-5">
-            <SettingsRow label="Show demo content" description="Explore fictional books and sample collections. These do not unlock reading titles."><Switch aria-label="Show demo content" checked={ui.showDemo} onCheckedChange={(showDemo) => ui.patch({ showDemo })} /></SettingsRow>
+          <section className="border-b border-border/60 pb-6">
             <h2 className="mb-2 text-base font-semibold leading-[26px]">
               Appearance
             </h2>
@@ -112,7 +111,7 @@ export function SettingsPage() {
             <SettingsRow
               label="Interface text size"
               description="Adjust labels and navigation."
-              className="min-h-[78px]"
+              className="min-h-18"
             >
               <Choice
                 label="Interface text size"
@@ -123,7 +122,7 @@ export function SettingsPage() {
             </SettingsRow>
             <SettingsRow
               label="Show sidebar labels"
-              className="min-h-[72px] border-0 pt-2.5"
+              className="min-h-18 border-0"
             >
               <Switch
                 aria-label="Show sidebar labels"
@@ -132,7 +131,7 @@ export function SettingsPage() {
               />
             </SettingsRow>
           </section>
-          <section className="rounded-section bg-card px-6 pt-5">
+          <section className="border-b border-border/60 pb-6">
             <h2 className="mb-2 text-base font-semibold leading-[26px]">
               Reading
             </h2>
@@ -163,7 +162,7 @@ export function SettingsPage() {
                 key={String(label)}
                 label={String(label)}
                 description={String(desc)}
-                className={index ? "min-h-[78px]" : ""}
+                className={index ? "min-h-18" : ""}
               >
                 <Choice
                   label={String(label)}
@@ -176,7 +175,7 @@ export function SettingsPage() {
             <SettingsRow
               label="Resume where you left off"
               description="Open books at your last reading position."
-              className="min-h-[68px] border-0"
+              className="min-h-18 border-0"
             >
               <Switch
                 aria-label="Resume where you left off"
@@ -184,9 +183,13 @@ export function SettingsPage() {
                 onCheckedChange={(resume) => ui.patch({ resume })}
               />
             </SettingsRow>
-            <p className="h-[52px] pt-3.5 text-xs leading-[18px] text-muted-foreground">
+            <p className="pt-2 text-xs leading-[18px] text-muted-foreground">
               These defaults apply to your EPUB reader.
             </p>
+          </section>
+          <section>
+            <h2 className="text-ui-section">Library</h2>
+            <SettingsRow label="Show demo content" description="Explore fictional books and sample collections. These do not unlock reading titles."><Switch aria-label="Show demo content" checked={ui.showDemo} onCheckedChange={(showDemo) => ui.patch({ showDemo })} /></SettingsRow>
           </section>
           <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-muted-foreground">
             <span>
@@ -210,18 +213,19 @@ export function SettingsPage() {
             Your default reading appearance.
           </p>
           <div
-            className={`relative min-h-[526px] rounded-section border border-soft-border px-8 pb-24 pt-12 sm:px-[52px] ${ui.page === "Dark" ? "bg-[#292929] text-[#e5e5e5]" : ui.page === "Paper" ? "bg-[#f3f0e7] text-[#44423d]" : "bg-white text-[#343434]"}`}
+            className={`relative min-h-96 rounded-section border border-soft-border px-8 pb-24 pt-12 sm:px-10 ${ui.page === "Dark" ? "bg-[#292929] text-[#e5e5e5]" : ui.page === "Paper" ? "bg-[#f3f0e7] text-[#44423d]" : "bg-white text-[#343434]"}`}
           >
             <p className="text-center text-[11px] leading-[18px] text-muted-foreground">
               CHAPTER ONE
             </p>
             <h3
-              className={`mb-10 mt-9 text-[30px] font-normal leading-[41px] ${ui.font === "Georgia" ? "font-[Georgia,serif]" : "font-sans"}`}
+              className={`mb-6 mt-8 text-2xl font-normal leading-8 ${ui.font === "Georgia" ? "font-[Georgia,serif]" : "font-sans"}`}
             >
               A place between pages
             </h3>
             <div
-              className={`space-y-8 text-[21px] ${ui.font === "Georgia" ? "font-[Georgia,serif]" : "font-sans"} ${ui.spacing === "Compact" ? "leading-7" : ui.spacing === "Spacious" ? "leading-10" : "leading-[31.5px]"}`}
+              style={{ fontSize: ui.reader.fontSize }}
+              className={`space-y-6 ${ui.font === "Georgia" ? "font-[Georgia,serif]" : "font-sans"} ${ui.spacing === "Compact" ? "leading-7" : ui.spacing === "Spacious" ? "leading-10" : "leading-[31.5px]"}`}
             >
               <p>
                 The room grew quiet as the afternoon light moved across the

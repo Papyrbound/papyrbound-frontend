@@ -9,6 +9,7 @@ import { BookCover } from "./book-cover";
 import type { SampleBook } from "../model/sample-books";
 import { orderBooks, nextUnreadBook } from "@/features/library/model/book-order";
 import { AddBookDialog } from "@/features/library/ui/add-book-dialog";
+import { Progress } from "@/shared/ui/progress";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
 
 export function LibraryOverview() {
@@ -24,7 +25,7 @@ export function LibraryOverview() {
     return (
       <main aria-label="Reading Now" className="grid h-[calc(100dvh-3.5rem)] min-h-0 place-items-center overflow-y-auto px-6 py-12">
         {importsReady ? (
-          <Empty className="min-h-80 max-w-lg border border-border/70 bg-card/40">
+          <Empty className="min-h-80 max-w-lg">
             <EmptyHeader>
               <EmptyMedia variant="icon" className="mb-3 size-12 rounded-2xl text-muted-foreground"><BookOpen aria-hidden="true" className="size-6" /></EmptyMedia>
               <EmptyTitle role="heading" aria-level={1}>No {plural} yet</EmptyTitle>
@@ -46,22 +47,24 @@ export function LibraryOverview() {
       <button
         key={book.id}
         onClick={() => selectBook(book.id)}
-        className="-mx-3 flex w-[calc(100%+1.5rem)] items-start gap-[19px] rounded-xl px-3 py-3 text-left outline-none hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring"
+        onDoubleClick={() => openReader(book.id)}
+        aria-pressed={selectedId === book.id}
+        className="-mx-3 flex w-[calc(100%+1.5rem)] items-center gap-4 rounded-xl px-3 py-3 text-left outline-none hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <span className="block w-[55px] shrink-0 [&_.book-cover]:rounded-[4px]">
+        <span className="block w-12 shrink-0 [&_.book-cover]:rounded-[4px]">
           <BookCover book={book} />
         </span>
-        <span className="min-w-0 pt-2.5">
-          <span className="block truncate text-sm font-semibold leading-[22px]">
+        <span className="min-w-0">
+          <span className="block truncate text-sm font-semibold leading-5">
             {book.title}
           </span>
-          <span className="mt-[5px] block text-xs leading-[18px] text-muted-foreground">
+          <span className="mt-1 block text-xs leading-5 text-muted-foreground">
             {kind === "finished"
               ? (book.completedLabel ?? "Recently")
               : book.author}
           </span>
           {kind !== "next" && (
-            <span className="mt-[5px] block text-xs leading-[18px] text-muted-foreground">
+            <span className="mt-1 block text-xs leading-5 text-muted-foreground">
               {kind === "finished"
                 ? "100%"
                 : (book.addedLabel ?? "Recently added")}
@@ -74,16 +77,17 @@ export function LibraryOverview() {
 
   return (
     <div className="flex h-[calc(100dvh-3.5rem)] min-h-0">
-      <main className="@container min-w-0 flex-1 overflow-y-auto px-5 pb-9 pt-[35px] lg:pl-12 lg:pr-3">
-        <div className="max-w-[1236px]">
-          <h1 className="mb-4 text-[28px] font-semibold leading-[38px]">
+      <main className="@container min-w-0 flex-1 overflow-y-auto px-6 py-8 lg:px-10">
+        <div className="max-w-6xl">
+          <h1 className="mb-5 text-ui-title">
             Recent reads
           </h1>
-          <div className="grid max-w-[952px] grid-cols-[repeat(2,minmax(0,220px))] gap-6 @min-[750px]:grid-cols-[repeat(4,minmax(0,220px))]">
+          <div className="grid max-w-4xl grid-cols-[repeat(2,minmax(0,192px))] gap-x-6 gap-y-8 @min-[750px]:grid-cols-[repeat(4,minmax(0,192px))]">
             {recent.map((book) => (
               <button
                 key={book.id}
-                className={`relative aspect-[2/3] w-full max-w-[220px] overflow-hidden rounded-2xl text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedId === book.id ? "ring-1 ring-muted-foreground ring-offset-2 ring-offset-background" : ""}`}
+                className={`group w-full max-w-48 rounded-control p-2 text-left outline-none transition-colors hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring ${selectedId === book.id ? "bg-selected" : ""}`}
+                aria-pressed={selectedId === book.id}
                 onClick={() => selectBook(book.id)}
                 onDoubleClick={() => {
                   selectBook(book.id);
@@ -91,17 +95,12 @@ export function LibraryOverview() {
                 }}
                 aria-label={`Continue reading ${book.title}`}
               >
-                <BookCover book={book} />
-                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-4 pb-4 pt-14">
-                  <span className="block truncate text-base font-medium leading-[22px] text-white">
-                    {book.title}
-                  </span>
-                  <span className="mt-[18px] block h-[3px] overflow-hidden rounded-full bg-white/35">
-                    <span
-                      className="block h-full bg-white"
-                      style={{ width: `${book.progress}%` }}
-                    />
-                  </span>
+                <span className="block overflow-hidden rounded-sm [&_.book-cover]:rounded-sm"><BookCover book={book} /></span>
+                <span className="mt-3 block truncate text-sm font-medium">{book.title}</span>
+                <span className="mt-1 block truncate text-ui-meta text-muted-foreground">{book.author}</span>
+                <span className="mt-3 flex items-center gap-2">
+                  <Progress value={book.progress} aria-label={`${book.title} reading progress`} className="h-1 flex-1" />
+                  <span className="text-ui-meta tabular-nums text-muted-foreground">{book.progress}%</span>
                 </span>
               </button>
             ))}
@@ -111,10 +110,10 @@ export function LibraryOverview() {
               Start a {noun} from your library to see it here.
             </p>
           )}
-          <div className="mt-[39px] grid gap-12 @min-[750px]:grid-cols-[minmax(0,1.26fr)_minmax(0,1fr)] lg:mr-10">
+          <div className="mt-8 grid gap-8 @min-[750px]:grid-cols-[minmax(0,1.26fr)_minmax(0,1fr)]">
             <div>
               <section>
-                <h2 className="mb-[17px] text-2xl font-semibold leading-[33px]">
+                <h2 className="mb-4 text-ui-section">
                   Next Up
                 </h2>
                 {next.map((book) => row(book, "next"))}
@@ -124,9 +123,9 @@ export function LibraryOverview() {
                   </p>
                 )}
               </section>
-              <section className="mt-[44.5px]">
-                <div className="mb-[18px] flex items-center justify-between gap-3">
-                  <h2 className="text-2xl font-semibold leading-[33px]">
+              <section className="mt-8">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <h2 className="text-ui-section">
                     Finished
                   </h2>
                   <Link
@@ -137,7 +136,7 @@ export function LibraryOverview() {
                     View all
                   </Link>
                 </div>
-                <div className="space-y-[25.5px]">
+                <div className="space-y-2">
                   {finished.slice(0, 2).map((book) => row(book, "finished"))}
                 </div>
                 {!finished.length && (
@@ -148,10 +147,10 @@ export function LibraryOverview() {
               </section>
             </div>
             <section>
-              <h2 className="mb-[17px] text-2xl font-semibold leading-[33px]">
+              <h2 className="mb-4 text-ui-section">
                 Recently added
               </h2>
-              <div className="space-y-[25.5px]">
+              <div className="space-y-2">
                 {added.map((book) => row(book, "added"))}
               </div>
             </section>

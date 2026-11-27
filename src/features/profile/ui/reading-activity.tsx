@@ -65,7 +65,9 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
   const day = activityDateKey(clampActivityDate(new Date(`${ui.day || activityDateKey(latest)}T12:00:00Z`), earliest, latest));
   const activeSessions = recorded.filter((session) => session.kind === kind && books.some((book) => book.id === session.bookId));
   const heatmapDays = createHeatmapDays(earliest, latest, activeSessions);
-  const chartDays = embedded ? heatmapDays.slice(-182) : heatmapDays;
+  const firstAvailableDay = Math.max(0, heatmapDays.findIndex((entry) => entry.minutes !== null));
+  const availableDays = heatmapDays.slice(Math.floor(firstAvailableDay / 7) * 7);
+  const chartDays = embedded ? availableDays.slice(-182) : availableDays;
   const streak = activityStreak(heatmapDays, day);
   const months = chartDays.filter((_, index) => index % 7 === 0).flatMap((entry, index, weeks) => {
     const date = new Date(`${entry.date}T12:00:00Z`);
@@ -91,7 +93,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
     <div>
       <header className="flex flex-wrap items-start justify-between gap-4">
         {!embedded && <div>
-          <h1 className="text-3xl font-semibold leading-[42px]">
+          <h1 className="text-ui-title">
             Reading activity
           </h1>
           <p className="mt-3 text-[13px] leading-6 text-muted-foreground">
@@ -108,7 +110,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
           onSelect={selectDay}
         />
       </header>
-      <div className={cn("mb-8 grid grid-cols-2 gap-6", embedded ? "mt-6" : "mt-11 lg:grid-cols-4")}>
+      <div className={cn("mb-8 grid grid-cols-2 gap-6", embedded ? "mt-6" : "mt-8 lg:grid-cols-4")}>
         {[
           [total === 0 && sessions.some((session) => session.seconds > 0) ? "<1 min" : `${Math.floor(total / 60)}h ${total % 60}m`, "Time read this week"],
           [
@@ -119,7 +121,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
           [String(finished.length), `${label} finished in your library`],
         ].map(([n, l]) => (
           <div key={l} className="min-w-0 border-r border-border pr-4 last:border-0">
-            <p className={cn("font-medium", embedded ? "text-2xl leading-9" : "text-4xl leading-[49px]")}>{n}</p>
+            <p className={cn("font-medium", embedded ? "text-2xl leading-9" : "text-2xl leading-9")}>{n}</p>
             <p className="mt-1 text-[13px] leading-6 text-muted-foreground">
               {l}
             </p>
@@ -132,22 +134,22 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
             Reading consistency
           </h2>
           <p className="mt-1 text-xs leading-[18px] text-muted-foreground">
-            {embedded ? "Last 26 weeks" : "Last 12 months"}
+            Daily minutes read · since {chartDays.find((entry) => entry.minutes !== null)?.date ?? activityDateKey(earliest)}
           </p>
-          <div className="mt-[18px] overflow-x-auto">
-            <div className={embedded ? "min-w-[260px]" : "min-w-[920px] pl-4 pr-9"}>
-              <div style={{ gridTemplateColumns: `repeat(${chartDays.length / 7}, minmax(0, 1fr))` }} className={cn("mb-2.5 grid h-[18px] text-[10px] text-muted-foreground", embedded ? "ml-8 gap-0.5" : "ml-14 gap-1")}>
+          <div className="mt-4 overflow-x-auto">
+            <div className="w-max min-w-full">
+              <div style={{ gridTemplateColumns: `repeat(${chartDays.length / 7}, 12px)` }} className="mb-2 grid h-5 gap-1 pl-8 text-[10px] text-muted-foreground">
                 {months.map((month) => (
-                  <span key={month.date} style={{ gridColumn: month.column }}>{month.label}</span>
+                  <span key={month.date} className="w-8 whitespace-nowrap" style={{ gridColumn: month.column }}>{month.label}</span>
                 ))}
               </div>
-              <div className={cn("flex", embedded ? "gap-2" : "gap-8")}>
+              <div className="flex gap-2">
                 <div className="flex w-6 shrink-0 flex-col justify-around text-[10px] text-muted-foreground">
                   <span>Mon</span>
                   <span>Wed</span>
                   <span>Fri</span>
                 </div>
-                <div className={cn("grid grid-flow-col", embedded ? "aspect-[26/7] flex-1 grid-rows-7 auto-cols-fr gap-0.5" : "grid-rows-[repeat(7,12px)] auto-cols-[12px] gap-1")}>
+                <div className="grid grid-flow-col grid-rows-[repeat(7,12px)] auto-cols-[12px] gap-1">
                   {chartDays.map((d) => (
                     <TooltipHint key={d.date} content={`${d.date}: ${d.minutes ?? 0} minutes read`}><button
                       className={`aspect-square rounded-[3px] outline-none focus-visible:ring-2 focus-visible:ring-ring ${day === d.date ? "ring-1 ring-foreground ring-offset-1 ring-offset-card" : ""} ${d.minutes === null ? "invisible" : d.minutes === 0 ? "bg-border" : d.minutes < 20 ? "bg-neutral-300 dark:bg-neutral-600" : d.minutes < 35 ? "bg-neutral-400" : d.minutes < 50 ? "bg-neutral-500" : "bg-neutral-700 dark:bg-neutral-200"}`}
@@ -161,7 +163,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
               </div>
             </div>
           </div>
-          <div className="mt-[26px] flex flex-wrap items-center justify-between gap-3 text-xs leading-[18px]">
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-xs leading-[18px]">
             <span>
               {chartDays.filter((d) => !!d.minutes).length} reading days
             </span>
@@ -180,7 +182,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
             </span>
           </div>
           <p
-            className="mt-[18px] border-t border-border pt-4 text-xs leading-[18px]"
+            className="mt-4 border-t border-border pt-4 text-xs leading-[18px]"
             aria-live="polite"
           >
             {day} · {selected?.minutes ?? 0} minutes read
@@ -191,9 +193,9 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
             Daily reading goal
             <CircleCheck className="size-4 text-muted-foreground" />
           </h2>
-          <p className="mt-[26px] text-[44px] font-medium leading-[60px]">
+          <p className="mt-6 text-3xl font-medium leading-10">
             {selected?.minutes ?? 0}{" "}
-            <span className="ml-14 text-lg font-normal text-muted-foreground">
+            <span className="ml-2 text-base font-normal text-muted-foreground">
               / {goal} min
             </span>
           </p>
@@ -227,7 +229,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
               );
             })}
           </div>
-          <p className="mt-[26px] text-xs leading-[18px] text-muted-foreground">
+          <p className="mt-6 text-xs leading-[18px] text-muted-foreground">
             {streak.current}-day streak · Personal best: {streak.best} {streak.best === 1 ? "day" : "days"}
           </p>
           <Button
@@ -242,7 +244,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
       </div>
       <div className={cn("mt-9 grid min-w-0 gap-7", !embedded && "xl:grid-cols-[minmax(0,1.88fr)_minmax(280px,1fr)]")}>
         <section>
-          <h2 className="mb-5 text-xl font-semibold leading-7">
+          <h2 className="mb-5 text-ui-section">
             Recent sessions
           </h2>
           <div className="divide-y divide-border">
@@ -273,7 +275,7 @@ export function ReadingActivity({ embedded = false }: { embedded?: boolean }) {
           {!sessions.length && <p className="text-sm text-muted-foreground">No reading sessions this week. Open an imported book or comic to start.</p>}
         </section>
         <section>
-          <h2 className="mb-5 text-xl font-semibold leading-7">
+          <h2 className="mb-5 text-ui-section">
             Recently finished
           </h2>
           {finished.length ? (
